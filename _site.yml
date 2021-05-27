@@ -16,7 +16,7 @@ navbar:
     - text: Problem sets
       menu:
       - text: Week 2 problem set
-        href: assigments/week_2_ps.html
+        href: assignments/week_2_ps.html
       - text: Week 3 problem set
         href: assignments/week_3_ps.pdf
 output: distill::distill_article
