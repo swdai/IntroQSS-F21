@@ -2,7 +2,7 @@ name: "."
 title: "&quot;Intro QSS&quot;"
 description: |
   &quot;Intro QSS&quot;
-output_dir: "_site"
+output_dir: "."
 navbar:
   right:
     - text: "Home"
