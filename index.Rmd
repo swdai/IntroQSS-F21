@@ -1,5 +1,5 @@
 ---
-title: "Intro QSS"
+title: Intro QSS
 description: |
   Welcome to the website. We hope you enjoy it!
 site: distill::distill_website
