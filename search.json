@@ -1,18 +1,11 @@
 {
   "articles": [
     {
-      "path": "about.html",
-      "title": "About this site",
-      "author": [],
-      "contents": "\nThis is the course website for PLSC30500 at the University of Chicago.\n\n\n\n",
-      "last_modified": "2021-05-27T12:50:30+01:00"
-    },
-    {
       "path": "index.html",
       "title": "Introduction to Quantitative Social Science",
       "author": [],
       "contents": "\nDo you want to learn how to do this?\n\n\n\nThen stay tuned!\n\n\n\n",
-      "last_modified": "2021-05-27T12:50:33+01:00"
+      "last_modified": "2021-05-27T13:47:54+01:00"
     }
   ],
   "collections": []

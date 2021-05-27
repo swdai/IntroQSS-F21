@@ -19,6 +19,4 @@ navbar:
         href: assigments/week_2_ps.html
       - text: Week 3 problem set
         href: assignments/week_3_ps.pdf
-    - text: "About"
-      href: about.html
 output: distill::distill_article
