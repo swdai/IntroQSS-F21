@@ -7,6 +7,12 @@ navbar:
   right:
     - text: "Home"
       href: index.html
+    - text: Slides
+      menu:
+      - text: 1.1 Getting started
+        href: slides/slides_11.html
+      - text: 1.2 Data visualization
+        href: slides/slides_12.html
     - text: "About"
       href: about.html
 output: distill::distill_article

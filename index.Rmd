@@ -1,15 +1,24 @@
 ---
-title: Intro QSS
-description: |
-  Welcome to the website. We hope you enjoy it!
+title: Introduction to Quantitative Social Science
 site: distill::distill_website
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-
+library(tidyverse)
 # Learn more about creating websites with Distill at:
 # https://rstudio.github.io/distill/website.html
 
 ```
 
+Do you want to learn how to do this? 
+
+
+```{r}
+mtcars %>% 
+  ggplot(aes(x = wt, y = mpg)) +
+  geom_point() + 
+  geom_smooth()
+```
+
+Then stay tuned! 
