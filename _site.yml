@@ -1,7 +1,7 @@
 name: "."
-title: "&quot;Intro QSS&quot;"
+title: "Intro QSS"
 description: |
-  &quot;Intro QSS&quot;
+  Introduction to quantitative social science (POLSC 30500);
 output_dir: "."
 navbar:
   right:
