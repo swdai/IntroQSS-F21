@@ -13,6 +13,12 @@ navbar:
         href: slides/slides_11.html
       - text: 1.2 Data visualization
         href: slides/slides_12.html
+    - text: Problem sets
+      menu:
+      - text: Week 2 problem set
+        href: assigments/week_2_ps.html
+      - text: Week 3 problem set
+        href: assignments/week_3_ps.pdf
     - text: "About"
       href: about.html
 output: distill::distill_article
