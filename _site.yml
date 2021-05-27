@@ -2,7 +2,7 @@ name: "."
 title: "Intro QSS"
 description: |
   Introduction to quantitative social science (POLSC 30500);
-output_dir: "."
+output_dir: "_site"
 navbar:
   right:
     - text: "Home"

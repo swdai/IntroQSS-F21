@@ -1,20 +1,11 @@
 {
   "articles": [
     {
-      "path": "about.html",
-      "title": "About this site",
-      "description": "Some additional details about the website",
-      "author": [],
-      "contents": "\n\n\n\n",
-      "last_modified": "2021-05-27T11:17:25+01:00"
-    },
-    {
       "path": "index.html",
-      "title": "Intro QSS",
-      "description": "Welcome to the website. We hope you enjoy it!\n",
+      "title": "Introduction to Quantitative Social Science",
       "author": [],
-      "contents": "\n\n\n\n",
-      "last_modified": "2021-05-27T11:17:26+01:00"
+      "contents": "\nDo you want to learn how to do this?\n\n\n\nThen stay tuned!\n\n\n\n",
+      "last_modified": "2021-05-27T14:00:01+01:00"
     }
   ],
   "collections": []

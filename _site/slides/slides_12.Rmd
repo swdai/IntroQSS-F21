@@ -1,0 +1,31 @@
+---
+title: "1.2 Data visualization"
+subtitle: "PLSC30500, Fall 2021"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
+  xaringan::moon_reader:
+    css: [default, shinobi]
+    nature:
+      highlightStyle: atelier-lakeside-light
+      highlightLines: true
+      countIncrementalSlides: false
+  
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+
+## Here we go
+
+```{r echo = T}
+
+mtcars %>% 
+  ggplot(aes(x = wt, y = mpg)) +
+  geom_point() + 
+  geom_smooth()
+
+```
+
+

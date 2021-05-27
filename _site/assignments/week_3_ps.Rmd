@@ -1,0 +1,22 @@
+---
+title: "Week 3 problem set"
+date: "5/27/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+1. Does this make you think of anything? 
+\[\frac{\text{cov}(Y, X)}{\text{var}(X)} \]
+
+1. How about this? 
+
+```{r}
+mtcars %>% 
+  ggplot(aes(x = disp)) + 
+  geom_histogram(bins = 30)
+```
+
