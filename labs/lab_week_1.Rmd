@@ -1,0 +1,19 @@
+---
+title: "Untitled"
+description: |
+  A new article created using the Distill format.
+author:
+  - name: Our Lab TA 
+    url: https://example.com/norajones
+    email: introqss_ta@uchicago.edu
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+Is this a lab worksheet, or what? 
+

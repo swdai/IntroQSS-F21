@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>6.1 Regression intuition</title>
+    <meta charset="utf-8" />
+    <link href="slides_61_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_61_files/remark-css-0.0.1/fc.css" rel="stylesheet" />
+    <link href="slides_61_files/remark-css-0.0.1/fc-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 6.1 Regression intuition
+## PLSC30500, Fall 2021
+
+---
+
+
+
+
+
+class: inverse, middle, center
+
+# Two key facts about regression 
+
+
+&lt;!-- Todo: might add a thing about interpreting the coefficient by plotting it via predictions, etc -- what IS the best way to do that, anyway? might be sjplot plot_model  --&gt;
+
+---
+
+name: fact-1-task
+
+
+## Fact 1: slope from covariance and variance
+
+
+Slope coefficient from bivariate regression of `\(Y\)` on `\(X\)`: 
+
+$$  \hat{\beta} = \frac{\text{cov}(Y, X)}{\text{var}(X)}$$
+--
+
+**Task 1**: demonstrate this using `mtcars` (or any other dataset!)
+
+See [solution](#fact-1-task-solution).
+
+???
+
+Fun fact: any OLS coefficient can be expressed in terms of covariances and variances, not just a bivariate regression slope.
+
+
+---
+
+name: fact-2-task
+
+## Fact 2: residuals uncorrelated with regressors
+
+If `\(X\)` is a regressor (i.e. predictor, right-hand-side (RHS) variable) and `\(\hat{r}\)` is the vector of residuals, then 
+$$ \text{cov}(X, \hat{r}) = 0 $$
+
+--
+
+**Task 2:** Confirm this with `mtcars`. (See [solution](#fact-2-task-solution))
+
+--
+
+&lt;br/&gt;&lt;br/&gt; 
+
+&lt;br/&gt;&lt;br/&gt; 
+
+**Reminder:** If `my_lm` is your regression object, you can get the residuals with 
+
+- `resid(my_lm)`, 
+- `my_lm$residuals`, or 
+- `my_lm %&gt;% broom::augment()`.
+
+
+---
+
+## Fact 2 intuition (1)
+
+&lt;img src="slides_61_files/figure-html/ols-not-ols-1.png" width="900px" style="display: block; margin: auto;" /&gt;
+
+???
+
+We do two prediction lines: the OLS one and a "bad" one
+
+---
+
+
+## Fact 2 intuition (2)
+
+&lt;img src="slides_61_files/figure-html/fact-2-intuition-2-1.png" width="900px" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+The residuals from the bad prediction are correlated with `wt`, but not the residuals from the OLS prediction. 
+
+If the residuals are correlated with a predictor (as in the "Not OLS" prediction line), we can make the prediction better by shifting the line and getting rid of that correlation. When we do that for all predictors we get the OLS solution. 
+
+
+
+---
+
+class: inverse, middle, center
+
+# Using the two facts (1):
+# the Frisch-Waugh-Lovell (FWL) theorem
+
+---
+
+# FWL theorem and interpreting regression coefficients
+
+Suppose we regress `\(Y\)` on `\(D\)` ("treatment") and `\(X\)` ("covariate"). What does the coefficient on `\(D\)` mean?
+
+--
+
+name: fwl-task
+
+The **Frisch-Waugh-Lovell (FWL) Theorem** says that these produce the same number: 
+
+- regress `\(Y\)` on `\(D\)` and `\(X\)`, get coefficient on `\(D\)`
+- regress `\(D\)` on `\(X\)`, get residuals; regress `\(Y\)` on those residuals, get coefficient
+
+--
+
+&lt;br&gt; &lt;/br&gt;
+
+**Task:** confirm FWL in `mtcars`. 
+&lt;!-- (use `mpg` as `\(Y\)`, `wt` as `\(D\)`, and `disp` as `\(X\)`).--&gt;
+(See [solution](fwl-task-solution))
+
+???
+
+This also works when you have many covariates `\(X_1, X_2, \ldots\)`, not just one
+
+
+
+---
+
+
+###  The math behind the FWL theorem
+
+Consider three fitted regression equations:
+
+`$$\begin{eqnarray}
+Y_i &amp;=&amp; \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i  \\
+D_i &amp;=&amp; \hat{\alpha}_0 + \hat{\alpha}_1 X_i  + \hat{\varepsilon}_i \\
+Y_i &amp;=&amp; \hat{\gamma}_0 + \hat{\gamma}_1 \hat{\varepsilon}_i + \hat{u}_i
+\end{eqnarray}$$`
+FWL says `\(\hat{\beta}_1 = \hat{\gamma}_1\)`.
+
+**Proof**: `\(\hat{\gamma}_1\)` can be written (fact 1) `\(\frac{\text{cov}(Y_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} =\frac{\text{cov}(\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}\)`
+
+Now observe that
+
+- `\(\hat{\beta}_0\)` is a constant `\(\rightarrow\)` not correlated w. `\(\hat{\varepsilon}_i\)`
+- `\(X_i\)` is uncorrelated with `\(\hat{\varepsilon}\)` (**fact 2**), and
+- `\(\hat{r}_i\)` is uncorrelated with `\(\hat{\varepsilon}\)` b/c `\(D_i\)` is uncorrelated with `\(\hat{r}_i\)` (**fact 2**), and `\(\hat{\varepsilon}_i\)` is part of `\(D_i\)`.
+
+So:
+
+`$$\begin{eqnarray} \frac{\text{cov}(Y_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} = \frac{\text{cov}(\hat{\beta_1} D_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} =
+\hat{\beta_1} \frac{\text{cov}(\hat{\alpha}_0 + \hat{\alpha}_1 X_i  + \hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} =
+\hat{\beta_1}\frac{\text{cov}(\hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} = \hat{\beta_1}
+\end{eqnarray}$$`
+
+
+
+---
+
+## Using the FWL theorem
+
+To interpret `\(\hat{\beta}_1\)` in a regression like 
+$$
+Y_i = \hat{\beta}_0 + \hat{\beta_1} D_i + \hat{\beta_2} X_i,
+$$ 
+think of FWL: `\(\hat{\beta}_1\)` describes the relationship between `\(Y_i\)` and the part of `\(D_i\)` that is not "explained" by `\(X_i\)`. 
+
+--
+
+FWL says we can learn about a regression coefficient using a **partial regression plot**.  
+
+???
+
+"Explained" is in quotes here because regressing `\(D\)` on `\(X\)` does not explain any part of `\(D\)` in a deep sense; OLS is just describing their relationship in the dataset. 
+
+---
+
+#### Partial regression plot
+
+
+```r
+mtcars %&gt;%
+  mutate(wt_resid = resid(lm(wt ~ disp, data = .))) %&gt;%
+  ggplot(aes(x = wt_resid, y = mpg)) + 
+  geom_point() + 
+  geom_smooth(method = lm, formula = y ~ x, se = F) + 
+  labs(x = "Residualized vehicle weight\n(adjusted for displacement)", 
+       y = "Vehicle MPG")
+```
+
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-3-1.png" width="550px" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: center, inverse, middle
+
+# Using the two facts (2):
+# the Omitted variable bias (OVB) equation
+
+---
+name: ovb-task
+
+### OVB equation and interpreting regression coefficients 
+
+Suppose we have regressed `\(Y\)` on `\(D\)` ("treatment"). How would our coefficient change if we included `\(X\)` in the regression? 
+
+--
+
+OVB equation says that the difference between the first and second coefficient is the product of  
+
+- the coefficient on `\(X\)` in the full regression ("impact")
+- the coefficient on `\(D\)` from a regression of `\(X\)` on `\(D\)` ("imbalance")
+
+--
+
+Confirm that this is true with `mtcars`. &lt;!-- (use `mpg` as `\(Y\)`, `wt` as `\(D\)`, and `disp` as `\(X\)`).--&gt;  (See [solution](#ovb-task-solution).)
+
+???
+
+This is a fact about regression. It only makes sense to call the difference in the two estimates "bias" if the longer equation is correct, but the fact is true whether or not the longer equation is correct.
+
+The question here is one you should ask when thinking about any empirical finding: how would the results be different if the regression adjusted for an additional factor? 
+
+---
+
+
+
+### The math behind the OVB equation 
+
+Consider three fitted regression equations: 
+
+`$$\begin{eqnarray} 
+Y_i &amp;=&amp; \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i \\
+Y_i &amp;=&amp; \hat{\gamma}_0 + \hat{\gamma}_1 D_i + \hat{\varepsilon}_i \\
+X_i &amp;=&amp; \hat{\alpha}_0 + \hat{\alpha}_1 D_i + \hat{u}_i
+\end{eqnarray}$$`
+
+OVB equation says: `\(\hat{\gamma}_1 = \hat{\beta}_1 + \hat{\beta}_2 \hat{\alpha}_1\)`. 
+
+--
+
+**Proof**: Using **fact 1** we have
+$$ \hat{\gamma}_1 = \frac{\text{cov}(Y_i, D_i)}{\text{var}(D_i)} = \frac{\text{cov}(\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i, D_i)}{\text{var}(D_i)} $$ 
+
+and using fact 2 this becomes  
+
+$$ \hat{\beta}_1 \frac{\text{cov}(D_i, D_i)}{\text{var}(D_i)} + \hat{\beta}_2 \frac{\text{cov}(X_i, D_i)}{\text{var}(D_i)} = \hat{\beta}_1 + \hat{\beta}_2 \frac{\text{cov}(X_i, D_i)}{\text{var}(D_i)}$$
+which (using fact 1) is `\(\hat{\beta}_1 + \hat{\beta}_2 \times \hat{\alpha}_1\)`.
+
+???
+
+The `\(\hat{\beta}_2 \hat{\alpha}_1\)` term is impact `\(\times\)` imabalance, and this is "bias" if the long model is correct so that `\(\beta_1\)` is the target. But leaving aside the "bias" interpretation, this fact about regression doesn't depend on the "long" regression being correct (though sometimes it's presented that way) or on onything being causal. 
+
+---
+
+### OVB practice 
+
+
+Suppose we regress a measure of civil conflict on an indicator for whether peacekeeping had taken place in the previous 5 years.
+
+--
+
+How is our estimate different from the estimate we would get if we adjusted for previous level of civil conflict? 
+
+&lt;br&gt; &lt;/br&gt;
+&lt;br&gt; &lt;/br&gt;
+
+
+--
+
+"Impact" here is: coefficient on previous civil conflict in regression of civil conflict on peacekeeping 
+
+"Imbalance" here is: difference in previous civil conflict between places with vs. without peacekeeping. 
+
+???
+
+Impact and imbalance in this example would probably both be positive, so the "bias" is positive, i.e. we get a larger coefficient without adjusting for previous conflict than we would if we did adjust for it. 
+
+---
+
+class: center, inverse, middle
+
+## Task solutions
+
+---
+
+name: fact-1-task-solution
+
+#### Solution to task 1 (fact 1 demo) 
+
+.pull-left[
+
+```r
+mtcars %&gt;% 
+  ggplot(aes(x = wt, 
+             y = mpg)) + 
+  geom_point()
+```
+]
+
+.pull-right[
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-4-1.png" width="450px" style="display: block; margin: auto;" /&gt;
+]
+
+
+```r
+lm(mpg ~ wt, data = mtcars) %&gt;% coef()
+```
+
+```
+## (Intercept)          wt 
+##   37.285126   -5.344472
+```
+
+
+```r
+cov(mtcars$mpg, mtcars$wt)/var(mtcars$wt) 
+```
+
+```
+## [1] -5.344472
+```
+
+Back to [task 1](#fact-1-task).
+
+
+---
+
+name: fact-2-task-solution
+
+#### Solutions to task 2 (fact 2)
+&lt;!-- ## Confirming fact 2: choose your style  --&gt;
+
+
+```r
+#### Explicit
+my_lm &lt;- lm(mpg ~ wt, data = mtcars)
+my_resids &lt;- my_lm$residuals
+cov(mtcars$wt, my_resids)
+```
+
+```
+## [1] -2.237513e-16
+```
+
+
+```r
+#### One-liner/"code golf"
+cov(mtcars$wt, resid(lm(mpg ~ wt, data = mtcars)))
+```
+
+```
+## [1] -2.237513e-16
+```
+
+
+```r
+#### Tidy fanatic
+mtcars %&gt;% 
+  lm(mpg ~ wt, data = .) %&gt;% 
+  broom::augment() %&gt;% 
+  summarize(cov(wt, .resid)) %&gt;% 
+  as.numeric()
+```
+
+```
+## [1] -2.237513e-16
+```
+
+(Back to [task 2](#fact-2-task))
+
+???
+
+That's as close to zero as the computer knows how to get.
+
+---
+name: fwl-task-solution
+
+#### Confirming FWL 
+
+
+```r
+lm(mpg ~ wt + hp, data = mtcars) %&gt;% coef()
+```
+
+```
+## (Intercept)          wt          hp 
+## 37.22727012 -3.87783074 -0.03177295
+```
+
+```r
+# tidy-ish way
+mtcars %&gt;% 
+  mutate(resid = resid(lm(wt ~ hp, data = .))) %&gt;% 
+  lm(mpg ~ resid, data = .) %&gt;% 
+  coef()
+```
+
+```
+## (Intercept)       resid 
+##   20.090625   -3.877831
+```
+
+```r
+# more straightforward way
+resids &lt;- resid(lm(wt ~ hp, data = mtcars))
+lm(mtcars$mpg ~ resids) %&gt;% coef()
+```
+
+```
+## (Intercept)      resids 
+##   20.090625   -3.877831
+```
+
+(Back to [FWL](fwl-task).)
+
+--- 
+name: ovb-task-solution
+
+#### Confirming OVB equation
+
+
+
+```r
+long_lm &lt;- lm(mpg ~ wt + disp, data = mtcars)
+impact &lt;- coef(long_lm)["disp"]
+imbalance &lt;- coef(lm(disp ~ wt, data = mtcars))["wt"]
+short_lm &lt;- lm(mpg ~ wt, data = mtcars)
+
+coef(long_lm)["wt"] - coef(short_lm)["wt"]
+```
+
+```
+##       wt 
+## 1.993646
+```
+
+```r
+-impact*imbalance
+```
+
+```
+##     disp 
+## 1.993646
+```
+
+([Back to OVB task](#ovb-task).)
+
+---
+
+class: inverse, middle, center
+
+## Other omitted code 
+
+---
+
+name: ols-not-ols-code
+
+
+```r
+mtcars_reg &lt;- lm(mpg ~ wt, data = mtcars)
+bad_intercept &lt;- coef(mtcars_reg)[1]*.875
+bad_slope &lt;- coef(mtcars_reg)[2]*.75
+
+mtcars %&gt;%
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() + 
+  # the OLS line
+  geom_smooth(method = lm, formula = y ~ x,
+              col = "blue", se = F) + 
+  annotate(x = 4.5, y = 11, geom = "text", label = "OLS", 
+           col = "blue", size = 3) +
+  # the not OLS line
+  geom_abline(intercept = bad_intercept,
+         slope = bad_slope, col = "red") + 
+  annotate(x = 4.5, y = 18, geom = "text", label = "Not OLS",
+           col = "red", size = 3)
+```
+
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-11-1.png" width="350px" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+name: fact-2-intuition-2-code
+
+
+```r
+mtcars %&gt;% 
+  mutate(`1. OLS` = coef(mtcars_reg)[1] + coef(mtcars_reg)[2]*wt,
+         `2. Not OLS` = bad_intercept + bad_slope*wt) %&gt;% 
+  pivot_longer(cols = matches("OLS"), values_to = "prediction", names_to = "prediction_type") %&gt;% 
+  mutate(Residuals = mpg - prediction) %&gt;% 
+  ggplot(aes(x = wt, y = Residuals)) + 
+  geom_point() + 
+  geom_smooth(aes(col = prediction_type),
+              method = "lm", formula = y ~ x, se = F,
+              show.legend = F) + 
+  scale_color_manual(values = c("blue", "red")) +
+  facet_wrap(. ~ prediction_type)
+```
+
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-12-1.png" width="350px" style="display: block; margin: auto;" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "atelier-lakeside-light",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
