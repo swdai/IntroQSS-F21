@@ -1,0 +1,363 @@
+---
+title: "5.1 Regression basics"
+subtitle: "PLSC30500, Fall 2021"
+output: 
+  xaringan::moon_reader:
+    css: [default, fc, fc-fonts]
+    ration: '16:9'
+    nature:
+      highlightStyle: atelier-lakeside-light
+      highlightLines: true
+      countIncrementalSlides: false
+  
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, fig.align = "center", out.width = "900px", fig.width = 4.5, fig.asp = .7)
+```
+
+
+class: inverse, middle, center
+
+# What is regression? 
+
+
+<!-- Todo: might add a thing about interpreting the coefficient by plotting it via predictions, etc -- what IS the best way to do that, anyway? might be sjplot plot_model  -->
+
+---
+
+## Regression in general 
+
+In **regression analysis**, we estimate the relationship between a **dependent variable** $(Y_i)$ and **independent variables** $(X_i, D_i, \ldots)$
+
+<br> </br>
+
+Regression **describes** the relationship between $Y_i$ and $\mathbf{X}_i$, but in some circumstances we can use it for  
+
+- prediction (what will $Y_i$ be, given some $X_i$?)
+- causal inference (what is effect of $D_i$ on $Y_i$?)
+
+---
+
+## Prediction and causal inference: an example
+
+Suppose we had this data for each country $i$:
+
+- $Y_i$: was there civil conflict?
+- $D_i$: was there a peace-keeping operation in the past 5 years? 
+- $X_i$: GDP
+
+--
+
+<br> </br>
+
+Would $D_i$ and $X_i$ be useful **predictors** of $Y_i$? 
+
+If $D_i$ predicts $Y_i$, does that mean peace-keeping affects civil conflict?
+
+---
+
+## Ordinary least squares regression
+
+When we say "regression" we often mean **ordinary least squares (OLS)**.
+
+--
+
+We seek a linear prediction of $Y$ based on $D_i$ and $X_i$: 
+
+$$ \hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i $$ 
+--
+
+Define $Y_i - \hat{Y_i} = \hat{r}_i$ as the **residual**. 
+
+--
+
+We seek **coefficients** $\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2$ that minimize the **sum of squared residuals**, i.e.
+
+$$ \underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min}  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right) $$
+
+
+---
+
+## Toy example 
+
+
+.pull-left[
+
+Suppose we have this data: 
+```{r get-data, echo = F}
+set.seed(1245)
+df <- tibble(x = rnorm(2), y = x + rnorm(2, sd = .4)) %>% 
+  bind_rows(tibble(x = -sum(.$x), y = -sum(.$y) + rnorm(1, .1)))
+
+df %>% 
+  kableExtra::kbl(full_width = F, digits = 2)
+```
+]
+
+.pull-right[
+```{r, out.width = "500px", echo = F}
+df %>% 
+  ggplot(aes(x = x, y = y)) + 
+  geom_point() + 
+  expand_limits(x = c(-2, 2), y = c(-2, 2)) + 
+  coord_fixed() 
+
+```
+]
+
+<br> </br>
+<br> </br>
+
+What slope $\hat{\beta}_0$ and intercept $\hat{\beta}_1$ would minimize the sum of squared residuals? 
+
+---
+
+## Regression through guessing 
+
+Let's try $\hat{\beta}_0 = 0$ and $\hat{\beta}_1 = 1$.
+
+```{r, echo = F, out.width = "600px"}
+df %>% 
+  mutate(i = 1:n(),
+         y2 = x,
+         resid = y - x) -> df2
+
+df2 %>%  
+  pivot_longer(cols = c(y, y2), values_to = "y") %>% 
+  select(i, x, y) -> df3
+
+#df2 %>% 
+#  summarize(sum(resid^2))
+
+
+df %>% 
+  ggplot(aes(x = x, y = y)) + 
+  geom_point() + 
+  expand_limits(x = c(-2, 2), y = c(-2, 2)) + 
+  coord_fixed() + 
+  geom_abline(intercept = 0, slope = 1, lty = 2) + 
+  geom_line(data = df3, aes(group = i), col = "red")
+
+```
+
+What is the sum of squared residuals? 
+
+---
+
+## Computing SSR 
+
+```{r}
+# dplyr way
+df %>% 
+  mutate(prediction = 0 + 1*x,
+         residual = y - prediction) %>% 
+  summarize(ssr = sum(residual^2))
+
+# more concise way 
+df %>% 
+  summarize(ssr = (y - x)^2 %>% sum())
+
+# base R way
+sum((df$y - df$x)^2)
+```
+
+---
+
+## A function 
+
+```{r}
+ssr_for_df <- function(intercept, slope){
+  df %>% 
+    mutate(prediction = intercept + slope*x, #<<
+           residual = y - prediction) %>% 
+    summarize(ssr = sum(residual^2)) %>% 
+    as.numeric()
+}
+```
+
+For example: 
+
+```{r}
+ssr_for_df(intercept = 0, slope = 1)
+ssr_for_df(intercept = 0, slope = 2)
+```
+
+---
+
+## "Grid search" over one dimension
+
+We compute SSR for a range of slopes assuming intercept of zero: 
+
+```{r, fig.asp = .5}
+tibble(intercept = 0, slope = seq(0, 2, by = .05)) %>% 
+  mutate(ssr = map2_dbl(intercept, slope, ssr_for_df)) %>% 
+  ggplot(aes(x = slope, y = ssr)) + 
+  geom_point()
+```
+
+---
+
+## "Grid search" over two dimensions
+
+Now consider other intercepts: 
+
+```{r, fig.asp = .5}
+expand_grid(intercept = seq(-.25, .25, by = .05), slope = seq(1, 1.5, by = .05)) %>% 
+  mutate(ssr = map2_dbl(intercept, slope, ssr_for_df)) %>% 
+  ggplot(aes(x = intercept, y = slope, fill = ssr)) + 
+  geom_tile() + 
+  coord_fixed()
+```
+
+---
+
+## There must be a better way
+
+Grid search works, but $\ldots$.
+
+`R` has better ways: 
+
+```{r}
+lm(y ~ x, data = df)
+estimatr::lm_robust(y ~ x, data = df)
+```
+
+---
+
+## How? 
+
+Calculus and linear algebra. (See Linear Models, next course in sequence!)
+
+---
+
+## It's just "linear" regression, right?
+
+In OLS we model $Y$ as an additive function of predictors: 
+
+$$Y_i = \beta_0 + \beta_1 X_{i1} + \beta_2 X_{i2} + \ldots + \beta_k X_{ik} + \epsilon_i$$
+
+--
+
+.pull-left[
+Does this mean OLS is only useful when you have relationships that look like this?
+
+**No.**
+]
+
+
+.pull-right[
+```{r echo = F, out.width = "400px"}
+n <- 100
+tibble(x = rnorm(n)) %>% 
+  mutate(y = x + rnorm(n, sd = .35)) %>% 
+  ggplot(aes(x = x, y = y)) + 
+  geom_point()
+
+```
+
+]
+
+
+---
+
+Here we put in:
+
+- transformations (logs, polynomials)
+- categorical variables 
+
+---
+
+
+We can handle non-linear relationships by **transforming** variables. 
+
+```{r}
+mtcars %>%
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() + 
+  geom_smooth(method = lm, formula = y ~ x, se = F)
+
+mtcars %>%
+  mutate(log_wt = log(wt)) %>% 
+  ggplot(aes(x = log_wt, y = mpg)) + 
+  geom_point() + 
+  geom_smooth(method = lm, formula = y ~ x, se = F)
+
+mtcars %>%
+  mutate(log_mpg = log(mpg)) %>% 
+  ggplot(aes(x = wt, y = log_mpg)) + 
+  geom_point() + 
+  geom_smooth(method = lm, formula = y ~ x, se = F)
+```
+
+
+with You can use many predictors as you want. 
+
+They can be distinct predictors
+
+```{r}
+lm(mpg ~ wt + disp + hp + qsec, data = mtcars)
+```
+
+or **transformations** of the same predictor 
+
+
+```{r}
+wt_seq <- tibble(wt = seq(min(mtcars$wt), max(mtcars$wt), by = .01))
+  
+wt_seq %>%
+  mutate(mpg = predict(lm(mpg ~ wt, data = mtcars), newdata = .)) -> mtcars_wt
+
+mtcars %>% 
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() + 
+  geom_line(data = mtcars_wt, col = "blue")
+
+```
+
+
+---
+
+```{r}
+wt_seq %>%
+  mutate(mpg = predict(lm(mpg ~ wt + I(wt^2), data = mtcars), newdata = .)) -> mtcars_wt
+
+mtcars %>% 
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() + 
+  geom_line(data = mtcars_wt, col = "blue")
+
+```
+
+
+
+```{r}
+wt_seq %>%
+  mutate(mpg = predict(lm(mpg ~ wt + I(wt^2) + I(wt^3) + I(wt^4) + I(wt^5) + I(wt^6) + I(wt^7) + I(wt^8) + I(wt^9) + I(wt^10), data = mtcars), newdata = .)) -> mtcars_wt
+
+mtcars %>% 
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() + 
+  geom_line(data = mtcars_wt, col = "blue")
+
+```
+
+
+```{r}
+mtcars %>% 
+  ggplot(aes(x = wt, y = mpg)) + 
+  geom_point() -> p
+
+p + geom_smooth(method = lm, formula = y ~ x, se = F) + 
+  labs(title = "Linear")
+```
+
+```{r}
+p + geom_smooth(method = lm, formula = y ~ poly(x, 2), se = F, col = "purple") +
+  labs(title )
+```
+
+  geom_smooth(method = lm, formula = y ~ poly(x, 10), se = F, col = "red")
+```
+
