@@ -7,16 +7,18 @@ navbar:
   right:
     - text: "Home"
       href: index.html
-    - text: Slides
+    - text: Lectures
       menu:
       - text: 1.1 Getting started
-        href: slides/slides_11.html
-      - text: 1.2 Data visualization
-        href: slides/slides_12.html
-    - text: Problem sets
+        href: lectures/lecture_11.html
+    - text: Labs
       menu:
-      - text: Week 2 problem set
+      - text: Week 1
+        href: labs/lab_week_1.html
+    - text: Assignments
+      menu:
+      - text: Week 2
         href: assignments/week_2_ps.html
-      - text: Week 3 problem set
+      - text: Week 3
         href: assignments/week_3_ps.pdf
 output: distill::distill_article

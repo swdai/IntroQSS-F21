@@ -409,7 +409,7 @@ lm(mtcars$mpg ~ resids) %>% coef()
 
 (Back to [FWL](fwl-task).)
 
---- 
+---
 name: ovb-task-solution
 
 #### Confirming OVB equation
