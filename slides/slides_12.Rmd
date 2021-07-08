@@ -1,15 +1,13 @@
 ---
-title: "1.2 Data visualization"
-subtitle: "PLSC30500, Fall 2021"
-# author: "Andy Eggers & Molly Offer-Westort"
-output: 
+title: "Data visualization and data wrangling (sessions 1.1-2.2)"
+output:
   xaringan::moon_reader:
     css: [default, shinobi]
     nature:
       highlightStyle: atelier-lakeside-light
       highlightLines: true
       countIncrementalSlides: false
-  
+    pandoc_args: ["--metadata-file=./common.yaml"]
 ---
 
 ```{r setup, include=FALSE}
@@ -17,15 +15,50 @@ library(tidyverse)
 ```
 
 
-## Here we go
+# Workflow 
 
-```{r echo = T}
+1. **Data collection**: run survey, enter data from archive, etc
+1. **Data processing**: merge, recode, reshape, aggregate, etc
+1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
 
-mtcars %>% 
-  ggplot(aes(x = wt, y = mpg)) +
-  geom_point() + 
-  geom_smooth()
+???
 
-```
+Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
 
+---
+
+# Our plan (overview)
+
+- "Data science" first (weeks 1-2, every lab and homework)
+  - visualization on "tidied" data, then
+  - learn to "tidy" our data
+- Then probability/stats essentials (week 3)
+- Research design essentials: causality and experiments (week 4)
+- Regression (weeks 5 & 6) 
+- Inference (weeks 7 & 8)
+
+Cumulative -- please keep up.
+
+
+<!-- ## Plan  -->
+
+<!-- First, examples where data columns already map to desired aesthetics 1 to 1. -->
+
+<!-- - use (`gapminder`?) example to connect data to aesthetics (a la Heiss) -->
+<!-- - introduce types of plots (from the cheatsheet?) -->
+<!-- - `facet_wrap()`, `facet_grid()` -->
+<!-- - practice and use examples -->
+
+<!-- Then, cases where this is not true, and we need to do some data wrangling. -->
+
+<!-- - making a new variable (`mutate()`) -->
+<!-- - subsetting (`filter()`) -->
+<!-- - summarizing? `group_by()`, `summarize()` -->
+<!-- - `pivot_longer()`, `pivot_wider()` -->
+
+<!-- but always ending with a figure I guess. -->
+
+<!-- And that's basically it.  -->
+
+  
 

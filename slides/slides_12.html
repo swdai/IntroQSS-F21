@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>1.2 Data visualization</title>
+    <title>Data visualization and data wrangling (sessions 1.1-2.2)</title>
     <meta charset="utf-8" />
     <link href="slides_12_files/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="slides_12_files/remark-css-0.0.1/shinobi.css" rel="stylesheet" />
@@ -10,7 +10,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 1.2 Data visualization
+# Data visualization and data wrangling (sessions 1.1-2.2)
 ## PLSC30500, Fall 2021
 
 ---
@@ -19,21 +19,50 @@ class: center, middle, inverse, title-slide
 
 
 
-## Here we go
+# Workflow 
+
+1. **Data collection**: run survey, enter data from archive, etc
+1. **Data processing**: merge, recode, reshape, aggregate, etc
+1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
+
+???
+
+Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
+
+---
+
+# Our plan (overview)
+
+- "Data science" first (weeks 1-2, every lab and homework)
+  - visualization on "tidied" data, then
+  - learn to "tidy" our data
+- Then probability/stats essentials (week 3)
+- Research design essentials: causality and experiments (week 4)
+- Regression (weeks 5 &amp; 6) 
+- Inference (weeks 7 &amp; 8)
+
+Cumulative -- please keep up.
 
 
-```r
-mtcars %&gt;% 
-  ggplot(aes(x = wt, y = mpg)) +
-  geom_point() + 
-  geom_smooth()
-```
+&lt;!-- ## Plan  --&gt;
 
-```
-## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-```
+&lt;!-- First, examples where data columns already map to desired aesthetics 1 to 1. --&gt;
 
-![](slides_12_files/figure-html/unnamed-chunk-1-1.png)&lt;!-- --&gt;
+&lt;!-- - use (`gapminder`?) example to connect data to aesthetics (a la Heiss) --&gt;
+&lt;!-- - introduce types of plots (from the cheatsheet?) --&gt;
+&lt;!-- - `facet_wrap()`, `facet_grid()` --&gt;
+&lt;!-- - practice and use examples --&gt;
+
+&lt;!-- Then, cases where this is not true, and we need to do some data wrangling. --&gt;
+
+&lt;!-- - making a new variable (`mutate()`) --&gt;
+&lt;!-- - subsetting (`filter()`) --&gt;
+&lt;!-- - summarizing? `group_by()`, `summarize()` --&gt;
+&lt;!-- - `pivot_longer()`, `pivot_wider()` --&gt;
+
+&lt;!-- but always ending with a figure I guess. --&gt;
+
+&lt;!-- And that's basically it.  --&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
