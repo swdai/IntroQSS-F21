@@ -1,0 +1,120 @@
+---
+title: "Data wrangling (session 2.1)"
+output:
+  xaringan::moon_reader:
+    css: [default, shinobi]
+    nature:
+      highlightStyle: atelier-lakeside-light
+      highlightLines: true
+      countIncrementalSlides: false
+    pandoc_args: ["--metadata-file=./common.yaml"]
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+
+
+# The big picture 
+
+Components of a `ggplot`: 
+
+- "tidy" data, with observations in rows, attributes in columns
+- mapping of attributes to aesthetics (x, y, size, shape, color, transparency, etc)
+- geometric objects (`geom`s)
+
+Next: getting data into the right format for plotting (and analysis).
+
+
+
+# Workflow 
+
+1. **Data collection**: run survey, enter data from archive, etc
+1. **Data processing**: merge, recode, reshape, aggregate, etc
+1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
+
+???
+
+Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
+
+---
+
+# Our plan (overview)
+
+- "Data science" first (weeks 1-2, every lab and homework)
+  - visualization on "tidied" data
+  - learn to "tidy" our data
+- Probability/stats essentials (week 3)
+- Research design essentials: causality and experiments (week 4)
+- Regression (weeks 5 & 6) 
+- Inference (weeks 7 & 8)
+
+Cumulative -- please keep up.
+
+???
+
+Foregrounding "data science" skills, causality.
+
+---
+
+class: inverse, middle, center
+
+# Toward a grammar of graphics
+
+---
+
+
+
+
+# Structure of "tidy" data
+
+Observations in rows, each attribute has its own column
+
+Main task then is to tell `R` which columns should represent which attributes. 
+
+---
+
+
+
+# Getting data into `R` (and `RStudio`)
+
+An interaction option: `Import Dataset` button in `Environment` pane of `RStudio`
+
+--
+
+But note it's showing you the code it's using! 
+
+(Live coding example.)
+
+---
+
+# Digression about coding vs clicking
+
+
+
+
+
+
+<!-- ## Plan  -->
+
+<!-- First, examples where data columns already map to desired aesthetics 1 to 1. -->
+
+<!-- - use (`gapminder`?) example to connect data to aesthetics (a la Heiss) -->
+<!-- - introduce types of plots (from the cheatsheet?) -->
+<!-- - `facet_wrap()`, `facet_grid()` -->
+<!-- - practice and use examples -->
+
+<!-- Then, cases where this is not true, and we need to do some data wrangling. -->
+
+<!-- - making a new variable (`mutate()`) -->
+<!-- - subsetting (`filter()`) -->
+<!-- - summarizing? `group_by()`, `summarize()` -->
+<!-- - `pivot_longer()`, `pivot_wider()` -->
+
+<!-- but always ending with a figure I guess. -->
+
+<!-- And that's basically it.  -->
+
+  
+

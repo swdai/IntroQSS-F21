@@ -1,5 +1,5 @@
 ---
-title: "Data visualization and data wrangling (sessions 1.1-2.2)"
+title: "Data visualization (session 1.2)"
 output:
   xaringan::moon_reader:
     css: [default, shinobi]
@@ -15,53 +15,385 @@ library(tidyverse)
 ```
 
 
-# Workflow 
+class: inverse, middle, center
 
-1. **Data collection**: run survey, enter data from archive, etc
-1. **Data processing**: merge, recode, reshape, aggregate, etc
-1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
-
-???
-
-Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
+# Toward a grammar of graphics
 
 ---
 
-# Our plan (overview)
-
-- "Data science" first (weeks 1-2, every lab and homework)
-  - visualization on "tidied" data
-  - learn to "tidy" our data
-- Probability/stats essentials (week 3)
-- Research design essentials: causality and experiments (week 4)
-- Regression (weeks 5 & 6) 
-- Inference (weeks 7 & 8)
-
-Cumulative -- please keep up.
+class: bg-full
+background-image: url("assets/rosling_youtube.png")
+background-position: center
+background-size: contain
 
 ???
 
-Foregrounding "data science" skills, causality.
+Source: https://www.youtube.com/watch?v=jbkSRLYSojo
 
 ---
+
+class: bg-full
+background-image: url("assets/rosling_youtube_zoom.png")
+background-position: center
+background-size: contain
+
+???
+
+Source: https://www.youtube.com/watch?v=jbkSRLYSojo
+
+---
+
+# Mapping attributes to aesthetics 
+
+Q: What is the **unit of observation**? 
+
+A: A country in a year
+
+Q: How are a country-year's **attributes** mapped to **aesthetic** components of the graphic?
+
+```{r, echo = F}
+tribble(~Attribute, ~Aesthetic,
+        "Income", "Horizontal position (x)",
+        "Life expectancy", "Vertical position (y)",
+        "Population", "Size of point",
+        "Continent", "Color of point"
+        ) %>% 
+  kableExtra::kbl()
+```
+
+
+---
+
+class: bg-full
+background-image: url("assets/Minard.png")
+background-position: center
+background-size: contain
+
+### One of the "best statistical drawings ever created" (Tufte, *VDQI*): Minard's graphic on Napoléon in Russia   
+
+???
+
+Source: [Wikipedia](https://en.wikipedia.org/wiki/File:Minard.png)
+
+
+---
+
+
+# Mapping attributes to aesthetics 
+
+Q: What is the **unit of observation**? 
+
+A: An army (army division) on a day ("army-day")
+
+Q: How are an army-day's **attributes** mapped to **aesthetic** components of the graphic?
+
+```{r, echo = F}
+tribble(~Attribute, ~Aesthetic,
+        "Longitude", "Horizontal position (x)",
+        "Latitude", "Vertical position (y)",
+        "Number of surviving soldiers", "Width of line",
+        "Direction (advance, retreat)", "Color of line"
+        ) %>% 
+  kableExtra::kbl()
+```
+
+(Also note secondary plot showing temperature during retreat.)
+
+---
+
+# Data: structure
+
+Our data is typically **rectangular**, with rows and columns like a spreadsheet.
+
+--
+
+Usually, 
+
+- each row should be one observation (e.g. country-year, army-day)
+- each column should contain one attribute (e.g. life expectancy, number of surviving troops)
+
+--
+
+For example: 
+
+```{r, echo = F}
+gapminder::gapminder %>% 
+  filter(year == 2007) %>% 
+  select(-year) %>% 
+  slice(1:10) %>% 
+  kableExtra::kbl()
+
+```
+
+???
+
+Data in this format is sometimes referred to as "tidy" [(Wickham 2014)](https://vita.had.co.nz/papers/tidy-data.pdf). I think this concept is useful as long as you recognize that the definition of "unit of observation" (and thus attribute/variable) depends on the purpose for which the data is being used.
+
+---
+
+
+class: inverse, middle, center
+
+# Making (beautiful and informative) graphics
+
+---
+
+# Making graphics in `R` 
+
+We will use the `ggplot2` library, which is part of the `tidyverse` library.
+
+Basic components of plotting with `ggplot`: 
+
+- data 
+- mapping of attributes (columns of data) to aesthetics
+- geometric representations of data (`geom`s)
+
+<br></br>
+
+--
+
+A simple example: 
+
+```{r echo = F}
+gapminder_2007 <- gapminder::gapminder %>% 
+  filter(year == 2007)
+```
+
+
+```{r, eval = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+
+---
+
+```{r, fig.height=3.5, fig.width=5, fig.align="center"}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+To note:
+
+- the **arguments** to `ggplot()` say what the data is (`data = gapminder_2007`) and how attributes are mapped to aesthetics (`mapping = aes(x = gdpPercap, y = lifeExp)`)
+- `geom_point()` says "plot a point for each observation"
+- **layers** of plat linked with plus sign (`+`)
+
+
+---
+
+<!-- Let's map population to the size of the points:  -->
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center"}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop)) +  #<<
+  geom_point()
+```
+
+---
+
+<!-- Let's map continent to the color of the points:  -->
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center"}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop,
+                     col = continent)) +  #<<
+  geom_point()
+```
+
+---
+
+<!-- Let's put the x-axis on the log scale:  -->
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center"}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop,
+                     col = continent)) +  
+  geom_point() + 
+  scale_x_log10() #<<
+```
+
+
+---
+
+# Minard data 
+
+```{r, echo = F}
+minard <- read.table("assets/troops.txt", header = T)
+```
+
+```{r, echo = F}
+minard %>% 
+  slice(1:18) %>% 
+  kableExtra::kbl()
+```
+
+---
+
+```{r, fig.width = 9, fig.height = 3.5}
+ggplot(data = minard,
+       mapping = aes(x = long, y = lat, 
+                     size = survivors, col = direction,
+                     group = group)) + 
+  geom_path()
+  
+```
+
+
+???
+
+"`geom_path()` connects the observations in the order in which they appear in the data. `geom_line()` connects them in order of the variable on the x axis. `geom_step()` creates a stairstep plot, highlighting exactly when changes occur."
+
+Source: https://ggplot2.tidyverse.org/reference/geom_path.html
+
+---
+
+
+# Back to `gapminder`
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop, col = continent)) +  
+  geom_point() +   
+  scale_x_log10() 
+```
+
+---
+
+# Inheritance of aesthetics 
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop, col = continent)) +   #<< 
+  scale_x_log10() 
+```
+
+---
+
+# Data summary w. `geom_smooth()` 
+
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop, col = continent)) + 
+  scale_x_log10() +
+  geom_smooth() #<<
+```
+
+---
+
+# Linear version w. `geom_smooth()` 
+
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop, col = continent)) + 
+  scale_x_log10() +
+  geom_smooth(method = lm) # lm means "linear model" #<<  
+```
+
+
+???
+
+Anything after # (on the same line) is a "comment" and is ignored by R. This is useful for explaining to humans what is going on in the code.
+
+---
+
+# Small multiples w. `facet_wrap()` 
+
+```{r, fig.height=5, fig.width=8.5, fig.align="center", warning = F,  message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop)) + 
+  scale_x_log10() +
+  geom_smooth(method = lm) +
+  facet_wrap(vars(continent)) #<<
+```
+
+---
+
+# Other geoms 
+
+```{r, fig.height=5, fig.width=8.5, fig.align="center", warning = F,  message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_density2d() +  #<<
+  scale_x_log10()
+
+```
+
+
+
+---
+
+# Other geoms 
+
+```{r, fig.height=5, fig.width=8.5, fig.align="center", warning = F,  message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_label(aes(label = country)) +  #<<
+  scale_x_log10()
+
+```
+
+---
+
+# How to learn more 
+
+Practice and experiment. (And do problem sets.) 
+
+Resources: 
+
+- *R For Data Science*
+- RStudio primers
+- RStudio "Data Visualization" cheat sheet
+
+---
+
+class: bg-full
+background-image: url("assets/data_viz_cheatsheet.png")
+background-position: center
+background-size: contain
+
+???
+
+Source: [RStudio Cheatsheets](https://www.rstudio.com/resources/cheatsheets/)
+
+
+
+---
+
+# Back to the big picture 
+
+Components of a `ggplot`: 
+
+- data, with observations in rows, attributes in columns
+- mapping of attributes to aesthetics (x, y, size, shape, color, transparency, etc)
+- geometric objects (`geom`s)
+
+Next: getting data into the right format for plotting (and analysis).
+
+
+
+---
+
+
 
 # Grammar of graphics 
 
-(no code yet)
-
----
-
-# Example: gapminder graphic (?) 
 
 (no code yet)
-
 ---
 
-# Example: Minard Grande Armée graphic (?)
-
-(no code yet)
-
----
 
 # Structure of "tidy" data
 

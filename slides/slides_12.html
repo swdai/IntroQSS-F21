@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Data visualization and data wrangling (sessions 1.1-2.2)</title>
+    <title>Data visualization (session 1.2)</title>
     <meta charset="utf-8" />
     <link href="slides_12_files/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="slides_12_files/remark-css-0.0.1/shinobi.css" rel="stylesheet" />
+    <script src="slides_12_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="slides_12_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
   </head>
   <body>
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Data visualization and data wrangling (sessions 1.1-2.2)
+# Data visualization (session 1.2)
 ## PLSC30500, Fall 2021
 
 ---
@@ -19,53 +21,657 @@ class: center, middle, inverse, title-slide
 
 
 
-# Workflow 
+class: inverse, middle, center
 
-1. **Data collection**: run survey, enter data from archive, etc
-1. **Data processing**: merge, recode, reshape, aggregate, etc
-1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
-
-???
-
-Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
+# Toward a grammar of graphics
 
 ---
 
-# Our plan (overview)
-
-- "Data science" first (weeks 1-2, every lab and homework)
-  - visualization on "tidied" data
-  - learn to "tidy" our data
-- Probability/stats essentials (week 3)
-- Research design essentials: causality and experiments (week 4)
-- Regression (weeks 5 &amp; 6) 
-- Inference (weeks 7 &amp; 8)
-
-Cumulative -- please keep up.
+class: bg-full
+background-image: url("assets/rosling_youtube.png")
+background-position: center
+background-size: contain
 
 ???
 
-Foregrounding "data science" skills, causality.
+Source: https://www.youtube.com/watch?v=jbkSRLYSojo
 
 ---
+
+class: bg-full
+background-image: url("assets/rosling_youtube_zoom.png")
+background-position: center
+background-size: contain
+
+???
+
+Source: https://www.youtube.com/watch?v=jbkSRLYSojo
+
+---
+
+# Mapping attributes to aesthetics 
+
+Q: What is the **unit of observation**? 
+
+A: A country in a year
+
+Q: How are a country-year's **attributes** mapped to **aesthetic** components of the graphic?
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Attribute &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Aesthetic &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Income &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Horizontal position (x) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Life expectancy &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Vertical position (y) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Population &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Size of point &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Continent &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Color of point &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+---
+
+class: bg-full
+background-image: url("assets/Minard.png")
+background-position: center
+background-size: contain
+
+### One of the "best statistical drawings ever created" (Tufte, *VDQI*): Minard's graphic on Napoléon in Russia   
+
+???
+
+Source: [Wikipedia](https://en.wikipedia.org/wiki/File:Minard.png)
+
+
+---
+
+
+# Mapping attributes to aesthetics 
+
+Q: What is the **unit of observation**? 
+
+A: An army (army division) on a day ("army-day")
+
+Q: How are an army-day's **attributes** mapped to **aesthetic** components of the graphic?
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; Attribute &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Aesthetic &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Longitude &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Horizontal position (x) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Latitude &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Vertical position (y) &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Number of surviving soldiers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Width of line &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Direction (advance, retreat) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Color of line &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+(Also note secondary plot showing temperature during retreat.)
+
+---
+
+# Data: structure
+
+Our data is typically **rectangular**, with rows and columns like a spreadsheet.
+
+--
+
+Usually, 
+
+- each row should be one observation (e.g. country-year, army-day)
+- each column should contain one attribute (e.g. life expectancy, number of surviving troops)
+
+--
+
+For example: 
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; country &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; continent &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; lifeExp &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; pop &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; gdpPercap &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Afghanistan &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 43.828 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 31889923 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 974.5803 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Albania &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Europe &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 76.423 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3600523 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5937.0295 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Algeria &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Africa &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 72.301 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33333216 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6223.3675 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Angola &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Africa &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 42.731 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 12420476 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4797.2313 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Argentina &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Americas &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75.320 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 40301927 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 12779.3796 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Australia &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Oceania &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 81.235 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 20434176 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 34435.3674 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Austria &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Europe &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 79.829 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8199783 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 36126.4927 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Bahrain &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75.635 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 708573 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 29796.0483 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Bangladesh &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Asia &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 64.062 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 150448339 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1391.2538 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Belgium &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Europe &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 79.441 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 10392226 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33692.6051 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+???
+
+Data in this format is sometimes referred to as "tidy" [(Wickham 2014)](https://vita.had.co.nz/papers/tidy-data.pdf). I think this concept is useful as long as you recognize that the definition of "unit of observation" (and thus attribute/variable) depends on the purpose for which the data is being used.
+
+---
+
+
+class: inverse, middle, center
+
+# Making (beautiful and informative) graphics
+
+---
+
+# Making graphics in `R` 
+
+We will use the `ggplot2` library, which is part of the `tidyverse` library.
+
+Basic components of plotting with `ggplot`: 
+
+- data 
+- mapping of attributes (columns of data) to aesthetics
+- geometric representations of data (`geom`s)
+
+&lt;br&gt;&lt;/br&gt;
+
+--
+
+A simple example: 
+
+
+
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+
+---
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+
+To note:
+
+- the **arguments** to `ggplot()` say what the data is (`data = gapminder_2007`) and how attributes are mapped to aesthetics (`mapping = aes(x = gdpPercap, y = lifeExp)`)
+- `geom_point()` says "plot a point for each observation"
+- **layers** of plat linked with plus sign (`+`)
+
+
+---
+
+&lt;!-- Let's map population to the size of the points:  --&gt;
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+*                    size = pop)) +
+  geom_point()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;!-- Let's map continent to the color of the points:  --&gt;
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop,
+*                    col = continent)) +
+  geom_point()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;!-- Let's put the x-axis on the log scale:  --&gt;
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop,
+                     col = continent)) +  
+  geom_point() + 
+* scale_x_log10()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+# Minard data 
+
+
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; long &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; lat &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; survivors &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; direction &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; group &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 24.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 340000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 24.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 340000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 25.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 340000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 26.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 320000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 27.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 300000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 28.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 280000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 28.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 240000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 29.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 210000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 30.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 180000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 30.3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 175000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 32.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 145000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 33.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 140000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 34.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 127100 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 35.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 100000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 36.0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 100000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 37.6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 100000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 37.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 100000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; R &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 37.5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 55.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 98000 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; R &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+
+```r
+ggplot(data = minard,
+       mapping = aes(x = long, y = lat, 
+                     size = survivors, col = direction,
+                     group = group)) + 
+  geom_path()
+```
+
+![](slides_12_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+
+???
+
+"`geom_path()` connects the observations in the order in which they appear in the data. `geom_line()` connects them in order of the variable on the x axis. `geom_step()` creates a stairstep plot, highlighting exactly when changes occur."
+
+Source: https://ggplot2.tidyverse.org/reference/geom_path.html
+
+---
+
+
+# Back to `gapminder`
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop, col = continent)) +  
+  geom_point() +   
+  scale_x_log10() 
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Inheritance of aesthetics 
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+* geom_point(aes(size = pop, col = continent)) +
+  scale_x_log10() 
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Data summary w. `geom_smooth()` 
+
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop, col = continent)) + 
+  scale_x_log10() +
+* geom_smooth()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Linear version w. `geom_smooth()` 
+
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop, col = continent)) + 
+  scale_x_log10() +
+* geom_smooth(method = lm) # lm means "linear model"
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+
+
+???
+
+Anything after # (on the same line) is a "comment" and is ignored by R. This is useful for explaining to humans what is going on in the code.
+
+---
+
+# Small multiples w. `facet_wrap()` 
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+  geom_point(aes(size = pop)) + 
+  scale_x_log10() +
+  geom_smooth(method = lm) +
+* facet_wrap(vars(continent))
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Other geoms 
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+* geom_density2d() +
+  scale_x_log10()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+# Other geoms 
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp)) +  
+* geom_label(aes(label = country)) +
+  scale_x_log10()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+# How to learn more 
+
+Practice and experiment. (And do problem sets.) 
+
+Resources: 
+
+- *R For Data Science*
+- RStudio primers
+- RStudio "Data Visualization" cheat sheet
+
+---
+
+class: bg-full
+background-image: url("assets/data_viz_cheatsheet.png")
+background-position: center
+background-size: contain
+
+???
+
+Source: [RStudio Cheatsheets](https://www.rstudio.com/resources/cheatsheets/)
+
+
+
+---
+
+# Back to the big picture 
+
+Components of a `ggplot`: 
+
+- data, with observations in rows, attributes in columns
+- mapping of attributes to aesthetics (x, y, size, shape, color, transparency, etc)
+- geometric objects (`geom`s)
+
+Next: getting data into the right format for plotting (and analysis).
+
+
+
+---
+
+
 
 # Grammar of graphics 
 
-(no code yet)
-
----
-
-# Example: gapminder graphic (?) 
 
 (no code yet)
-
 ---
 
-# Example: Minard Grande Armée graphic (?)
-
-(no code yet)
-
----
 
 # Structure of "tidy" data
 

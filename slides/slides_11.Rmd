@@ -13,68 +13,59 @@ output:
 ---
 
 
-## This is it 
+# Workflow 
 
-$$ \frac{\text{cov}(Y, X)}{\text{var}(X)}$$
-
----
-class: inverse, middle, center 
-
-## What do you love? 
-
-I love **regression**.
-
-.pull-left[
-on your left
-]
-
-.pull-right[
-and on your right
-]
-
-
----
-
-background-image: url("http://bit.ly/cs631-donkey")
-background-size: cover
-
-# Would you ever want to have an animated background? 
-
-
----
-
-# Maybe not, but you would want this 
-
-```{r echo = F}
-knitr::include_graphics("http://bit.ly/cs631-pygmy")
-```
-
----
-
-# Code highlighting
-
-```{r example-plot, fig.height = 3, fig.align = "center"}
-library(ggplot2)
-ggplot(mtcars) + 
-  aes(mpg, disp) + 
-  geom_point() +   #<<
-  geom_smooth()    #<<
-
-```
-
----
-
-# Comments on slides
-
-If you press "p", you get to see the comments for this slide.
+1. **Data collection**: run survey, enter data from archive, etc
+1. **Data processing**: merge, recode, reshape, aggregate, etc
+1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
 
 ???
 
-Isn't that interesting?
+Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
 
 ---
 
-## The sky is the limit
+# Our plan (overview)
+
+- "Data science" first (weeks 1-2, every lab and homework)
+  - visualization on "tidied" data
+  - learn to "tidy" our data
+- Probability/stats essentials (week 3)
+- Research design essentials: causality and experiments (week 4)
+- Regression (weeks 5 & 6) 
+- Inference (weeks 7 & 8)
+
+Cumulative -- please keep up.
+
+???
+
+Foregrounding "data science" skills, causality.
+
+
+---
+
+# Programming in `R` 
+
+Which one is you? 
+
+1 Never done any programming
+1 Did some programming in another language (e.g. python, Stata)
+1 Some experience programming in `R`
+1 Experienced at programming in `R`
+
+--
+
+All welcome, but plan your work accordingly.
+
+---
+
+# Useful resources 
+
+- RStudio Cloud primers (online, interactive) 
+- "R For Data Science" book (online or print)  
+- Google
+- StackOverflow: our private one and "real" one
+- Lectures and labs
 
 
 
