@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Data wrangling (sessions 2.1 &amp; 2.2)</title>
+    <title>Data wrangling with dplyr</title>
     <meta charset="utf-8" />
     <link href="slides_21_files/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="slides_21_files/remark-css-0.0.1/robot.css" rel="stylesheet" />
@@ -11,7 +11,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Data wrangling (sessions 2.1 &amp; 2.2)
+# Data wrangling with <code>dplyr</code>
 ## PLSC30500, Fall 2021
 
 ---
@@ -33,7 +33,7 @@ Components of a `ggplot`:
 - mapping of attributes to aesthetics (x, y, size, shape, color, transparency, etc)
 - geometric objects (`geom`s)
 
-Next: getting data ready for plotting (and analysis).
+This week: "data wrangling" to prepare data for plotting (and analysis).
 
 
 ---
@@ -60,9 +60,10 @@ But note it's showing you the code it's using!
 
 Most commonly used functions: 
 
-- `read_csv()` in `readr` (`tidyverse`)
+- `read_csv()` and `read_rds()` in `readr` (`tidyverse`)
 - `readstata13::read.dta13()` for Stata files (`.dta`)
 - `readxl::read_excel()` for Excel files (`.xls`, `.xlsx`)
+- `load()` in base R for "R objects"
 
 All require "path" to file as argument. 
 
@@ -78,7 +79,7 @@ See Chapter 11 of R4DS and "Data Import" cheatsheet.
 
 class: inverse, middle, center
 
-# Some key data wrangling tools: `select()`, `filter()`, `group_by()`, `summarize()`
+# Some key data wrangling tools in `dplyr`: `select()`, `filter()`, `group_by()`, `summarize()`, `mutate()`
 
 ---
 
@@ -114,7 +115,7 @@ dim(vdem)
 
 --
 
-Typing `vdem` is unenlightening; `View(vdem)` better but takes a while to load. 
+Typing `vdem` is overwhelming and unhelpful; `View(vdem)` better but takes a while to load. 
 
 ---
 
@@ -127,1006 +128,506 @@ names(vdem)  # colnames(vdem) also works
 ```
 
 ```
-##    [1] "country_name"               
-##    [2] "country_text_id"            
-##    [3] "country_id"                 
-##    [4] "year"                       
-##    [5] "historical_date"            
-##    [6] "project"                    
-##    [7] "historical"                 
-##    [8] "histname"                   
-##    [9] "codingstart"                
-##   [10] "codingend"                  
-##   [11] "codingstart_contemp"        
-##   [12] "codingend_contemp"          
-##   [13] "codingstart_hist"           
-##   [14] "codingend_hist"             
-##   [15] "gapstart1"                  
-##   [16] "gapstart2"                  
-##   [17] "gapstart3"                  
-##   [18] "gapend1"                    
-##   [19] "gapend2"                    
-##   [20] "gapend3"                    
-##   [21] "gap_index"                  
-##   [22] "COWcode"                    
-##   [23] "v2x_polyarchy"              
-##   [24] "v2x_polyarchy_codelow"      
-##   [25] "v2x_polyarchy_codehigh"     
-##   [26] "v2x_polyarchy_sd"           
-##   [27] "v2x_libdem"                 
-##   [28] "v2x_libdem_codelow"         
-##   [29] "v2x_libdem_codehigh"        
-##   [30] "v2x_libdem_sd"              
-##   [31] "v2x_partipdem"              
-##   [32] "v2x_partipdem_codelow"      
-##   [33] "v2x_partipdem_codehigh"     
-##   [34] "v2x_partipdem_sd"           
-##   [35] "v2x_delibdem"               
-##   [36] "v2x_delibdem_codelow"       
-##   [37] "v2x_delibdem_codehigh"      
-##   [38] "v2x_delibdem_sd"            
-##   [39] "v2x_egaldem"                
-##   [40] "v2x_egaldem_codelow"        
-##   [41] "v2x_egaldem_codehigh"       
-##   [42] "v2x_egaldem_sd"             
-##   [43] "v2x_api"                    
-##   [44] "v2x_api_codelow"            
-##   [45] "v2x_api_codehigh"           
-##   [46] "v2x_api_sd"                 
-##   [47] "v2x_mpi"                    
-##   [48] "v2x_mpi_codelow"            
-##   [49] "v2x_mpi_codehigh"           
-##   [50] "v2x_mpi_sd"                 
-##   [51] "v2x_freexp_altinf"          
-##   [52] "v2x_freexp_altinf_codelow"  
-##   [53] "v2x_freexp_altinf_codehigh" 
-##   [54] "v2x_freexp_altinf_sd"       
-##   [55] "v2x_frassoc_thick"          
-##   [56] "v2x_frassoc_thick_codelow"  
-##   [57] "v2x_frassoc_thick_codehigh" 
-##   [58] "v2x_frassoc_thick_sd"       
-##   [59] "v2x_suffr"                  
-##   [60] "v2xel_frefair"              
-##   [61] "v2xel_frefair_codelow"      
-##   [62] "v2xel_frefair_codehigh"     
-##   [63] "v2xel_frefair_sd"           
-##   [64] "v2x_elecoff"                
-##   [65] "v2x_liberal"                
-##   [66] "v2x_liberal_codelow"        
-##   [67] "v2x_liberal_codehigh"       
-##   [68] "v2x_liberal_sd"             
-##   [69] "v2xcl_rol"                  
-##   [70] "v2xcl_rol_codelow"          
-##   [71] "v2xcl_rol_codehigh"         
-##   [72] "v2xcl_rol_sd"               
-##   [73] "v2x_jucon"                  
-##   [74] "v2x_jucon_codelow"          
-##   [75] "v2x_jucon_codehigh"         
-##   [76] "v2x_jucon_sd"               
-##   [77] "v2xlg_legcon"               
-##   [78] "v2xlg_legcon_codelow"       
-##   [79] "v2xlg_legcon_codehigh"      
-##   [80] "v2xlg_legcon_sd"            
-##   [81] "v2x_partip"                 
-##   [82] "v2x_partip_codelow"         
-##   [83] "v2x_partip_codehigh"        
-##   [84] "v2x_partip_sd"              
-##   [85] "v2x_cspart"                 
-##   [86] "v2x_cspart_codelow"         
-##   [87] "v2x_cspart_codehigh"        
-##   [88] "v2x_cspart_sd"              
-##   [89] "v2xdd_dd"                   
-##   [90] "v2xel_locelec"              
-##   [91] "v2xel_locelec_codelow"      
-##   [92] "v2xel_locelec_codehigh"     
-##   [93] "v2xel_locelec_sd"           
-##   [94] "v2xel_regelec"              
-##   [95] "v2xel_regelec_codelow"      
-##   [96] "v2xel_regelec_codehigh"     
-##   [97] "v2xel_regelec_sd"           
-##   [98] "v2xdl_delib"                
-##   [99] "v2xdl_delib_codelow"        
-##  [100] "v2xdl_delib_codehigh"       
-##  [101] "v2xdl_delib_sd"             
-##  [102] "v2x_egal"                   
-##  [103] "v2x_egal_codelow"           
-##  [104] "v2x_egal_codehigh"          
-##  [105] "v2x_egal_sd"                
-##  [106] "v2xeg_eqprotec"             
-##  [107] "v2xeg_eqprotec_codelow"     
-##  [108] "v2xeg_eqprotec_codehigh"    
-##  [109] "v2xeg_eqprotec_sd"          
-##  [110] "v2xeg_eqaccess"             
-##  [111] "v2xeg_eqaccess_codelow"     
-##  [112] "v2xeg_eqaccess_codehigh"    
-##  [113] "v2xeg_eqaccess_sd"          
-##  [114] "v2xeg_eqdr"                 
-##  [115] "v2xeg_eqdr_codelow"         
-##  [116] "v2xeg_eqdr_codehigh"        
-##  [117] "v2xeg_eqdr_sd"              
-##  [118] "v2eltype_0"                 
-##  [119] "v2eltype_1"                 
-##  [120] "v2eltype_2"                 
-##  [121] "v2eltype_3"                 
-##  [122] "v2eltype_4"                 
-##  [123] "v2eltype_5"                 
-##  [124] "v2eltype_6"                 
-##  [125] "v2eltype_7"                 
-##  [126] "v2eltype_8"                 
-##  [127] "v2eltype_9"                 
-##  [128] "v2asuffrage"                
-##  [129] "v2elage"                    
-##  [130] "v2elcomvot"                 
-##  [131] "v2elfemrst"                 
-##  [132] "v2elgvsuflvl"               
-##  [133] "v2elsuffrage"               
-##  [134] "v2elwestmon"                
-##  [135] "v2fsuffrage"                
-##  [136] "v2msuffrage"                
-##  [137] "v2eldonate"                 
-##  [138] "v2eldonate_codelow"         
-##  [139] "v2eldonate_codehigh"        
-##  [140] "v2eldonate_sd"              
-##  [141] "v2eldonate_osp"             
-##  [142] "v2eldonate_osp_codelow"     
-##  [143] "v2eldonate_osp_codehigh"    
-##  [144] "v2eldonate_osp_sd"          
-##  [145] "v2eldonate_ord"             
-##  [146] "v2eldonate_ord_codelow"     
-##  [147] "v2eldonate_ord_codehigh"    
-##  [148] "v2eldonate_mean"            
-##  [149] "v2eldonate_nr"              
-##  [150] "v2elpubfin"                 
-##  [151] "v2elpubfin_codelow"         
-##  [152] "v2elpubfin_codehigh"        
-##  [153] "v2elpubfin_sd"              
-##  [154] "v2elpubfin_osp"             
-##  [155] "v2elpubfin_osp_codelow"     
-##  [156] "v2elpubfin_osp_codehigh"    
-##  [157] "v2elpubfin_osp_sd"          
-##  [158] "v2elpubfin_ord"             
-##  [159] "v2elpubfin_ord_codelow"     
-##  [160] "v2elpubfin_ord_codehigh"    
-##  [161] "v2elpubfin_mean"            
-##  [162] "v2elpubfin_nr"              
-##  [163] "v2elembaut"                 
-##  [164] "v2elembaut_codelow"         
-##  [165] "v2elembaut_codehigh"        
-##  [166] "v2elembaut_sd"              
-##  [167] "v2elembaut_osp"             
-##  [168] "v2elembaut_osp_codelow"     
-##  [169] "v2elembaut_osp_codehigh"    
-##  [170] "v2elembaut_osp_sd"          
-##  [171] "v2elembaut_ord"             
-##  [172] "v2elembaut_ord_codelow"     
-##  [173] "v2elembaut_ord_codehigh"    
-##  [174] "v2elembaut_mean"            
-##  [175] "v2elembaut_nr"              
-##  [176] "v2elembcap"                 
-##  [177] "v2elembcap_codelow"         
-##  [178] "v2elembcap_codehigh"        
-##  [179] "v2elembcap_sd"              
-##  [180] "v2elembcap_osp"             
-##  [181] "v2elembcap_osp_codelow"     
-##  [182] "v2elembcap_osp_codehigh"    
-##  [183] "v2elembcap_osp_sd"          
-##  [184] "v2elembcap_ord"             
-##  [185] "v2elembcap_ord_codelow"     
-##  [186] "v2elembcap_ord_codehigh"    
-##  [187] "v2elembcap_mean"            
-##  [188] "v2elembcap_nr"              
-##  [189] "v2elmulpar"                 
-##  [190] "v2elmulpar_codelow"         
-##  [191] "v2elmulpar_codehigh"        
-##  [192] "v2elmulpar_sd"              
-##  [193] "v2elmulpar_osp"             
-##  [194] "v2elmulpar_osp_codelow"     
-##  [195] "v2elmulpar_osp_codehigh"    
-##  [196] "v2elmulpar_osp_sd"          
-##  [197] "v2elmulpar_ord"             
-##  [198] "v2elmulpar_ord_codelow"     
-##  [199] "v2elmulpar_ord_codehigh"    
-##  [200] "v2elmulpar_mean"            
-##  [201] "v2elmulpar_nr"              
-##  [202] "v2elrgstry"                 
-##  [203] "v2elrgstry_codelow"         
-##  [204] "v2elrgstry_codehigh"        
-##  [205] "v2elrgstry_sd"              
-##  [206] "v2elrgstry_osp"             
-##  [207] "v2elrgstry_osp_codelow"     
-##  [208] "v2elrgstry_osp_codehigh"    
-##  [209] "v2elrgstry_osp_sd"          
-##  [210] "v2elrgstry_ord"             
-##  [211] "v2elrgstry_ord_codelow"     
-##  [212] "v2elrgstry_ord_codehigh"    
-##  [213] "v2elrgstry_mean"            
-##  [214] "v2elrgstry_nr"              
-##  [215] "v2elvotbuy"                 
-##  [216] "v2elvotbuy_codelow"         
-##  [217] "v2elvotbuy_codehigh"        
-##  [218] "v2elvotbuy_sd"              
-##  [219] "v2elvotbuy_osp"             
-##  [220] "v2elvotbuy_osp_codelow"     
-##  [221] "v2elvotbuy_osp_codehigh"    
-##  [222] "v2elvotbuy_osp_sd"          
-##  [223] "v2elvotbuy_ord"             
-##  [224] "v2elvotbuy_ord_codelow"     
-##  [225] "v2elvotbuy_ord_codehigh"    
-##  [226] "v2elvotbuy_mean"            
-##  [227] "v2elvotbuy_nr"              
-##  [228] "v2elirreg"                  
-##  [229] "v2elirreg_codelow"          
-##  [230] "v2elirreg_codehigh"         
-##  [231] "v2elirreg_sd"               
-##  [232] "v2elirreg_osp"              
-##  [233] "v2elirreg_osp_codelow"      
-##  [234] "v2elirreg_osp_codehigh"     
-##  [235] "v2elirreg_osp_sd"           
-##  [236] "v2elirreg_ord"              
-##  [237] "v2elirreg_ord_codelow"      
-##  [238] "v2elirreg_ord_codehigh"     
-##  [239] "v2elirreg_mean"             
-##  [240] "v2elirreg_nr"               
-##  [241] "v2elintim"                  
-##  [242] "v2elintim_codelow"          
-##  [243] "v2elintim_codehigh"         
-##  [244] "v2elintim_sd"               
-##  [245] "v2elintim_osp"              
-##  [246] "v2elintim_osp_codelow"      
-##  [247] "v2elintim_osp_codehigh"     
-##  [248] "v2elintim_osp_sd"           
-##  [249] "v2elintim_ord"              
-##  [250] "v2elintim_ord_codelow"      
-##  [251] "v2elintim_ord_codehigh"     
-##  [252] "v2elintim_mean"             
-##  [253] "v2elintim_nr"               
-##  [254] "v2elpeace"                  
-##  [255] "v2elpeace_codelow"          
-##  [256] "v2elpeace_codehigh"         
-##  [257] "v2elpeace_sd"               
-##  [258] "v2elpeace_osp"              
-##  [259] "v2elpeace_osp_codelow"      
-##  [260] "v2elpeace_osp_codehigh"     
-##  [261] "v2elpeace_osp_sd"           
-##  [262] "v2elpeace_ord"              
-##  [263] "v2elpeace_ord_codelow"      
-##  [264] "v2elpeace_ord_codehigh"     
-##  [265] "v2elpeace_mean"             
-##  [266] "v2elpeace_nr"               
-##  [267] "v2elboycot"                 
-##  [268] "v2elboycot_codelow"         
-##  [269] "v2elboycot_codehigh"        
-##  [270] "v2elboycot_sd"              
-##  [271] "v2elboycot_osp"             
-##  [272] "v2elboycot_osp_codelow"     
-##  [273] "v2elboycot_osp_codehigh"    
-##  [274] "v2elboycot_osp_sd"          
-##  [275] "v2elboycot_ord"             
-##  [276] "v2elboycot_ord_codelow"     
-##  [277] "v2elboycot_ord_codehigh"    
-##  [278] "v2elboycot_mean"            
-##  [279] "v2elboycot_nr"              
-##  [280] "v2elfrcamp"                 
-##  [281] "v2elfrcamp_codelow"         
-##  [282] "v2elfrcamp_codehigh"        
-##  [283] "v2elfrcamp_sd"              
-##  [284] "v2elfrcamp_osp"             
-##  [285] "v2elfrcamp_osp_codelow"     
-##  [286] "v2elfrcamp_osp_codehigh"    
-##  [287] "v2elfrcamp_osp_sd"          
-##  [288] "v2elfrcamp_ord"             
-##  [289] "v2elfrcamp_ord_codelow"     
-##  [290] "v2elfrcamp_ord_codehigh"    
-##  [291] "v2elfrcamp_mean"            
-##  [292] "v2elfrcamp_nr"              
-##  [293] "v2elpdcamp"                 
-##  [294] "v2elpdcamp_codelow"         
-##  [295] "v2elpdcamp_codehigh"        
-##  [296] "v2elpdcamp_sd"              
-##  [297] "v2elpdcamp_osp"             
-##  [298] "v2elpdcamp_osp_codelow"     
-##  [299] "v2elpdcamp_osp_codehigh"    
-##  [300] "v2elpdcamp_osp_sd"          
-##  [301] "v2elpdcamp_ord"             
-##  [302] "v2elpdcamp_ord_codelow"     
-##  [303] "v2elpdcamp_ord_codehigh"    
-##  [304] "v2elpdcamp_mean"            
-##  [305] "v2elpdcamp_nr"              
-##  [306] "v2elpaidig"                 
-##  [307] "v2elpaidig_codelow"         
-##  [308] "v2elpaidig_codehigh"        
-##  [309] "v2elpaidig_sd"              
-##  [310] "v2elpaidig_osp"             
-##  [311] "v2elpaidig_osp_codelow"     
-##  [312] "v2elpaidig_osp_codehigh"    
-##  [313] "v2elpaidig_osp_sd"          
-##  [314] "v2elpaidig_ord"             
-##  [315] "v2elpaidig_ord_codelow"     
-##  [316] "v2elpaidig_ord_codehigh"    
-##  [317] "v2elpaidig_mean"            
-##  [318] "v2elpaidig_nr"              
-##  [319] "v2elfrfair"                 
-##  [320] "v2elfrfair_codelow"         
-##  [321] "v2elfrfair_codehigh"        
-##  [322] "v2elfrfair_sd"              
-##  [323] "v2elfrfair_osp"             
-##  [324] "v2elfrfair_osp_codelow"     
-##  [325] "v2elfrfair_osp_codehigh"    
-##  [326] "v2elfrfair_osp_sd"          
-##  [327] "v2elfrfair_ord"             
-##  [328] "v2elfrfair_ord_codelow"     
-##  [329] "v2elfrfair_ord_codehigh"    
-##  [330] "v2elfrfair_mean"            
-##  [331] "v2elfrfair_nr"              
-##  [332] "v2eldommon"                 
-##  [333] "v2elintmon"                 
-##  [334] "v2elmonden"                 
-##  [335] "v2elmonref"                 
-##  [336] "v2elrstrct"                 
-##  [337] "v2elaccept"                 
-##  [338] "v2elaccept_codelow"         
-##  [339] "v2elaccept_codehigh"        
-##  [340] "v2elaccept_sd"              
-##  [341] "v2elaccept_osp"             
-##  [342] "v2elaccept_osp_codelow"     
-##  [343] "v2elaccept_osp_codehigh"    
-##  [344] "v2elaccept_osp_sd"          
-##  [345] "v2elaccept_ord"             
-##  [346] "v2elaccept_ord_codelow"     
-##  [347] "v2elaccept_ord_codehigh"    
-##  [348] "v2elaccept_mean"            
-##  [349] "v2elaccept_nr"              
-##  [350] "v2elasmoff"                 
-##  [351] "v2elasmoff_codelow"         
-##  [352] "v2elasmoff_codehigh"        
-##  [353] "v2elasmoff_sd"              
-##  [354] "v2elasmoff_osp"             
-##  [355] "v2elasmoff_osp_codelow"     
-##  [356] "v2elasmoff_osp_codehigh"    
-##  [357] "v2elasmoff_osp_sd"          
-##  [358] "v2elasmoff_ord"             
-##  [359] "v2elasmoff_ord_codelow"     
-##  [360] "v2elasmoff_ord_codehigh"    
-##  [361] "v2elasmoff_mean"            
-##  [362] "v2elasmoff_nr"              
-##  [363] "v2eltrnout"                 
-##  [364] "v2elvaptrn"                 
-##  [365] "v2lpname"                   
-##  [366] "v2slpname"                  
-##  [367] "v2tlpname"                  
-##  [368] "v2elprescons"               
-##  [369] "v2elprescumul"              
-##  [370] "v2elrsthog"                 
-##  [371] "v2elrsthos"                 
-##  [372] "v2elturnhog"                
-##  [373] "v2elturnhos"                
-##  [374] "v2eltvrexo"                 
-##  [375] "v2elvotlrg"                 
-##  [376] "v2elvotsml"                 
-##  [377] "v2ellocons"                 
-##  [378] "v2ellocumul"                
-##  [379] "v2elloeldm"                 
-##  [380] "v2elloelsy"                 
-##  [381] "v2elloseat"                 
-##  [382] "v2ellostlg"                 
-##  [383] "v2ellostsl"                 
-##  [384] "v2ellostsm"                 
-##  [385] "v2ellostss"                 
-##  [386] "v2ellosttm"                 
-##  [387] "v2ellostts"                 
-##  [388] "v2ellovtlg"                 
-##  [389] "v2ellovtsm"                 
-##  [390] "v2ellovttm"                 
-##  [391] "v2elparlel"                 
-##  [392] "v2elthresh"                 
-##  [393] "v2eltvrig"                  
-##  [394] "v2elreggov"                 
-##  [395] "v2elregnam"                 
-##  [396] "v2elsrgel"                  
-##  [397] "v2elrgpwr"                  
-##  [398] "v2elrgpwr_codelow"          
-##  [399] "v2elrgpwr_codehigh"         
-##  [400] "v2elrgpwr_sd"               
-##  [401] "v2elrgpwr_osp"              
-##  [402] "v2elrgpwr_osp_codelow"      
-##  [403] "v2elrgpwr_osp_codehigh"     
-##  [404] "v2elrgpwr_osp_sd"           
-##  [405] "v2elrgpwr_ord"              
-##  [406] "v2elrgpwr_ord_codelow"      
-##  [407] "v2elrgpwr_ord_codehigh"     
-##  [408] "v2elrgpwr_mean"             
-##  [409] "v2elrgpwr_nr"               
-##  [410] "v2ellocgov"                 
-##  [411] "v2ellocnam"                 
-##  [412] "v2ellocelc"                 
-##  [413] "v2ellocpwr"                 
-##  [414] "v2ellocpwr_codelow"         
-##  [415] "v2ellocpwr_codehigh"        
-##  [416] "v2ellocpwr_sd"              
-##  [417] "v2ellocpwr_osp"             
-##  [418] "v2ellocpwr_osp_codelow"     
-##  [419] "v2ellocpwr_osp_codehigh"    
-##  [420] "v2ellocpwr_osp_sd"          
-##  [421] "v2ellocpwr_ord"             
-##  [422] "v2ellocpwr_ord_codelow"     
-##  [423] "v2ellocpwr_ord_codehigh"    
-##  [424] "v2ellocpwr_mean"            
-##  [425] "v2ellocpwr_nr"              
-##  [426] "v2elffelr"                  
-##  [427] "v2elffelr_codelow"          
-##  [428] "v2elffelr_codehigh"         
-##  [429] "v2elffelr_sd"               
-##  [430] "v2elffelr_osp"              
-##  [431] "v2elffelr_osp_codelow"      
-##  [432] "v2elffelr_osp_codehigh"     
-##  [433] "v2elffelr_osp_sd"           
-##  [434] "v2elffelr_ord"              
-##  [435] "v2elffelr_ord_codelow"      
-##  [436] "v2elffelr_ord_codehigh"     
-##  [437] "v2elffelr_mean"             
-##  [438] "v2elffelr_nr"               
-##  [439] "v2elffelrbin"               
-##  [440] "v2elffelrbin_codelow"       
-##  [441] "v2elffelrbin_codehigh"      
-##  [442] "v2elffelrbin_sd"            
-##  [443] "v2elffelrbin_osp"           
-##  [444] "v2elffelrbin_osp_codelow"   
-##  [445] "v2elffelrbin_osp_codehigh"  
-##  [446] "v2elffelrbin_osp_sd"        
-##  [447] "v2elffelrbin_ord"           
-##  [448] "v2elffelrbin_ord_codelow"   
-##  [449] "v2elffelrbin_ord_codehigh"  
-##  [450] "v2elffelrbin_mean"          
-##  [451] "v2elffelrbin_nr"            
-##  [452] "v2elsnlsff"                 
-##  [453] "v2elsnlsff_codelow"         
-##  [454] "v2elsnlsff_codehigh"        
-##  [455] "v2elsnlsff_sd"              
-##  [456] "v2elsnlsff_osp"             
-##  [457] "v2elsnlsff_osp_codelow"     
-##  [458] "v2elsnlsff_osp_codehigh"    
-##  [459] "v2elsnlsff_osp_sd"          
-##  [460] "v2elsnlsff_ord"             
-##  [461] "v2elsnlsff_ord_codelow"     
-##  [462] "v2elsnlsff_ord_codehigh"    
-##  [463] "v2elsnlsff_mean"            
-##  [464] "v2elsnlsff_nr"              
-##  [465] "v2elsnlfc_0"                
-##  [466] "v2elsnlfc_1"                
-##  [467] "v2elsnlfc_2"                
-##  [468] "v2elsnlfc_3"                
-##  [469] "v2elsnlfc_4"                
-##  [470] "v2elsnlfc_5"                
-##  [471] "v2elsnlfc_6"                
-##  [472] "v2elsnlfc_7"                
-##  [473] "v2elsnlfc_8"                
-##  [474] "v2elsnlfc_9"                
-##  [475] "v2elsnlfc_10"               
-##  [476] "v2elsnlfc_11"               
-##  [477] "v2elsnlfc_12"               
-##  [478] "v2elsnlfc_13"               
-##  [479] "v2elsnlfc_14"               
-##  [480] "v2elsnlfc_15"               
-##  [481] "v2elsnlfc_16"               
-##  [482] "v2elsnlfc_17"               
-##  [483] "v2elsnlfc_18"               
-##  [484] "v2elsnlfc_19"               
-##  [485] "v2elsnlfc_20"               
-##  [486] "v2elsnlfc_21"               
-##  [487] "v2elsnlfc_nr"               
-##  [488] "v2elsnmrfc_0"               
-##  [489] "v2elsnmrfc_1"               
-##  [490] "v2elsnmrfc_2"               
-##  [491] "v2elsnmrfc_3"               
-##  [492] "v2elsnmrfc_4"               
-##  [493] "v2elsnmrfc_5"               
-##  [494] "v2elsnmrfc_6"               
-##  [495] "v2elsnmrfc_7"               
-##  [496] "v2elsnmrfc_8"               
-##  [497] "v2elsnmrfc_9"               
-##  [498] "v2elsnmrfc_10"              
-##  [499] "v2elsnmrfc_11"              
-##  [500] "v2elsnmrfc_12"              
-##  [501] "v2elsnmrfc_13"              
-##  [502] "v2elsnmrfc_14"              
-##  [503] "v2elsnmrfc_15"              
-##  [504] "v2elsnmrfc_16"              
-##  [505] "v2elsnmrfc_17"              
-##  [506] "v2elsnmrfc_18"              
-##  [507] "v2elsnmrfc_19"              
-##  [508] "v2elsnmrfc_20"              
-##  [509] "v2elsnmrfc_21"              
-##  [510] "v2elsnmrfc_nr"              
-##  [511] "v2psbars"                   
-##  [512] "v2psbars_codelow"           
-##  [513] "v2psbars_codehigh"          
-##  [514] "v2psbars_sd"                
-##  [515] "v2psbars_osp"               
-##  [516] "v2psbars_osp_codelow"       
-##  [517] "v2psbars_osp_codehigh"      
-##  [518] "v2psbars_osp_sd"            
-##  [519] "v2psbars_ord"               
-##  [520] "v2psbars_ord_codelow"       
-##  [521] "v2psbars_ord_codehigh"      
-##  [522] "v2psbars_mean"              
-##  [523] "v2psbars_nr"                
-##  [524] "v2psparban"                 
-##  [525] "v2psparban_codelow"         
-##  [526] "v2psparban_codehigh"        
-##  [527] "v2psparban_sd"              
-##  [528] "v2psparban_osp"             
-##  [529] "v2psparban_osp_codelow"     
-##  [530] "v2psparban_osp_codehigh"    
-##  [531] "v2psparban_osp_sd"          
-##  [532] "v2psparban_ord"             
-##  [533] "v2psparban_ord_codelow"     
-##  [534] "v2psparban_ord_codehigh"    
-##  [535] "v2psparban_mean"            
-##  [536] "v2psparban_nr"              
-##  [537] "v2psoppaut"                 
-##  [538] "v2psoppaut_codelow"         
-##  [539] "v2psoppaut_codehigh"        
-##  [540] "v2psoppaut_sd"              
-##  [541] "v2psoppaut_osp"             
-##  [542] "v2psoppaut_osp_codelow"     
-##  [543] "v2psoppaut_osp_codehigh"    
-##  [544] "v2psoppaut_osp_sd"          
-##  [545] "v2psoppaut_ord"             
-##  [546] "v2psoppaut_ord_codelow"     
-##  [547] "v2psoppaut_ord_codehigh"    
-##  [548] "v2psoppaut_mean"            
-##  [549] "v2psoppaut_nr"              
-##  [550] "v2psorgs"                   
-##  [551] "v2psorgs_codelow"           
-##  [552] "v2psorgs_codehigh"          
-##  [553] "v2psorgs_sd"                
-##  [554] "v2psorgs_osp"               
-##  [555] "v2psorgs_osp_codelow"       
-##  [556] "v2psorgs_osp_codehigh"      
-##  [557] "v2psorgs_osp_sd"            
-##  [558] "v2psorgs_ord"               
-##  [559] "v2psorgs_ord_codelow"       
-##  [560] "v2psorgs_ord_codehigh"      
-##  [561] "v2psorgs_mean"              
-##  [562] "v2psorgs_nr"                
-##  [563] "v2psprbrch"                 
-##  [564] "v2psprbrch_codelow"         
-##  [565] "v2psprbrch_codehigh"        
-##  [566] "v2psprbrch_sd"              
-##  [567] "v2psprbrch_osp"             
-##  [568] "v2psprbrch_osp_codelow"     
-##  [569] "v2psprbrch_osp_codehigh"    
-##  [570] "v2psprbrch_osp_sd"          
-##  [571] "v2psprbrch_ord"             
-##  [572] "v2psprbrch_ord_codelow"     
-##  [573] "v2psprbrch_ord_codehigh"    
-##  [574] "v2psprbrch_mean"            
-##  [575] "v2psprbrch_nr"              
-##  [576] "v2psprlnks"                 
-##  [577] "v2psprlnks_codelow"         
-##  [578] "v2psprlnks_codehigh"        
-##  [579] "v2psprlnks_sd"              
-##  [580] "v2psprlnks_osp"             
-##  [581] "v2psprlnks_osp_codelow"     
-##  [582] "v2psprlnks_osp_codehigh"    
-##  [583] "v2psprlnks_osp_sd"          
-##  [584] "v2psprlnks_ord"             
-##  [585] "v2psprlnks_ord_codelow"     
-##  [586] "v2psprlnks_ord_codehigh"    
-##  [587] "v2psprlnks_mean"            
-##  [588] "v2psprlnks_nr"              
-##  [589] "v2psplats"                  
-##  [590] "v2psplats_codelow"          
-##  [591] "v2psplats_codehigh"         
-##  [592] "v2psplats_sd"               
-##  [593] "v2psplats_osp"              
-##  [594] "v2psplats_osp_codelow"      
-##  [595] "v2psplats_osp_codehigh"     
-##  [596] "v2psplats_osp_sd"           
-##  [597] "v2psplats_ord"              
-##  [598] "v2psplats_ord_codelow"      
-##  [599] "v2psplats_ord_codehigh"     
-##  [600] "v2psplats_mean"             
-##  [601] "v2psplats_nr"               
-##  [602] "v2pscnslnl"                 
-##  [603] "v2pscnslnl_codelow"         
-##  [604] "v2pscnslnl_codehigh"        
-##  [605] "v2pscnslnl_sd"              
-##  [606] "v2pscnslnl_osp"             
-##  [607] "v2pscnslnl_osp_codelow"     
-##  [608] "v2pscnslnl_osp_codehigh"    
-##  [609] "v2pscnslnl_osp_sd"          
-##  [610] "v2pscnslnl_ord"             
-##  [611] "v2pscnslnl_ord_codelow"     
-##  [612] "v2pscnslnl_ord_codehigh"    
-##  [613] "v2pscnslnl_mean"            
-##  [614] "v2pscnslnl_nr"              
-##  [615] "v2pscohesv"                 
-##  [616] "v2pscohesv_codelow"         
-##  [617] "v2pscohesv_codehigh"        
-##  [618] "v2pscohesv_sd"              
-##  [619] "v2pscohesv_osp"             
-##  [620] "v2pscohesv_osp_codelow"     
-##  [621] "v2pscohesv_osp_codehigh"    
-##  [622] "v2pscohesv_osp_sd"          
-##  [623] "v2pscohesv_ord"             
-##  [624] "v2pscohesv_ord_codelow"     
-##  [625] "v2pscohesv_ord_codehigh"    
-##  [626] "v2pscohesv_mean"            
-##  [627] "v2pscohesv_nr"              
-##  [628] "v2pscomprg"                 
-##  [629] "v2pscomprg_codelow"         
-##  [630] "v2pscomprg_codehigh"        
-##  [631] "v2pscomprg_sd"              
-##  [632] "v2pscomprg_osp"             
-##  [633] "v2pscomprg_osp_codelow"     
-##  [634] "v2pscomprg_osp_codehigh"    
-##  [635] "v2pscomprg_osp_sd"          
-##  [636] "v2pscomprg_ord"             
-##  [637] "v2pscomprg_ord_codelow"     
-##  [638] "v2pscomprg_ord_codehigh"    
-##  [639] "v2pscomprg_mean"            
-##  [640] "v2pscomprg_nr"              
-##  [641] "v2psnatpar"                 
-##  [642] "v2psnatpar_codelow"         
-##  [643] "v2psnatpar_codehigh"        
-##  [644] "v2psnatpar_sd"              
-##  [645] "v2psnatpar_osp"             
-##  [646] "v2psnatpar_osp_codelow"     
-##  [647] "v2psnatpar_osp_codehigh"    
-##  [648] "v2psnatpar_osp_sd"          
-##  [649] "v2psnatpar_ord"             
-##  [650] "v2psnatpar_ord_codelow"     
-##  [651] "v2psnatpar_ord_codehigh"    
-##  [652] "v2psnatpar_mean"            
-##  [653] "v2psnatpar_nr"              
-##  [654] "v2pssunpar"                 
-##  [655] "v2pssunpar_codelow"         
-##  [656] "v2pssunpar_codehigh"        
-##  [657] "v2pssunpar_sd"              
-##  [658] "v2pssunpar_osp"             
-##  [659] "v2pssunpar_osp_codelow"     
-##  [660] "v2pssunpar_osp_codehigh"    
-##  [661] "v2pssunpar_osp_sd"          
-##  [662] "v2pssunpar_ord"             
-##  [663] "v2pssunpar_ord_codelow"     
-##  [664] "v2pssunpar_ord_codehigh"    
-##  [665] "v2pssunpar_mean"            
-##  [666] "v2pssunpar_nr"              
-##  [667] "v2psbantar_0"               
-##  [668] "v2psbantar_1"               
-##  [669] "v2psbantar_2"               
-##  [670] "v2psbantar_3"               
-##  [671] "v2psbantar_4"               
-##  [672] "v2psbantar_5"               
-##  [673] "v2psbantar_nr"              
-##  [674] "v2ddlexci"                  
-##  [675] "v2ddsignci"                 
-##  [676] "v2ddsigpci"                 
-##  [677] "v2ddsigdci"                 
-##  [678] "v2ddsiglci"                 
-##  [679] "v2ddpartci"                 
-##  [680] "v2ddapprci"                 
-##  [681] "v2ddadmci"                  
-##  [682] "v2ddspmci"                  
-##  [683] "v2ddthreci"                 
-##  [684] "v2ddlexrf"                  
-##  [685] "v2ddsignrf"                 
-##  [686] "v2ddsigprf"                 
-##  [687] "v2ddsigdrf"                 
-##  [688] "v2ddsiglrf"                 
-##  [689] "v2ddpartrf"                 
-##  [690] "v2ddapprrf"                 
-##  [691] "v2ddadmrf"                  
-##  [692] "v2ddspmrf"                  
-##  [693] "v2ddthrerf"                 
-##  [694] "v2ddlexor"                  
-##  [695] "v2ddpartor"                 
-##  [696] "v2ddappor"                  
-##  [697] "v2ddadmor"                  
-##  [698] "v2ddspmor"                  
-##  [699] "v2ddthreor"                 
-##  [700] "v2ddlexpl"                  
-##  [701] "v2ddpartpl"                 
-##  [702] "v2ddapprpl"                 
-##  [703] "v2ddadmpl"                  
-##  [704] "v2ddspmpl"                  
-##  [705] "v2ddthrepl"                 
-##  [706] "v2ddyrci"                   
-##  [707] "v2ddyrrf"                   
-##  [708] "v2ddyror"                   
-##  [709] "v2ddyrpl"                   
-##  [710] "v2ddyrall"                  
-##  [711] "v2ddcredal"                 
-##  [712] "v2exnamhos"                 
-##  [713] "v2extithos"                 
-##  [714] "v2exremhsp"                 
-##  [715] "v2exremhsp_codelow"         
-##  [716] "v2exremhsp_codehigh"        
-##  [717] "v2exremhsp_sd"              
-##  [718] "v2exremhsp_osp"             
-##  [719] "v2exremhsp_osp_codelow"     
-##  [720] "v2exremhsp_osp_codehigh"    
-##  [721] "v2exremhsp_osp_sd"          
-##  [722] "v2exremhsp_ord"             
-##  [723] "v2exremhsp_ord_codelow"     
-##  [724] "v2exremhsp_ord_codehigh"    
-##  [725] "v2exremhsp_mean"            
-##  [726] "v2exremhsp_nr"              
-##  [727] "v2exdfdshs"                 
-##  [728] "v2exdfdshs_codelow"         
-##  [729] "v2exdfdshs_codehigh"        
-##  [730] "v2exdfdshs_sd"              
-##  [731] "v2exdfdshs_osp"             
-##  [732] "v2exdfdshs_osp_codelow"     
-##  [733] "v2exdfdshs_osp_codehigh"    
-##  [734] "v2exdfdshs_osp_sd"          
-##  [735] "v2exdfdshs_ord"             
-##  [736] "v2exdfdshs_ord_codelow"     
-##  [737] "v2exdfdshs_ord_codehigh"    
-##  [738] "v2exdfdshs_mean"            
-##  [739] "v2exdfdshs_nr"              
-##  [740] "v2exdfcbhs"                 
-##  [741] "v2exdfcbhs_codelow"         
-##  [742] "v2exdfcbhs_codehigh"        
-##  [743] "v2exdfcbhs_sd"              
-##  [744] "v2exdfcbhs_osp"             
-##  [745] "v2exdfcbhs_osp_codelow"     
-##  [746] "v2exdfcbhs_osp_codehigh"    
-##  [747] "v2exdfcbhs_osp_sd"          
-##  [748] "v2exdfcbhs_ord"             
-##  [749] "v2exdfcbhs_ord_codelow"     
-##  [750] "v2exdfcbhs_ord_codehigh"    
-##  [751] "v2exdfcbhs_mean"            
-##  [752] "v2exdfcbhs_nr"              
-##  [753] "v2exdfvths"                 
-##  [754] "v2exdfvths_codelow"         
-##  [755] "v2exdfvths_codehigh"        
-##  [756] "v2exdfvths_sd"              
-##  [757] "v2exdfvths_osp"             
-##  [758] "v2exdfvths_osp_codelow"     
-##  [759] "v2exdfvths_osp_codehigh"    
-##  [760] "v2exdfvths_osp_sd"          
-##  [761] "v2exdfvths_ord"             
-##  [762] "v2exdfvths_ord_codelow"     
-##  [763] "v2exdfvths_ord_codehigh"    
-##  [764] "v2exdfvths_mean"            
-##  [765] "v2exdfvths_nr"              
-##  [766] "v2exdfdmhs"                 
-##  [767] "v2exdfdmhs_codelow"         
-##  [768] "v2exdfdmhs_codehigh"        
-##  [769] "v2exdfdmhs_sd"              
-##  [770] "v2exdfdmhs_osp"             
-##  [771] "v2exdfdmhs_osp_codelow"     
-##  [772] "v2exdfdmhs_osp_codehigh"    
-##  [773] "v2exdfdmhs_osp_sd"          
-##  [774] "v2exdfdmhs_ord"             
-##  [775] "v2exdfdmhs_ord_codelow"     
-##  [776] "v2exdfdmhs_ord_codehigh"    
-##  [777] "v2exdfdmhs_mean"            
-##  [778] "v2exdfdmhs_nr"              
-##  [779] "v2exdfpphs"                 
-##  [780] "v2exdfpphs_codelow"         
-##  [781] "v2exdfpphs_codehigh"        
-##  [782] "v2exdfpphs_sd"              
-##  [783] "v2exdfpphs_osp"             
-##  [784] "v2exdfpphs_osp_codelow"     
-##  [785] "v2exdfpphs_osp_codehigh"    
-##  [786] "v2exdfpphs_osp_sd"          
-##  [787] "v2exdfpphs_ord"             
-##  [788] "v2exdfpphs_ord_codelow"     
-##  [789] "v2exdfpphs_ord_codehigh"    
-##  [790] "v2exdfpphs_mean"            
-##  [791] "v2exdfpphs_nr"              
-##  [792] "v2exhoshog"                 
-##  [793] "v2exagehos"                 
-##  [794] "v2exaphos"                  
-##  [795] "v2ex_elechos"               
-##  [796] "v2exfemhos"                 
-##  [797] "v2exfxtmhs"                 
-##  [798] "v2expathhs"                 
-##  [799] "v2exctlhs_0"                
-##  [800] "v2exctlhs_1"                
-##  [801] "v2exctlhs_2"                
-##  [802] "v2exctlhs_3"                
-##  [803] "v2exctlhs_4"                
-##  [804] "v2exctlhs_5"                
-##  [805] "v2exctlhs_6"                
-##  [806] "v2exctlhs_7"                
-##  [807] "v2exctlhs_nr"               
-##  [808] "v2exdeathos"                
-##  [809] "v2exdfcbhs_rec"             
-##  [810] "v2exdfcbhs_rec_codelow"     
-##  [811] "v2exdfcbhs_rec_codehigh"    
-##  [812] "v2exdfcbhs_rec_sd"          
-##  [813] "v2exdfcbhs_rec_osp"         
-##  [814] "v2exdfcbhs_rec_osp_codelow" 
-##  [815] "v2exdfcbhs_rec_osp_codehigh"
-##  [816] "v2exdfcbhs_rec_osp_sd"      
-##  [817] "v2exdfcbhs_rec_ord"         
-##  [818] "v2exdfcbhs_rec_ord_codelow" 
-##  [819] "v2exdfcbhs_rec_ord_codehigh"
-##  [820] "v2exdfcbhs_rec_mean"        
-##  [821] "v2exdfcbhs_rec_nr"          
-##  [822] "v2exparhos"                 
-##  [823] "v2exrmhsol_0"               
-##  [824] "v2exrmhsol_1"               
-##  [825] "v2exrmhsol_2"               
-##  [826] "v2exrmhsol_3"               
-##  [827] "v2exrmhsol_4"               
-##  [828] "v2exrmhsol_5"               
-##  [829] "v2exrmhsol_6"               
-##  [830] "v2exrmhsol_7"               
-##  [831] "v2exrmhsol_nr"              
-##  [832] "v2exnamhog"                 
-##  [833] "v2extithog"                 
-##  [834] "v2exremhog"                 
-##  [835] "v2exremhog_codelow"         
-##  [836] "v2exremhog_codehigh"        
-##  [837] "v2exremhog_sd"              
-##  [838] "v2exremhog_osp"             
-##  [839] "v2exremhog_osp_codelow"     
-##  [840] "v2exremhog_osp_codehigh"    
-##  [841] "v2exremhog_osp_sd"          
-##  [842] "v2exremhog_ord"             
-##  [843] "v2exremhog_ord_codelow"     
-##  [844] "v2exremhog_ord_codehigh"    
-##  [845] "v2exremhog_mean"            
-##  [846] "v2exremhog_nr"              
-##  [847] "v2exdjdshg"                 
-##  [848] "v2exdjdshg_codelow"         
-##  [849] "v2exdjdshg_codehigh"        
-##  [850] "v2exdjdshg_sd"              
-##  [851] "v2exdjdshg_osp"             
-##  [852] "v2exdjdshg_osp_codelow"     
-##  [853] "v2exdjdshg_osp_codehigh"    
-##  [854] "v2exdjdshg_osp_sd"          
-##  [855] "v2exdjdshg_ord"             
-##  [856] "v2exdjdshg_ord_codelow"     
-##  [857] "v2exdjdshg_ord_codehigh"    
-##  [858] "v2exdjdshg_mean"            
-##  [859] "v2exdjdshg_nr"              
-##  [860] "v2exdjcbhg"                 
-##  [861] "v2exdjcbhg_codelow"         
-##  [862] "v2exdjcbhg_codehigh"        
-##  [863] "v2exdjcbhg_sd"              
-##  [864] "v2exdjcbhg_osp"             
-##  [865] "v2exdjcbhg_osp_codelow"     
-##  [866] "v2exdjcbhg_osp_codehigh"    
-##  [867] "v2exdjcbhg_osp_sd"          
-##  [868] "v2exdjcbhg_ord"             
-##  [869] "v2exdjcbhg_ord_codelow"     
-##  [870] "v2exdjcbhg_ord_codehigh"    
-##  [871] "v2exdjcbhg_mean"            
-##  [872] "v2exdjcbhg_nr"              
-##  [873] "v2exdfdshg"                 
-##  [874] "v2exdfdshg_codelow"         
-##  [875] "v2exdfdshg_codehigh"        
-##  [876] "v2exdfdshg_sd"              
-##  [877] "v2exdfdshg_osp"             
-##  [878] "v2exdfdshg_osp_codelow"     
-##  [879] "v2exdfdshg_osp_codehigh"    
-##  [880] "v2exdfdshg_osp_sd"          
-##  [881] "v2exdfdshg_ord"             
-##  [882] "v2exdfdshg_ord_codelow"     
-##  [883] "v2exdfdshg_ord_codehigh"    
-##  [884] "v2exdfdshg_mean"            
-##  [885] "v2exdfdshg_nr"              
-##  [886] "v2exdfvthg"                 
-##  [887] "v2exdfvthg_codelow"         
-##  [888] "v2exdfvthg_codehigh"        
-##  [889] "v2exdfvthg_sd"              
-##  [890] "v2exdfvthg_osp"             
-##  [891] "v2exdfvthg_osp_codelow"     
-##  [892] "v2exdfvthg_osp_codehigh"    
-##  [893] "v2exdfvthg_osp_sd"          
-##  [894] "v2exdfvthg_ord"             
-##  [895] "v2exdfvthg_ord_codelow"     
-##  [896] "v2exdfvthg_ord_codehigh"    
-##  [897] "v2exdfvthg_mean"            
-##  [898] "v2exdfvthg_nr"              
-##  [899] "v2exdfpphg"                 
-##  [900] "v2exdfpphg_codelow"         
-##  [901] "v2exdfpphg_codehigh"        
-##  [902] "v2exdfpphg_sd"              
-##  [903] "v2exdfpphg_osp"             
-##  [904] "v2exdfpphg_osp_codelow"     
-##  [905] "v2exdfpphg_osp_codehigh"    
-##  [906] "v2exdfpphg_osp_sd"          
-##  [907] "v2exdfpphg_ord"             
-##  [908] "v2exdfpphg_ord_codelow"     
-##  [909] "v2exdfpphg_ord_codehigh"    
-##  [910] "v2exdfpphg_mean"            
-##  [911] "v2exdfpphg_nr"              
-##  [912] "v2exagehog"                 
-##  [913] "v2exaphogp"                 
-##  [914] "v2ex_elechog"               
-##  [915] "v2exfemhog"                 
-##  [916] "v2exfxtmhg"                 
-##  [917] "v2ex_hogw"                  
-##  [918] "v2ex_hosconhog"             
-##  [919] "v2expathhg"                 
-##  [920] "v2exctlhg_0"                
-##  [921] "v2exctlhg_1"                
-##  [922] "v2exctlhg_2"                
-##  [923] "v2exctlhg_3"                
-##  [924] "v2exctlhg_4"                
-##  [925] "v2exctlhg_5"                
-##  [926] "v2exctlhg_6"                
-##  [927] "v2exctlhg_7"                
-##  [928] "v2exctlhg_8"                
-##  [929] "v2exctlhg_nr"               
-##  [930] "v2exdeathog"                
-##  [931] "v2expothog"                 
-##  [932] "v2exrmhgnp_0"               
-##  [933] "v2exrmhgnp_1"               
-##  [934] "v2exrmhgnp_2"               
-##  [935] "v2exrmhgnp_3"               
-##  [936] "v2exrmhgnp_4"               
-##  [937] "v2exrmhgnp_5"               
-##  [938] "v2exrmhgnp_6"               
-##  [939] "v2exrmhgnp_7"               
-##  [940] "v2exrmhgnp_8"               
-##  [941] "v2exrmhgnp_nr"              
-##  [942] "v2exrescon"                 
-##  [943] "v2exrescon_codelow"         
-##  [944] "v2exrescon_codehigh"        
-##  [945] "v2exrescon_sd"              
-##  [946] "v2exrescon_osp"             
-##  [947] "v2exrescon_osp_codelow"     
-##  [948] "v2exrescon_osp_codehigh"    
-##  [949] "v2exrescon_osp_sd"          
-##  [950] "v2exrescon_ord"             
-##  [951] "v2exrescon_ord_codelow"     
-##  [952] "v2exrescon_ord_codehigh"    
-##  [953] "v2exrescon_mean"            
-##  [954] "v2exrescon_nr"              
-##  [955] "v2exbribe"                  
-##  [956] "v2exbribe_codelow"          
-##  [957] "v2exbribe_codehigh"         
-##  [958] "v2exbribe_sd"               
-##  [959] "v2exbribe_osp"              
-##  [960] "v2exbribe_osp_codelow"      
-##  [961] "v2exbribe_osp_codehigh"     
-##  [962] "v2exbribe_osp_sd"           
-##  [963] "v2exbribe_ord"              
-##  [964] "v2exbribe_ord_codelow"      
-##  [965] "v2exbribe_ord_codehigh"     
-##  [966] "v2exbribe_mean"             
-##  [967] "v2exbribe_nr"               
-##  [968] "v2exembez"                  
-##  [969] "v2exembez_codelow"          
-##  [970] "v2exembez_codehigh"         
-##  [971] "v2exembez_sd"               
-##  [972] "v2exembez_osp"              
-##  [973] "v2exembez_osp_codelow"      
-##  [974] "v2exembez_osp_codehigh"     
-##  [975] "v2exembez_osp_sd"           
-##  [976] "v2exembez_ord"              
-##  [977] "v2exembez_ord_codelow"      
-##  [978] "v2exembez_ord_codehigh"     
-##  [979] "v2exembez_mean"             
-##  [980] "v2exembez_nr"               
-##  [981] "v2excrptps"                 
-##  [982] "v2excrptps_codelow"         
-##  [983] "v2excrptps_codehigh"        
-##  [984] "v2excrptps_sd"              
-##  [985] "v2excrptps_osp"             
-##  [986] "v2excrptps_osp_codelow"     
-##  [987] "v2excrptps_osp_codehigh"    
-##  [988] "v2excrptps_osp_sd"          
-##  [989] "v2excrptps_ord"             
-##  [990] "v2excrptps_ord_codelow"     
-##  [991] "v2excrptps_ord_codehigh"    
-##  [992] "v2excrptps_mean"            
-##  [993] "v2excrptps_nr"              
-##  [994] "v2exthftps"                 
-##  [995] "v2exthftps_codelow"         
-##  [996] "v2exthftps_codehigh"        
-##  [997] "v2exthftps_sd"              
-##  [998] "v2exthftps_osp"             
-##  [999] "v2exthftps_osp_codelow"     
-## [1000] "v2exthftps_osp_codehigh"    
+##    [1] "country_name"                "country_text_id"            
+##    [3] "country_id"                  "year"                       
+##    [5] "historical_date"             "project"                    
+##    [7] "historical"                  "histname"                   
+##    [9] "codingstart"                 "codingend"                  
+##   [11] "codingstart_contemp"         "codingend_contemp"          
+##   [13] "codingstart_hist"            "codingend_hist"             
+##   [15] "gapstart1"                   "gapstart2"                  
+##   [17] "gapstart3"                   "gapend1"                    
+##   [19] "gapend2"                     "gapend3"                    
+##   [21] "gap_index"                   "COWcode"                    
+##   [23] "v2x_polyarchy"               "v2x_polyarchy_codelow"      
+##   [25] "v2x_polyarchy_codehigh"      "v2x_polyarchy_sd"           
+##   [27] "v2x_libdem"                  "v2x_libdem_codelow"         
+##   [29] "v2x_libdem_codehigh"         "v2x_libdem_sd"              
+##   [31] "v2x_partipdem"               "v2x_partipdem_codelow"      
+##   [33] "v2x_partipdem_codehigh"      "v2x_partipdem_sd"           
+##   [35] "v2x_delibdem"                "v2x_delibdem_codelow"       
+##   [37] "v2x_delibdem_codehigh"       "v2x_delibdem_sd"            
+##   [39] "v2x_egaldem"                 "v2x_egaldem_codelow"        
+##   [41] "v2x_egaldem_codehigh"        "v2x_egaldem_sd"             
+##   [43] "v2x_api"                     "v2x_api_codelow"            
+##   [45] "v2x_api_codehigh"            "v2x_api_sd"                 
+##   [47] "v2x_mpi"                     "v2x_mpi_codelow"            
+##   [49] "v2x_mpi_codehigh"            "v2x_mpi_sd"                 
+##   [51] "v2x_freexp_altinf"           "v2x_freexp_altinf_codelow"  
+##   [53] "v2x_freexp_altinf_codehigh"  "v2x_freexp_altinf_sd"       
+##   [55] "v2x_frassoc_thick"           "v2x_frassoc_thick_codelow"  
+##   [57] "v2x_frassoc_thick_codehigh"  "v2x_frassoc_thick_sd"       
+##   [59] "v2x_suffr"                   "v2xel_frefair"              
+##   [61] "v2xel_frefair_codelow"       "v2xel_frefair_codehigh"     
+##   [63] "v2xel_frefair_sd"            "v2x_elecoff"                
+##   [65] "v2x_liberal"                 "v2x_liberal_codelow"        
+##   [67] "v2x_liberal_codehigh"        "v2x_liberal_sd"             
+##   [69] "v2xcl_rol"                   "v2xcl_rol_codelow"          
+##   [71] "v2xcl_rol_codehigh"          "v2xcl_rol_sd"               
+##   [73] "v2x_jucon"                   "v2x_jucon_codelow"          
+##   [75] "v2x_jucon_codehigh"          "v2x_jucon_sd"               
+##   [77] "v2xlg_legcon"                "v2xlg_legcon_codelow"       
+##   [79] "v2xlg_legcon_codehigh"       "v2xlg_legcon_sd"            
+##   [81] "v2x_partip"                  "v2x_partip_codelow"         
+##   [83] "v2x_partip_codehigh"         "v2x_partip_sd"              
+##   [85] "v2x_cspart"                  "v2x_cspart_codelow"         
+##   [87] "v2x_cspart_codehigh"         "v2x_cspart_sd"              
+##   [89] "v2xdd_dd"                    "v2xel_locelec"              
+##   [91] "v2xel_locelec_codelow"       "v2xel_locelec_codehigh"     
+##   [93] "v2xel_locelec_sd"            "v2xel_regelec"              
+##   [95] "v2xel_regelec_codelow"       "v2xel_regelec_codehigh"     
+##   [97] "v2xel_regelec_sd"            "v2xdl_delib"                
+##   [99] "v2xdl_delib_codelow"         "v2xdl_delib_codehigh"       
+##  [101] "v2xdl_delib_sd"              "v2x_egal"                   
+##  [103] "v2x_egal_codelow"            "v2x_egal_codehigh"          
+##  [105] "v2x_egal_sd"                 "v2xeg_eqprotec"             
+##  [107] "v2xeg_eqprotec_codelow"      "v2xeg_eqprotec_codehigh"    
+##  [109] "v2xeg_eqprotec_sd"           "v2xeg_eqaccess"             
+##  [111] "v2xeg_eqaccess_codelow"      "v2xeg_eqaccess_codehigh"    
+##  [113] "v2xeg_eqaccess_sd"           "v2xeg_eqdr"                 
+##  [115] "v2xeg_eqdr_codelow"          "v2xeg_eqdr_codehigh"        
+##  [117] "v2xeg_eqdr_sd"               "v2eltype_0"                 
+##  [119] "v2eltype_1"                  "v2eltype_2"                 
+##  [121] "v2eltype_3"                  "v2eltype_4"                 
+##  [123] "v2eltype_5"                  "v2eltype_6"                 
+##  [125] "v2eltype_7"                  "v2eltype_8"                 
+##  [127] "v2eltype_9"                  "v2asuffrage"                
+##  [129] "v2elage"                     "v2elcomvot"                 
+##  [131] "v2elfemrst"                  "v2elgvsuflvl"               
+##  [133] "v2elsuffrage"                "v2elwestmon"                
+##  [135] "v2fsuffrage"                 "v2msuffrage"                
+##  [137] "v2eldonate"                  "v2eldonate_codelow"         
+##  [139] "v2eldonate_codehigh"         "v2eldonate_sd"              
+##  [141] "v2eldonate_osp"              "v2eldonate_osp_codelow"     
+##  [143] "v2eldonate_osp_codehigh"     "v2eldonate_osp_sd"          
+##  [145] "v2eldonate_ord"              "v2eldonate_ord_codelow"     
+##  [147] "v2eldonate_ord_codehigh"     "v2eldonate_mean"            
+##  [149] "v2eldonate_nr"               "v2elpubfin"                 
+##  [151] "v2elpubfin_codelow"          "v2elpubfin_codehigh"        
+##  [153] "v2elpubfin_sd"               "v2elpubfin_osp"             
+##  [155] "v2elpubfin_osp_codelow"      "v2elpubfin_osp_codehigh"    
+##  [157] "v2elpubfin_osp_sd"           "v2elpubfin_ord"             
+##  [159] "v2elpubfin_ord_codelow"      "v2elpubfin_ord_codehigh"    
+##  [161] "v2elpubfin_mean"             "v2elpubfin_nr"              
+##  [163] "v2elembaut"                  "v2elembaut_codelow"         
+##  [165] "v2elembaut_codehigh"         "v2elembaut_sd"              
+##  [167] "v2elembaut_osp"              "v2elembaut_osp_codelow"     
+##  [169] "v2elembaut_osp_codehigh"     "v2elembaut_osp_sd"          
+##  [171] "v2elembaut_ord"              "v2elembaut_ord_codelow"     
+##  [173] "v2elembaut_ord_codehigh"     "v2elembaut_mean"            
+##  [175] "v2elembaut_nr"               "v2elembcap"                 
+##  [177] "v2elembcap_codelow"          "v2elembcap_codehigh"        
+##  [179] "v2elembcap_sd"               "v2elembcap_osp"             
+##  [181] "v2elembcap_osp_codelow"      "v2elembcap_osp_codehigh"    
+##  [183] "v2elembcap_osp_sd"           "v2elembcap_ord"             
+##  [185] "v2elembcap_ord_codelow"      "v2elembcap_ord_codehigh"    
+##  [187] "v2elembcap_mean"             "v2elembcap_nr"              
+##  [189] "v2elmulpar"                  "v2elmulpar_codelow"         
+##  [191] "v2elmulpar_codehigh"         "v2elmulpar_sd"              
+##  [193] "v2elmulpar_osp"              "v2elmulpar_osp_codelow"     
+##  [195] "v2elmulpar_osp_codehigh"     "v2elmulpar_osp_sd"          
+##  [197] "v2elmulpar_ord"              "v2elmulpar_ord_codelow"     
+##  [199] "v2elmulpar_ord_codehigh"     "v2elmulpar_mean"            
+##  [201] "v2elmulpar_nr"               "v2elrgstry"                 
+##  [203] "v2elrgstry_codelow"          "v2elrgstry_codehigh"        
+##  [205] "v2elrgstry_sd"               "v2elrgstry_osp"             
+##  [207] "v2elrgstry_osp_codelow"      "v2elrgstry_osp_codehigh"    
+##  [209] "v2elrgstry_osp_sd"           "v2elrgstry_ord"             
+##  [211] "v2elrgstry_ord_codelow"      "v2elrgstry_ord_codehigh"    
+##  [213] "v2elrgstry_mean"             "v2elrgstry_nr"              
+##  [215] "v2elvotbuy"                  "v2elvotbuy_codelow"         
+##  [217] "v2elvotbuy_codehigh"         "v2elvotbuy_sd"              
+##  [219] "v2elvotbuy_osp"              "v2elvotbuy_osp_codelow"     
+##  [221] "v2elvotbuy_osp_codehigh"     "v2elvotbuy_osp_sd"          
+##  [223] "v2elvotbuy_ord"              "v2elvotbuy_ord_codelow"     
+##  [225] "v2elvotbuy_ord_codehigh"     "v2elvotbuy_mean"            
+##  [227] "v2elvotbuy_nr"               "v2elirreg"                  
+##  [229] "v2elirreg_codelow"           "v2elirreg_codehigh"         
+##  [231] "v2elirreg_sd"                "v2elirreg_osp"              
+##  [233] "v2elirreg_osp_codelow"       "v2elirreg_osp_codehigh"     
+##  [235] "v2elirreg_osp_sd"            "v2elirreg_ord"              
+##  [237] "v2elirreg_ord_codelow"       "v2elirreg_ord_codehigh"     
+##  [239] "v2elirreg_mean"              "v2elirreg_nr"               
+##  [241] "v2elintim"                   "v2elintim_codelow"          
+##  [243] "v2elintim_codehigh"          "v2elintim_sd"               
+##  [245] "v2elintim_osp"               "v2elintim_osp_codelow"      
+##  [247] "v2elintim_osp_codehigh"      "v2elintim_osp_sd"           
+##  [249] "v2elintim_ord"               "v2elintim_ord_codelow"      
+##  [251] "v2elintim_ord_codehigh"      "v2elintim_mean"             
+##  [253] "v2elintim_nr"                "v2elpeace"                  
+##  [255] "v2elpeace_codelow"           "v2elpeace_codehigh"         
+##  [257] "v2elpeace_sd"                "v2elpeace_osp"              
+##  [259] "v2elpeace_osp_codelow"       "v2elpeace_osp_codehigh"     
+##  [261] "v2elpeace_osp_sd"            "v2elpeace_ord"              
+##  [263] "v2elpeace_ord_codelow"       "v2elpeace_ord_codehigh"     
+##  [265] "v2elpeace_mean"              "v2elpeace_nr"               
+##  [267] "v2elboycot"                  "v2elboycot_codelow"         
+##  [269] "v2elboycot_codehigh"         "v2elboycot_sd"              
+##  [271] "v2elboycot_osp"              "v2elboycot_osp_codelow"     
+##  [273] "v2elboycot_osp_codehigh"     "v2elboycot_osp_sd"          
+##  [275] "v2elboycot_ord"              "v2elboycot_ord_codelow"     
+##  [277] "v2elboycot_ord_codehigh"     "v2elboycot_mean"            
+##  [279] "v2elboycot_nr"               "v2elfrcamp"                 
+##  [281] "v2elfrcamp_codelow"          "v2elfrcamp_codehigh"        
+##  [283] "v2elfrcamp_sd"               "v2elfrcamp_osp"             
+##  [285] "v2elfrcamp_osp_codelow"      "v2elfrcamp_osp_codehigh"    
+##  [287] "v2elfrcamp_osp_sd"           "v2elfrcamp_ord"             
+##  [289] "v2elfrcamp_ord_codelow"      "v2elfrcamp_ord_codehigh"    
+##  [291] "v2elfrcamp_mean"             "v2elfrcamp_nr"              
+##  [293] "v2elpdcamp"                  "v2elpdcamp_codelow"         
+##  [295] "v2elpdcamp_codehigh"         "v2elpdcamp_sd"              
+##  [297] "v2elpdcamp_osp"              "v2elpdcamp_osp_codelow"     
+##  [299] "v2elpdcamp_osp_codehigh"     "v2elpdcamp_osp_sd"          
+##  [301] "v2elpdcamp_ord"              "v2elpdcamp_ord_codelow"     
+##  [303] "v2elpdcamp_ord_codehigh"     "v2elpdcamp_mean"            
+##  [305] "v2elpdcamp_nr"               "v2elpaidig"                 
+##  [307] "v2elpaidig_codelow"          "v2elpaidig_codehigh"        
+##  [309] "v2elpaidig_sd"               "v2elpaidig_osp"             
+##  [311] "v2elpaidig_osp_codelow"      "v2elpaidig_osp_codehigh"    
+##  [313] "v2elpaidig_osp_sd"           "v2elpaidig_ord"             
+##  [315] "v2elpaidig_ord_codelow"      "v2elpaidig_ord_codehigh"    
+##  [317] "v2elpaidig_mean"             "v2elpaidig_nr"              
+##  [319] "v2elfrfair"                  "v2elfrfair_codelow"         
+##  [321] "v2elfrfair_codehigh"         "v2elfrfair_sd"              
+##  [323] "v2elfrfair_osp"              "v2elfrfair_osp_codelow"     
+##  [325] "v2elfrfair_osp_codehigh"     "v2elfrfair_osp_sd"          
+##  [327] "v2elfrfair_ord"              "v2elfrfair_ord_codelow"     
+##  [329] "v2elfrfair_ord_codehigh"     "v2elfrfair_mean"            
+##  [331] "v2elfrfair_nr"               "v2eldommon"                 
+##  [333] "v2elintmon"                  "v2elmonden"                 
+##  [335] "v2elmonref"                  "v2elrstrct"                 
+##  [337] "v2elaccept"                  "v2elaccept_codelow"         
+##  [339] "v2elaccept_codehigh"         "v2elaccept_sd"              
+##  [341] "v2elaccept_osp"              "v2elaccept_osp_codelow"     
+##  [343] "v2elaccept_osp_codehigh"     "v2elaccept_osp_sd"          
+##  [345] "v2elaccept_ord"              "v2elaccept_ord_codelow"     
+##  [347] "v2elaccept_ord_codehigh"     "v2elaccept_mean"            
+##  [349] "v2elaccept_nr"               "v2elasmoff"                 
+##  [351] "v2elasmoff_codelow"          "v2elasmoff_codehigh"        
+##  [353] "v2elasmoff_sd"               "v2elasmoff_osp"             
+##  [355] "v2elasmoff_osp_codelow"      "v2elasmoff_osp_codehigh"    
+##  [357] "v2elasmoff_osp_sd"           "v2elasmoff_ord"             
+##  [359] "v2elasmoff_ord_codelow"      "v2elasmoff_ord_codehigh"    
+##  [361] "v2elasmoff_mean"             "v2elasmoff_nr"              
+##  [363] "v2eltrnout"                  "v2elvaptrn"                 
+##  [365] "v2lpname"                    "v2slpname"                  
+##  [367] "v2tlpname"                   "v2elprescons"               
+##  [369] "v2elprescumul"               "v2elrsthog"                 
+##  [371] "v2elrsthos"                  "v2elturnhog"                
+##  [373] "v2elturnhos"                 "v2eltvrexo"                 
+##  [375] "v2elvotlrg"                  "v2elvotsml"                 
+##  [377] "v2ellocons"                  "v2ellocumul"                
+##  [379] "v2elloeldm"                  "v2elloelsy"                 
+##  [381] "v2elloseat"                  "v2ellostlg"                 
+##  [383] "v2ellostsl"                  "v2ellostsm"                 
+##  [385] "v2ellostss"                  "v2ellosttm"                 
+##  [387] "v2ellostts"                  "v2ellovtlg"                 
+##  [389] "v2ellovtsm"                  "v2ellovttm"                 
+##  [391] "v2elparlel"                  "v2elthresh"                 
+##  [393] "v2eltvrig"                   "v2elreggov"                 
+##  [395] "v2elregnam"                  "v2elsrgel"                  
+##  [397] "v2elrgpwr"                   "v2elrgpwr_codelow"          
+##  [399] "v2elrgpwr_codehigh"          "v2elrgpwr_sd"               
+##  [401] "v2elrgpwr_osp"               "v2elrgpwr_osp_codelow"      
+##  [403] "v2elrgpwr_osp_codehigh"      "v2elrgpwr_osp_sd"           
+##  [405] "v2elrgpwr_ord"               "v2elrgpwr_ord_codelow"      
+##  [407] "v2elrgpwr_ord_codehigh"      "v2elrgpwr_mean"             
+##  [409] "v2elrgpwr_nr"                "v2ellocgov"                 
+##  [411] "v2ellocnam"                  "v2ellocelc"                 
+##  [413] "v2ellocpwr"                  "v2ellocpwr_codelow"         
+##  [415] "v2ellocpwr_codehigh"         "v2ellocpwr_sd"              
+##  [417] "v2ellocpwr_osp"              "v2ellocpwr_osp_codelow"     
+##  [419] "v2ellocpwr_osp_codehigh"     "v2ellocpwr_osp_sd"          
+##  [421] "v2ellocpwr_ord"              "v2ellocpwr_ord_codelow"     
+##  [423] "v2ellocpwr_ord_codehigh"     "v2ellocpwr_mean"            
+##  [425] "v2ellocpwr_nr"               "v2elffelr"                  
+##  [427] "v2elffelr_codelow"           "v2elffelr_codehigh"         
+##  [429] "v2elffelr_sd"                "v2elffelr_osp"              
+##  [431] "v2elffelr_osp_codelow"       "v2elffelr_osp_codehigh"     
+##  [433] "v2elffelr_osp_sd"            "v2elffelr_ord"              
+##  [435] "v2elffelr_ord_codelow"       "v2elffelr_ord_codehigh"     
+##  [437] "v2elffelr_mean"              "v2elffelr_nr"               
+##  [439] "v2elffelrbin"                "v2elffelrbin_codelow"       
+##  [441] "v2elffelrbin_codehigh"       "v2elffelrbin_sd"            
+##  [443] "v2elffelrbin_osp"            "v2elffelrbin_osp_codelow"   
+##  [445] "v2elffelrbin_osp_codehigh"   "v2elffelrbin_osp_sd"        
+##  [447] "v2elffelrbin_ord"            "v2elffelrbin_ord_codelow"   
+##  [449] "v2elffelrbin_ord_codehigh"   "v2elffelrbin_mean"          
+##  [451] "v2elffelrbin_nr"             "v2elsnlsff"                 
+##  [453] "v2elsnlsff_codelow"          "v2elsnlsff_codehigh"        
+##  [455] "v2elsnlsff_sd"               "v2elsnlsff_osp"             
+##  [457] "v2elsnlsff_osp_codelow"      "v2elsnlsff_osp_codehigh"    
+##  [459] "v2elsnlsff_osp_sd"           "v2elsnlsff_ord"             
+##  [461] "v2elsnlsff_ord_codelow"      "v2elsnlsff_ord_codehigh"    
+##  [463] "v2elsnlsff_mean"             "v2elsnlsff_nr"              
+##  [465] "v2elsnlfc_0"                 "v2elsnlfc_1"                
+##  [467] "v2elsnlfc_2"                 "v2elsnlfc_3"                
+##  [469] "v2elsnlfc_4"                 "v2elsnlfc_5"                
+##  [471] "v2elsnlfc_6"                 "v2elsnlfc_7"                
+##  [473] "v2elsnlfc_8"                 "v2elsnlfc_9"                
+##  [475] "v2elsnlfc_10"                "v2elsnlfc_11"               
+##  [477] "v2elsnlfc_12"                "v2elsnlfc_13"               
+##  [479] "v2elsnlfc_14"                "v2elsnlfc_15"               
+##  [481] "v2elsnlfc_16"                "v2elsnlfc_17"               
+##  [483] "v2elsnlfc_18"                "v2elsnlfc_19"               
+##  [485] "v2elsnlfc_20"                "v2elsnlfc_21"               
+##  [487] "v2elsnlfc_nr"                "v2elsnmrfc_0"               
+##  [489] "v2elsnmrfc_1"                "v2elsnmrfc_2"               
+##  [491] "v2elsnmrfc_3"                "v2elsnmrfc_4"               
+##  [493] "v2elsnmrfc_5"                "v2elsnmrfc_6"               
+##  [495] "v2elsnmrfc_7"                "v2elsnmrfc_8"               
+##  [497] "v2elsnmrfc_9"                "v2elsnmrfc_10"              
+##  [499] "v2elsnmrfc_11"               "v2elsnmrfc_12"              
+##  [501] "v2elsnmrfc_13"               "v2elsnmrfc_14"              
+##  [503] "v2elsnmrfc_15"               "v2elsnmrfc_16"              
+##  [505] "v2elsnmrfc_17"               "v2elsnmrfc_18"              
+##  [507] "v2elsnmrfc_19"               "v2elsnmrfc_20"              
+##  [509] "v2elsnmrfc_21"               "v2elsnmrfc_nr"              
+##  [511] "v2psbars"                    "v2psbars_codelow"           
+##  [513] "v2psbars_codehigh"           "v2psbars_sd"                
+##  [515] "v2psbars_osp"                "v2psbars_osp_codelow"       
+##  [517] "v2psbars_osp_codehigh"       "v2psbars_osp_sd"            
+##  [519] "v2psbars_ord"                "v2psbars_ord_codelow"       
+##  [521] "v2psbars_ord_codehigh"       "v2psbars_mean"              
+##  [523] "v2psbars_nr"                 "v2psparban"                 
+##  [525] "v2psparban_codelow"          "v2psparban_codehigh"        
+##  [527] "v2psparban_sd"               "v2psparban_osp"             
+##  [529] "v2psparban_osp_codelow"      "v2psparban_osp_codehigh"    
+##  [531] "v2psparban_osp_sd"           "v2psparban_ord"             
+##  [533] "v2psparban_ord_codelow"      "v2psparban_ord_codehigh"    
+##  [535] "v2psparban_mean"             "v2psparban_nr"              
+##  [537] "v2psoppaut"                  "v2psoppaut_codelow"         
+##  [539] "v2psoppaut_codehigh"         "v2psoppaut_sd"              
+##  [541] "v2psoppaut_osp"              "v2psoppaut_osp_codelow"     
+##  [543] "v2psoppaut_osp_codehigh"     "v2psoppaut_osp_sd"          
+##  [545] "v2psoppaut_ord"              "v2psoppaut_ord_codelow"     
+##  [547] "v2psoppaut_ord_codehigh"     "v2psoppaut_mean"            
+##  [549] "v2psoppaut_nr"               "v2psorgs"                   
+##  [551] "v2psorgs_codelow"            "v2psorgs_codehigh"          
+##  [553] "v2psorgs_sd"                 "v2psorgs_osp"               
+##  [555] "v2psorgs_osp_codelow"        "v2psorgs_osp_codehigh"      
+##  [557] "v2psorgs_osp_sd"             "v2psorgs_ord"               
+##  [559] "v2psorgs_ord_codelow"        "v2psorgs_ord_codehigh"      
+##  [561] "v2psorgs_mean"               "v2psorgs_nr"                
+##  [563] "v2psprbrch"                  "v2psprbrch_codelow"         
+##  [565] "v2psprbrch_codehigh"         "v2psprbrch_sd"              
+##  [567] "v2psprbrch_osp"              "v2psprbrch_osp_codelow"     
+##  [569] "v2psprbrch_osp_codehigh"     "v2psprbrch_osp_sd"          
+##  [571] "v2psprbrch_ord"              "v2psprbrch_ord_codelow"     
+##  [573] "v2psprbrch_ord_codehigh"     "v2psprbrch_mean"            
+##  [575] "v2psprbrch_nr"               "v2psprlnks"                 
+##  [577] "v2psprlnks_codelow"          "v2psprlnks_codehigh"        
+##  [579] "v2psprlnks_sd"               "v2psprlnks_osp"             
+##  [581] "v2psprlnks_osp_codelow"      "v2psprlnks_osp_codehigh"    
+##  [583] "v2psprlnks_osp_sd"           "v2psprlnks_ord"             
+##  [585] "v2psprlnks_ord_codelow"      "v2psprlnks_ord_codehigh"    
+##  [587] "v2psprlnks_mean"             "v2psprlnks_nr"              
+##  [589] "v2psplats"                   "v2psplats_codelow"          
+##  [591] "v2psplats_codehigh"          "v2psplats_sd"               
+##  [593] "v2psplats_osp"               "v2psplats_osp_codelow"      
+##  [595] "v2psplats_osp_codehigh"      "v2psplats_osp_sd"           
+##  [597] "v2psplats_ord"               "v2psplats_ord_codelow"      
+##  [599] "v2psplats_ord_codehigh"      "v2psplats_mean"             
+##  [601] "v2psplats_nr"                "v2pscnslnl"                 
+##  [603] "v2pscnslnl_codelow"          "v2pscnslnl_codehigh"        
+##  [605] "v2pscnslnl_sd"               "v2pscnslnl_osp"             
+##  [607] "v2pscnslnl_osp_codelow"      "v2pscnslnl_osp_codehigh"    
+##  [609] "v2pscnslnl_osp_sd"           "v2pscnslnl_ord"             
+##  [611] "v2pscnslnl_ord_codelow"      "v2pscnslnl_ord_codehigh"    
+##  [613] "v2pscnslnl_mean"             "v2pscnslnl_nr"              
+##  [615] "v2pscohesv"                  "v2pscohesv_codelow"         
+##  [617] "v2pscohesv_codehigh"         "v2pscohesv_sd"              
+##  [619] "v2pscohesv_osp"              "v2pscohesv_osp_codelow"     
+##  [621] "v2pscohesv_osp_codehigh"     "v2pscohesv_osp_sd"          
+##  [623] "v2pscohesv_ord"              "v2pscohesv_ord_codelow"     
+##  [625] "v2pscohesv_ord_codehigh"     "v2pscohesv_mean"            
+##  [627] "v2pscohesv_nr"               "v2pscomprg"                 
+##  [629] "v2pscomprg_codelow"          "v2pscomprg_codehigh"        
+##  [631] "v2pscomprg_sd"               "v2pscomprg_osp"             
+##  [633] "v2pscomprg_osp_codelow"      "v2pscomprg_osp_codehigh"    
+##  [635] "v2pscomprg_osp_sd"           "v2pscomprg_ord"             
+##  [637] "v2pscomprg_ord_codelow"      "v2pscomprg_ord_codehigh"    
+##  [639] "v2pscomprg_mean"             "v2pscomprg_nr"              
+##  [641] "v2psnatpar"                  "v2psnatpar_codelow"         
+##  [643] "v2psnatpar_codehigh"         "v2psnatpar_sd"              
+##  [645] "v2psnatpar_osp"              "v2psnatpar_osp_codelow"     
+##  [647] "v2psnatpar_osp_codehigh"     "v2psnatpar_osp_sd"          
+##  [649] "v2psnatpar_ord"              "v2psnatpar_ord_codelow"     
+##  [651] "v2psnatpar_ord_codehigh"     "v2psnatpar_mean"            
+##  [653] "v2psnatpar_nr"               "v2pssunpar"                 
+##  [655] "v2pssunpar_codelow"          "v2pssunpar_codehigh"        
+##  [657] "v2pssunpar_sd"               "v2pssunpar_osp"             
+##  [659] "v2pssunpar_osp_codelow"      "v2pssunpar_osp_codehigh"    
+##  [661] "v2pssunpar_osp_sd"           "v2pssunpar_ord"             
+##  [663] "v2pssunpar_ord_codelow"      "v2pssunpar_ord_codehigh"    
+##  [665] "v2pssunpar_mean"             "v2pssunpar_nr"              
+##  [667] "v2psbantar_0"                "v2psbantar_1"               
+##  [669] "v2psbantar_2"                "v2psbantar_3"               
+##  [671] "v2psbantar_4"                "v2psbantar_5"               
+##  [673] "v2psbantar_nr"               "v2ddlexci"                  
+##  [675] "v2ddsignci"                  "v2ddsigpci"                 
+##  [677] "v2ddsigdci"                  "v2ddsiglci"                 
+##  [679] "v2ddpartci"                  "v2ddapprci"                 
+##  [681] "v2ddadmci"                   "v2ddspmci"                  
+##  [683] "v2ddthreci"                  "v2ddlexrf"                  
+##  [685] "v2ddsignrf"                  "v2ddsigprf"                 
+##  [687] "v2ddsigdrf"                  "v2ddsiglrf"                 
+##  [689] "v2ddpartrf"                  "v2ddapprrf"                 
+##  [691] "v2ddadmrf"                   "v2ddspmrf"                  
+##  [693] "v2ddthrerf"                  "v2ddlexor"                  
+##  [695] "v2ddpartor"                  "v2ddappor"                  
+##  [697] "v2ddadmor"                   "v2ddspmor"                  
+##  [699] "v2ddthreor"                  "v2ddlexpl"                  
+##  [701] "v2ddpartpl"                  "v2ddapprpl"                 
+##  [703] "v2ddadmpl"                   "v2ddspmpl"                  
+##  [705] "v2ddthrepl"                  "v2ddyrci"                   
+##  [707] "v2ddyrrf"                    "v2ddyror"                   
+##  [709] "v2ddyrpl"                    "v2ddyrall"                  
+##  [711] "v2ddcredal"                  "v2exnamhos"                 
+##  [713] "v2extithos"                  "v2exremhsp"                 
+##  [715] "v2exremhsp_codelow"          "v2exremhsp_codehigh"        
+##  [717] "v2exremhsp_sd"               "v2exremhsp_osp"             
+##  [719] "v2exremhsp_osp_codelow"      "v2exremhsp_osp_codehigh"    
+##  [721] "v2exremhsp_osp_sd"           "v2exremhsp_ord"             
+##  [723] "v2exremhsp_ord_codelow"      "v2exremhsp_ord_codehigh"    
+##  [725] "v2exremhsp_mean"             "v2exremhsp_nr"              
+##  [727] "v2exdfdshs"                  "v2exdfdshs_codelow"         
+##  [729] "v2exdfdshs_codehigh"         "v2exdfdshs_sd"              
+##  [731] "v2exdfdshs_osp"              "v2exdfdshs_osp_codelow"     
+##  [733] "v2exdfdshs_osp_codehigh"     "v2exdfdshs_osp_sd"          
+##  [735] "v2exdfdshs_ord"              "v2exdfdshs_ord_codelow"     
+##  [737] "v2exdfdshs_ord_codehigh"     "v2exdfdshs_mean"            
+##  [739] "v2exdfdshs_nr"               "v2exdfcbhs"                 
+##  [741] "v2exdfcbhs_codelow"          "v2exdfcbhs_codehigh"        
+##  [743] "v2exdfcbhs_sd"               "v2exdfcbhs_osp"             
+##  [745] "v2exdfcbhs_osp_codelow"      "v2exdfcbhs_osp_codehigh"    
+##  [747] "v2exdfcbhs_osp_sd"           "v2exdfcbhs_ord"             
+##  [749] "v2exdfcbhs_ord_codelow"      "v2exdfcbhs_ord_codehigh"    
+##  [751] "v2exdfcbhs_mean"             "v2exdfcbhs_nr"              
+##  [753] "v2exdfvths"                  "v2exdfvths_codelow"         
+##  [755] "v2exdfvths_codehigh"         "v2exdfvths_sd"              
+##  [757] "v2exdfvths_osp"              "v2exdfvths_osp_codelow"     
+##  [759] "v2exdfvths_osp_codehigh"     "v2exdfvths_osp_sd"          
+##  [761] "v2exdfvths_ord"              "v2exdfvths_ord_codelow"     
+##  [763] "v2exdfvths_ord_codehigh"     "v2exdfvths_mean"            
+##  [765] "v2exdfvths_nr"               "v2exdfdmhs"                 
+##  [767] "v2exdfdmhs_codelow"          "v2exdfdmhs_codehigh"        
+##  [769] "v2exdfdmhs_sd"               "v2exdfdmhs_osp"             
+##  [771] "v2exdfdmhs_osp_codelow"      "v2exdfdmhs_osp_codehigh"    
+##  [773] "v2exdfdmhs_osp_sd"           "v2exdfdmhs_ord"             
+##  [775] "v2exdfdmhs_ord_codelow"      "v2exdfdmhs_ord_codehigh"    
+##  [777] "v2exdfdmhs_mean"             "v2exdfdmhs_nr"              
+##  [779] "v2exdfpphs"                  "v2exdfpphs_codelow"         
+##  [781] "v2exdfpphs_codehigh"         "v2exdfpphs_sd"              
+##  [783] "v2exdfpphs_osp"              "v2exdfpphs_osp_codelow"     
+##  [785] "v2exdfpphs_osp_codehigh"     "v2exdfpphs_osp_sd"          
+##  [787] "v2exdfpphs_ord"              "v2exdfpphs_ord_codelow"     
+##  [789] "v2exdfpphs_ord_codehigh"     "v2exdfpphs_mean"            
+##  [791] "v2exdfpphs_nr"               "v2exhoshog"                 
+##  [793] "v2exagehos"                  "v2exaphos"                  
+##  [795] "v2ex_elechos"                "v2exfemhos"                 
+##  [797] "v2exfxtmhs"                  "v2expathhs"                 
+##  [799] "v2exctlhs_0"                 "v2exctlhs_1"                
+##  [801] "v2exctlhs_2"                 "v2exctlhs_3"                
+##  [803] "v2exctlhs_4"                 "v2exctlhs_5"                
+##  [805] "v2exctlhs_6"                 "v2exctlhs_7"                
+##  [807] "v2exctlhs_nr"                "v2exdeathos"                
+##  [809] "v2exdfcbhs_rec"              "v2exdfcbhs_rec_codelow"     
+##  [811] "v2exdfcbhs_rec_codehigh"     "v2exdfcbhs_rec_sd"          
+##  [813] "v2exdfcbhs_rec_osp"          "v2exdfcbhs_rec_osp_codelow" 
+##  [815] "v2exdfcbhs_rec_osp_codehigh" "v2exdfcbhs_rec_osp_sd"      
+##  [817] "v2exdfcbhs_rec_ord"          "v2exdfcbhs_rec_ord_codelow" 
+##  [819] "v2exdfcbhs_rec_ord_codehigh" "v2exdfcbhs_rec_mean"        
+##  [821] "v2exdfcbhs_rec_nr"           "v2exparhos"                 
+##  [823] "v2exrmhsol_0"                "v2exrmhsol_1"               
+##  [825] "v2exrmhsol_2"                "v2exrmhsol_3"               
+##  [827] "v2exrmhsol_4"                "v2exrmhsol_5"               
+##  [829] "v2exrmhsol_6"                "v2exrmhsol_7"               
+##  [831] "v2exrmhsol_nr"               "v2exnamhog"                 
+##  [833] "v2extithog"                  "v2exremhog"                 
+##  [835] "v2exremhog_codelow"          "v2exremhog_codehigh"        
+##  [837] "v2exremhog_sd"               "v2exremhog_osp"             
+##  [839] "v2exremhog_osp_codelow"      "v2exremhog_osp_codehigh"    
+##  [841] "v2exremhog_osp_sd"           "v2exremhog_ord"             
+##  [843] "v2exremhog_ord_codelow"      "v2exremhog_ord_codehigh"    
+##  [845] "v2exremhog_mean"             "v2exremhog_nr"              
+##  [847] "v2exdjdshg"                  "v2exdjdshg_codelow"         
+##  [849] "v2exdjdshg_codehigh"         "v2exdjdshg_sd"              
+##  [851] "v2exdjdshg_osp"              "v2exdjdshg_osp_codelow"     
+##  [853] "v2exdjdshg_osp_codehigh"     "v2exdjdshg_osp_sd"          
+##  [855] "v2exdjdshg_ord"              "v2exdjdshg_ord_codelow"     
+##  [857] "v2exdjdshg_ord_codehigh"     "v2exdjdshg_mean"            
+##  [859] "v2exdjdshg_nr"               "v2exdjcbhg"                 
+##  [861] "v2exdjcbhg_codelow"          "v2exdjcbhg_codehigh"        
+##  [863] "v2exdjcbhg_sd"               "v2exdjcbhg_osp"             
+##  [865] "v2exdjcbhg_osp_codelow"      "v2exdjcbhg_osp_codehigh"    
+##  [867] "v2exdjcbhg_osp_sd"           "v2exdjcbhg_ord"             
+##  [869] "v2exdjcbhg_ord_codelow"      "v2exdjcbhg_ord_codehigh"    
+##  [871] "v2exdjcbhg_mean"             "v2exdjcbhg_nr"              
+##  [873] "v2exdfdshg"                  "v2exdfdshg_codelow"         
+##  [875] "v2exdfdshg_codehigh"         "v2exdfdshg_sd"              
+##  [877] "v2exdfdshg_osp"              "v2exdfdshg_osp_codelow"     
+##  [879] "v2exdfdshg_osp_codehigh"     "v2exdfdshg_osp_sd"          
+##  [881] "v2exdfdshg_ord"              "v2exdfdshg_ord_codelow"     
+##  [883] "v2exdfdshg_ord_codehigh"     "v2exdfdshg_mean"            
+##  [885] "v2exdfdshg_nr"               "v2exdfvthg"                 
+##  [887] "v2exdfvthg_codelow"          "v2exdfvthg_codehigh"        
+##  [889] "v2exdfvthg_sd"               "v2exdfvthg_osp"             
+##  [891] "v2exdfvthg_osp_codelow"      "v2exdfvthg_osp_codehigh"    
+##  [893] "v2exdfvthg_osp_sd"           "v2exdfvthg_ord"             
+##  [895] "v2exdfvthg_ord_codelow"      "v2exdfvthg_ord_codehigh"    
+##  [897] "v2exdfvthg_mean"             "v2exdfvthg_nr"              
+##  [899] "v2exdfpphg"                  "v2exdfpphg_codelow"         
+##  [901] "v2exdfpphg_codehigh"         "v2exdfpphg_sd"              
+##  [903] "v2exdfpphg_osp"              "v2exdfpphg_osp_codelow"     
+##  [905] "v2exdfpphg_osp_codehigh"     "v2exdfpphg_osp_sd"          
+##  [907] "v2exdfpphg_ord"              "v2exdfpphg_ord_codelow"     
+##  [909] "v2exdfpphg_ord_codehigh"     "v2exdfpphg_mean"            
+##  [911] "v2exdfpphg_nr"               "v2exagehog"                 
+##  [913] "v2exaphogp"                  "v2ex_elechog"               
+##  [915] "v2exfemhog"                  "v2exfxtmhg"                 
+##  [917] "v2ex_hogw"                   "v2ex_hosconhog"             
+##  [919] "v2expathhg"                  "v2exctlhg_0"                
+##  [921] "v2exctlhg_1"                 "v2exctlhg_2"                
+##  [923] "v2exctlhg_3"                 "v2exctlhg_4"                
+##  [925] "v2exctlhg_5"                 "v2exctlhg_6"                
+##  [927] "v2exctlhg_7"                 "v2exctlhg_8"                
+##  [929] "v2exctlhg_nr"                "v2exdeathog"                
+##  [931] "v2expothog"                  "v2exrmhgnp_0"               
+##  [933] "v2exrmhgnp_1"                "v2exrmhgnp_2"               
+##  [935] "v2exrmhgnp_3"                "v2exrmhgnp_4"               
+##  [937] "v2exrmhgnp_5"                "v2exrmhgnp_6"               
+##  [939] "v2exrmhgnp_7"                "v2exrmhgnp_8"               
+##  [941] "v2exrmhgnp_nr"               "v2exrescon"                 
+##  [943] "v2exrescon_codelow"          "v2exrescon_codehigh"        
+##  [945] "v2exrescon_sd"               "v2exrescon_osp"             
+##  [947] "v2exrescon_osp_codelow"      "v2exrescon_osp_codehigh"    
+##  [949] "v2exrescon_osp_sd"           "v2exrescon_ord"             
+##  [951] "v2exrescon_ord_codelow"      "v2exrescon_ord_codehigh"    
+##  [953] "v2exrescon_mean"             "v2exrescon_nr"              
+##  [955] "v2exbribe"                   "v2exbribe_codelow"          
+##  [957] "v2exbribe_codehigh"          "v2exbribe_sd"               
+##  [959] "v2exbribe_osp"               "v2exbribe_osp_codelow"      
+##  [961] "v2exbribe_osp_codehigh"      "v2exbribe_osp_sd"           
+##  [963] "v2exbribe_ord"               "v2exbribe_ord_codelow"      
+##  [965] "v2exbribe_ord_codehigh"      "v2exbribe_mean"             
+##  [967] "v2exbribe_nr"                "v2exembez"                  
+##  [969] "v2exembez_codelow"           "v2exembez_codehigh"         
+##  [971] "v2exembez_sd"                "v2exembez_osp"              
+##  [973] "v2exembez_osp_codelow"       "v2exembez_osp_codehigh"     
+##  [975] "v2exembez_osp_sd"            "v2exembez_ord"              
+##  [977] "v2exembez_ord_codelow"       "v2exembez_ord_codehigh"     
+##  [979] "v2exembez_mean"              "v2exembez_nr"               
+##  [981] "v2excrptps"                  "v2excrptps_codelow"         
+##  [983] "v2excrptps_codehigh"         "v2excrptps_sd"              
+##  [985] "v2excrptps_osp"              "v2excrptps_osp_codelow"     
+##  [987] "v2excrptps_osp_codehigh"     "v2excrptps_osp_sd"          
+##  [989] "v2excrptps_ord"              "v2excrptps_ord_codelow"     
+##  [991] "v2excrptps_ord_codehigh"     "v2excrptps_mean"            
+##  [993] "v2excrptps_nr"               "v2exthftps"                 
+##  [995] "v2exthftps_codelow"          "v2exthftps_codehigh"        
+##  [997] "v2exthftps_sd"               "v2exthftps_osp"             
+##  [999] "v2exthftps_osp_codelow"      "v2exthftps_osp_codehigh"    
 ##  [ reached getOption("max.print") -- omitted 3176 entries ]
 ```
 ]
@@ -1144,74 +645,63 @@ for shortcut
 .small-output[
 
 ```r
-vdem %&gt;% as_tibble()
+vdem %&gt;% as_tibble()   # "tibble" package is part of "tidyverse"
 ```
 
 ```
 ## # A tibble: 27,192 x 4,176
-##    country_name country_text_id country_id  year
-##    &lt;chr&gt;        &lt;chr&gt;                &lt;dbl&gt; &lt;dbl&gt;
-##  1 Mexico       MEX                      3  1789
-##  2 Mexico       MEX                      3  1790
-##  3 Mexico       MEX                      3  1791
-##  4 Mexico       MEX                      3  1792
-##  5 Mexico       MEX                      3  1793
-##  6 Mexico       MEX                      3  1794
-##  7 Mexico       MEX                      3  1795
-##  8 Mexico       MEX                      3  1796
-##  9 Mexico       MEX                      3  1797
-## 10 Mexico       MEX                      3  1798
-## # … with 27,182 more rows, and 4,172 more variables:
-## #   historical_date &lt;date&gt;, project &lt;dbl&gt;, historical &lt;dbl&gt;,
+##    country_name country_text_id country_id  year historical_date project
+##    &lt;chr&gt;        &lt;chr&gt;                &lt;dbl&gt; &lt;dbl&gt; &lt;date&gt;            &lt;dbl&gt;
+##  1 Mexico       MEX                      3  1789 1789-12-31            1
+##  2 Mexico       MEX                      3  1790 1790-12-31            1
+##  3 Mexico       MEX                      3  1791 1791-12-31            1
+##  4 Mexico       MEX                      3  1792 1792-12-31            1
+##  5 Mexico       MEX                      3  1793 1793-12-31            1
+##  6 Mexico       MEX                      3  1794 1794-12-31            1
+##  7 Mexico       MEX                      3  1795 1795-12-31            1
+##  8 Mexico       MEX                      3  1796 1796-12-31            1
+##  9 Mexico       MEX                      3  1797 1797-12-31            1
+## 10 Mexico       MEX                      3  1798 1798-12-31            1
+## # … with 27,182 more rows, and 4,170 more variables: historical &lt;dbl&gt;,
 ## #   histname &lt;chr&gt;, codingstart &lt;dbl&gt;, codingend &lt;dbl&gt;,
 ## #   codingstart_contemp &lt;dbl&gt;, codingend_contemp &lt;dbl&gt;,
-## #   codingstart_hist &lt;dbl&gt;, codingend_hist &lt;dbl&gt;,
-## #   gapstart1 &lt;dbl&gt;, gapstart2 &lt;dbl&gt;, gapstart3 &lt;dbl&gt;,
-## #   gapend1 &lt;dbl&gt;, gapend2 &lt;dbl&gt;, gapend3 &lt;dbl&gt;,
-## #   gap_index &lt;dbl&gt;, COWcode &lt;dbl&gt;, v2x_polyarchy &lt;dbl&gt;,
-## #   v2x_polyarchy_codelow &lt;dbl&gt;,
-## #   v2x_polyarchy_codehigh &lt;dbl&gt;, v2x_polyarchy_sd &lt;dbl&gt;,
-## #   v2x_libdem &lt;dbl&gt;, v2x_libdem_codelow &lt;dbl&gt;,
-## #   v2x_libdem_codehigh &lt;dbl&gt;, v2x_libdem_sd &lt;dbl&gt;,
-## #   v2x_partipdem &lt;dbl&gt;, v2x_partipdem_codelow &lt;dbl&gt;,
-## #   v2x_partipdem_codehigh &lt;dbl&gt;, v2x_partipdem_sd &lt;dbl&gt;,
-## #   v2x_delibdem &lt;dbl&gt;, v2x_delibdem_codelow &lt;dbl&gt;,
-## #   v2x_delibdem_codehigh &lt;dbl&gt;, v2x_delibdem_sd &lt;dbl&gt;,
-## #   v2x_egaldem &lt;dbl&gt;, v2x_egaldem_codelow &lt;dbl&gt;,
-## #   v2x_egaldem_codehigh &lt;dbl&gt;, v2x_egaldem_sd &lt;dbl&gt;,
-## #   v2x_api &lt;dbl&gt;, v2x_api_codelow &lt;dbl&gt;,
-## #   v2x_api_codehigh &lt;dbl&gt;, v2x_api_sd &lt;dbl&gt;, v2x_mpi &lt;dbl&gt;,
-## #   v2x_mpi_codelow &lt;dbl&gt;, v2x_mpi_codehigh &lt;dbl&gt;,
+## #   codingstart_hist &lt;dbl&gt;, codingend_hist &lt;dbl&gt;, gapstart1 &lt;dbl&gt;,
+## #   gapstart2 &lt;dbl&gt;, gapstart3 &lt;dbl&gt;, gapend1 &lt;dbl&gt;, gapend2 &lt;dbl&gt;,
+## #   gapend3 &lt;dbl&gt;, gap_index &lt;dbl&gt;, COWcode &lt;dbl&gt;, v2x_polyarchy &lt;dbl&gt;,
+## #   v2x_polyarchy_codelow &lt;dbl&gt;, v2x_polyarchy_codehigh &lt;dbl&gt;,
+## #   v2x_polyarchy_sd &lt;dbl&gt;, v2x_libdem &lt;dbl&gt;, v2x_libdem_codelow &lt;dbl&gt;,
+## #   v2x_libdem_codehigh &lt;dbl&gt;, v2x_libdem_sd &lt;dbl&gt;, v2x_partipdem &lt;dbl&gt;,
+## #   v2x_partipdem_codelow &lt;dbl&gt;, v2x_partipdem_codehigh &lt;dbl&gt;,
+## #   v2x_partipdem_sd &lt;dbl&gt;, v2x_delibdem &lt;dbl&gt;,
+## #   v2x_delibdem_codelow &lt;dbl&gt;, v2x_delibdem_codehigh &lt;dbl&gt;,
+## #   v2x_delibdem_sd &lt;dbl&gt;, v2x_egaldem &lt;dbl&gt;, v2x_egaldem_codelow &lt;dbl&gt;,
+## #   v2x_egaldem_codehigh &lt;dbl&gt;, v2x_egaldem_sd &lt;dbl&gt;, v2x_api &lt;dbl&gt;,
+## #   v2x_api_codelow &lt;dbl&gt;, v2x_api_codehigh &lt;dbl&gt;, v2x_api_sd &lt;dbl&gt;,
+## #   v2x_mpi &lt;dbl&gt;, v2x_mpi_codelow &lt;dbl&gt;, v2x_mpi_codehigh &lt;dbl&gt;,
 ## #   v2x_mpi_sd &lt;dbl&gt;, v2x_freexp_altinf &lt;dbl&gt;,
-## #   v2x_freexp_altinf_codelow &lt;dbl&gt;,
-## #   v2x_freexp_altinf_codehigh &lt;dbl&gt;,
+## #   v2x_freexp_altinf_codelow &lt;dbl&gt;, v2x_freexp_altinf_codehigh &lt;dbl&gt;,
 ## #   v2x_freexp_altinf_sd &lt;dbl&gt;, v2x_frassoc_thick &lt;dbl&gt;,
-## #   v2x_frassoc_thick_codelow &lt;dbl&gt;,
-## #   v2x_frassoc_thick_codehigh &lt;dbl&gt;,
-## #   v2x_frassoc_thick_sd &lt;dbl&gt;, v2x_suffr &lt;dbl&gt;,
-## #   v2xel_frefair &lt;dbl&gt;, v2xel_frefair_codelow &lt;dbl&gt;,
-## #   v2xel_frefair_codehigh &lt;dbl&gt;, v2xel_frefair_sd &lt;dbl&gt;,
-## #   v2x_elecoff &lt;dbl&gt;, v2x_liberal &lt;dbl&gt;,
+## #   v2x_frassoc_thick_codelow &lt;dbl&gt;, v2x_frassoc_thick_codehigh &lt;dbl&gt;,
+## #   v2x_frassoc_thick_sd &lt;dbl&gt;, v2x_suffr &lt;dbl&gt;, v2xel_frefair &lt;dbl&gt;,
+## #   v2xel_frefair_codelow &lt;dbl&gt;, v2xel_frefair_codehigh &lt;dbl&gt;,
+## #   v2xel_frefair_sd &lt;dbl&gt;, v2x_elecoff &lt;dbl&gt;, v2x_liberal &lt;dbl&gt;,
 ## #   v2x_liberal_codelow &lt;dbl&gt;, v2x_liberal_codehigh &lt;dbl&gt;,
-## #   v2x_liberal_sd &lt;dbl&gt;, v2xcl_rol &lt;dbl&gt;,
-## #   v2xcl_rol_codelow &lt;dbl&gt;, v2xcl_rol_codehigh &lt;dbl&gt;,
-## #   v2xcl_rol_sd &lt;dbl&gt;, v2x_jucon &lt;dbl&gt;,
-## #   v2x_jucon_codelow &lt;dbl&gt;, v2x_jucon_codehigh &lt;dbl&gt;,
-## #   v2x_jucon_sd &lt;dbl&gt;, v2xlg_legcon &lt;dbl&gt;,
-## #   v2xlg_legcon_codelow &lt;dbl&gt;, v2xlg_legcon_codehigh &lt;dbl&gt;,
-## #   v2xlg_legcon_sd &lt;dbl&gt;, v2x_partip &lt;dbl&gt;,
+## #   v2x_liberal_sd &lt;dbl&gt;, v2xcl_rol &lt;dbl&gt;, v2xcl_rol_codelow &lt;dbl&gt;,
+## #   v2xcl_rol_codehigh &lt;dbl&gt;, v2xcl_rol_sd &lt;dbl&gt;, v2x_jucon &lt;dbl&gt;,
+## #   v2x_jucon_codelow &lt;dbl&gt;, v2x_jucon_codehigh &lt;dbl&gt;, v2x_jucon_sd &lt;dbl&gt;,
+## #   v2xlg_legcon &lt;dbl&gt;, v2xlg_legcon_codelow &lt;dbl&gt;,
+## #   v2xlg_legcon_codehigh &lt;dbl&gt;, v2xlg_legcon_sd &lt;dbl&gt;, v2x_partip &lt;dbl&gt;,
 ## #   v2x_partip_codelow &lt;dbl&gt;, v2x_partip_codehigh &lt;dbl&gt;,
-## #   v2x_partip_sd &lt;dbl&gt;, v2x_cspart &lt;dbl&gt;,
-## #   v2x_cspart_codelow &lt;dbl&gt;, v2x_cspart_codehigh &lt;dbl&gt;,
-## #   v2x_cspart_sd &lt;dbl&gt;, v2xdd_dd &lt;dbl&gt;,
+## #   v2x_partip_sd &lt;dbl&gt;, v2x_cspart &lt;dbl&gt;, v2x_cspart_codelow &lt;dbl&gt;,
+## #   v2x_cspart_codehigh &lt;dbl&gt;, v2x_cspart_sd &lt;dbl&gt;, v2xdd_dd &lt;dbl&gt;,
 ## #   v2xel_locelec &lt;dbl&gt;, v2xel_locelec_codelow &lt;dbl&gt;,
 ## #   v2xel_locelec_codehigh &lt;dbl&gt;, v2xel_locelec_sd &lt;dbl&gt;,
 ## #   v2xel_regelec &lt;dbl&gt;, v2xel_regelec_codelow &lt;dbl&gt;,
 ## #   v2xel_regelec_codehigh &lt;dbl&gt;, v2xel_regelec_sd &lt;dbl&gt;,
 ## #   v2xdl_delib &lt;dbl&gt;, v2xdl_delib_codelow &lt;dbl&gt;,
-## #   v2xdl_delib_codehigh &lt;dbl&gt;, v2xdl_delib_sd &lt;dbl&gt;,
-## #   v2x_egal &lt;dbl&gt;, v2x_egal_codelow &lt;dbl&gt;,
-## #   v2x_egal_codehigh &lt;dbl&gt;, …
+## #   v2xdl_delib_codehigh &lt;dbl&gt;, v2xdl_delib_sd &lt;dbl&gt;, v2x_egal &lt;dbl&gt;,
+## #   v2x_egal_codelow &lt;dbl&gt;, v2x_egal_codehigh &lt;dbl&gt;, v2x_egal_sd &lt;dbl&gt;,
+## #   v2xeg_eqprotec &lt;dbl&gt;, …
 ```
 ]
 
@@ -1228,20 +718,19 @@ vd %&gt;%
 
 ```
 ## # A tibble: 27,192 x 5
-##    country_text_id  year e_regionpol_6C v2x_polyarchy
-##    &lt;chr&gt;           &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;
-##  1 MEX              1789              2         0.026
-##  2 MEX              1790              2         0.026
-##  3 MEX              1791              2         0.026
-##  4 MEX              1792              2         0.026
-##  5 MEX              1793              2         0.026
-##  6 MEX              1794              2         0.026
-##  7 MEX              1795              2         0.026
-##  8 MEX              1796              2         0.026
-##  9 MEX              1797              2         0.026
-## 10 MEX              1798              2         0.026
-## # … with 27,182 more rows, and 1 more variable:
-## #   e_migdppc &lt;dbl&gt;
+##    country_text_id  year e_regionpol_6C v2x_polyarchy e_migdppc
+##    &lt;chr&gt;           &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+##  1 MEX              1789              2         0.026      1304
+##  2 MEX              1790              2         0.026      1298
+##  3 MEX              1791              2         0.026      1331
+##  4 MEX              1792              2         0.026      1353
+##  5 MEX              1793              2         0.026      1374
+##  6 MEX              1794              2         0.026      1385
+##  7 MEX              1795              2         0.026      1388
+##  8 MEX              1796              2         0.026      1380
+##  9 MEX              1797              2         0.026      1356
+## 10 MEX              1798              2         0.026      1341
+## # … with 27,182 more rows
 ```
 
 ---
@@ -1258,24 +747,24 @@ vd %&gt;%
 
 ```
 ## # A tibble: 179 x 5
-##    country_text_id  year e_regionpol_6C v2x_polyarchy
-##    &lt;chr&gt;           &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;
-##  1 MEX              2015              2         0.631
-##  2 SUR              2015              2         0.777
-##  3 SWE              2015              5         0.915
-##  4 CHE              2015              5         0.901
-##  5 GHA              2015              4         0.724
-##  6 ZAF              2015              4         0.752
-##  7 JPN              2015              6         0.821
-##  8 MMR              2015              6         0.375
-##  9 RUS              2015              1         0.269
-## 10 ALB              2015              1         0.521
-## # … with 169 more rows, and 1 more variable: e_migdppc &lt;dbl&gt;
+##    country_text_id  year e_regionpol_6C v2x_polyarchy e_migdppc
+##    &lt;chr&gt;           &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+##  1 MEX              2015              2         0.631     16096
+##  2 SUR              2015              2         0.777        NA
+##  3 SWE              2015              5         0.915     43746
+##  4 CHE              2015              5         0.901     59307
+##  5 GHA              2015              4         0.724      3809
+##  6 ZAF              2015              4         0.752     12246
+##  7 JPN              2015              6         0.821     37031
+##  8 MMR              2015              6         0.375      5021
+##  9 RUS              2015              1         0.269     23691
+## 10 ALB              2015              1         0.521     10032
+## # … with 169 more rows
 ```
 
 ---
 
-### Plotting history for each country 
+### Plotting democratization for each country 
 
 
 ```r
@@ -1290,7 +779,7 @@ vd %&gt;%
 
 ---
 
-### Plotting history for each country (2)
+### Plotting democratization for each country (2)
 
 
 ```r
@@ -1337,6 +826,25 @@ apply(vd[vd$year == 2015, c("v2x_polyarchy", "e_migdppc")],
 ```
 ## v2x_polyarchy     e_migdppc 
 ##  5.275866e-01  1.821500e+04
+```
+
+---
+
+### Why `na.rm = T`? 
+
+
+```r
+vd %&gt;% 
+  filter(year == 2015) %&gt;% 
+  summarize(mean_poly = mean(v2x_polyarchy),
+            mean_gdppc = mean(e_migdppc)) 
+```
+
+```
+## # A tibble: 1 x 2
+##   mean_poly mean_gdppc
+##       &lt;dbl&gt;      &lt;dbl&gt;
+## 1     0.528         NA
 ```
 
 
@@ -1386,12 +894,12 @@ vd %&gt;%
 * geom_line()
 ```
 
-&lt;img src="slides_21_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_21_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
 
-### Plotting grouped summaries (alternative approach)
+### Alternative way to do something similar
 
 
 
@@ -1402,13 +910,13 @@ vd %&gt;%
 * geom_smooth(span = .5)
 ```
 
-&lt;img src="slides_21_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_21_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
 
 
-### Plotting grouped summaries (3)
+### Plotting grouped summaries (2)
 
 
 
@@ -1418,20 +926,20 @@ vd %&gt;%
   group_by(year) %&gt;%
   summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
             mean_gdppc = mean(e_migdppc, na.rm = T)) %&gt;% 
-  mutate(my_size = 8*as.integer(year %in% c(1946, 1960, 1989, 2015))) %&gt;% 
+  mutate(my_size = ifelse(year %in% c(1946, 1960, 1989, 2018), 8, 0)) %&gt;% 
 * ggplot(aes(x = mean_gdppc, y = mean_poly)) +
   geom_path() + 
   geom_point() + 
   geom_text(aes(label = year, size = my_size), show.legend=F)
 ```
 
-&lt;img src="slides_21_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_21_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
 
 
-### Plotting grouped summaries (4)
+### Plotting grouped summaries (3)
 
 
 
@@ -1445,7 +953,7 @@ vd %&gt;%
   geom_line()
 ```
 
-&lt;img src="slides_21_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_21_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
 
 ???
 
@@ -1467,11 +975,38 @@ class: inverse, middle, center
 
 # Structure of "tidy" data
 
-Observations in rows, each attribute has its own column
+Each observation has a row, each attribute has a column.
 
-Main task then is to tell `R` which columns should represent which attributes. 
+--
+
+Definition of "observation" may depend on application. 
+
 
 ---
+
+## "Wide" version of the V-Dem data 
+
+
+```
+## # A tibble: 181 x 18
+##    country_name  country_text_id polyarchy_1980 polyarchy_1985
+##    &lt;chr&gt;         &lt;chr&gt;                    &lt;dbl&gt;          &lt;dbl&gt;
+##  1 Mexico        MEX                      0.302          0.328
+##  2 Suriname      SUR                      0.247          0.179
+##  3 Sweden        SWE                      0.906          0.908
+##  4 Switzerland   CHE                      0.872          0.87 
+##  5 Ghana         GHA                      0.549          0.101
+##  6 South Africa  ZAF                      0.166          0.183
+##  7 Japan         JPN                      0.834          0.835
+##  8 Burma/Myanmar MMR                      0.137          0.137
+##  9 Russia        RUS                      0.11           0.112
+## 10 Albania       ALB                      0.175          0.175
+## # … with 171 more rows, and 14 more variables: polyarchy_1990 &lt;dbl&gt;,
+## #   polyarchy_1995 &lt;dbl&gt;, polyarchy_2000 &lt;dbl&gt;, polyarchy_2005 &lt;dbl&gt;,
+## #   polyarchy_2010 &lt;dbl&gt;, polyarchy_2015 &lt;dbl&gt;, gdppc_1980 &lt;dbl&gt;,
+## #   gdppc_1985 &lt;dbl&gt;, gdppc_1990 &lt;dbl&gt;, gdppc_1995 &lt;dbl&gt;,
+## #   gdppc_2000 &lt;dbl&gt;, gdppc_2005 &lt;dbl&gt;, gdppc_2010 &lt;dbl&gt;, gdppc_2015 &lt;dbl&gt;
+```
 
 &lt;!-- ## Plan  --&gt;
 

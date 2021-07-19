@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Data wrangling 2: reshaping and merging</title>
+    <meta charset="utf-8" />
+    <link href="slides_22_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="slides_22_files/remark-css-0.0.1/robot.css" rel="stylesheet" />
+    <link href="slides_22_files/remark-css-0.0.1/robot-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Data wrangling 2: reshaping and merging
+## PLSC30500, Fall 2021
+
+---
+
+
+
+
+&lt;style type="text/css"&gt;
+.small-output .remark-code{
+  font-size: x-small;
+}
+&lt;/style&gt;
+
+# The big picture 
+
+Components of a `ggplot`: 
+
+- "tidy" data, with observations in rows, attributes in columns
+- mapping of attributes to aesthetics (x, y, size, shape, color, transparency, etc)
+- geometric objects (`geom`s)
+
+This week: "data wrangling" to prepare data for plotting (and analysis).
+
+
+---
+
+
+# Structure of "tidy" data
+
+Each observation has a row, each attribute has a column.
+
+--
+
+Definition of "observation" may depend on application. 
+
+
+---
+
+## "Wide" version of some V-Dem data 
+
+
+```
+## # A tibble: 181 x 18
+##    country_name  country_text_id polyarchy_1980 polyarchy_1985
+##    &lt;chr&gt;         &lt;chr&gt;                    &lt;dbl&gt;          &lt;dbl&gt;
+##  1 Mexico        MEX                      0.302          0.328
+##  2 Suriname      SUR                      0.247          0.179
+##  3 Sweden        SWE                      0.906          0.908
+##  4 Switzerland   CHE                      0.872          0.87 
+##  5 Ghana         GHA                      0.549          0.101
+##  6 South Africa  ZAF                      0.166          0.183
+##  7 Japan         JPN                      0.834          0.835
+##  8 Burma/Myanmar MMR                      0.137          0.137
+##  9 Russia        RUS                      0.11           0.112
+## 10 Albania       ALB                      0.175          0.175
+## # … with 171 more rows, and 14 more variables: polyarchy_1990 &lt;dbl&gt;,
+## #   polyarchy_1995 &lt;dbl&gt;, polyarchy_2000 &lt;dbl&gt;, polyarchy_2005 &lt;dbl&gt;,
+## #   polyarchy_2010 &lt;dbl&gt;, polyarchy_2015 &lt;dbl&gt;, gdppc_1980 &lt;dbl&gt;,
+## #   gdppc_1985 &lt;dbl&gt;, gdppc_1990 &lt;dbl&gt;, gdppc_1995 &lt;dbl&gt;,
+## #   gdppc_2000 &lt;dbl&gt;, gdppc_2005 &lt;dbl&gt;, gdppc_2010 &lt;dbl&gt;, gdppc_2015 &lt;dbl&gt;
+```
+
+Here the "observation" is the country, and attributes are e.g. polyarchy in a year. 
+
+--
+
+Usually we prefer the observation to be the "country-year". Why?   
+
+
+???
+
+This is not how the `vdem` data really looks, but you do encounter datasets like this, e.g. the county presidential election data!
+
+Reasons to prefer "country-year":
+
+- some data we might want to add would be country-year (other data wouldn't)
+- we might like to look at attributes over time and this format doesn't allow that
+
+---
+
+## Let's reshape/pivot! 
+
+.pull-left[
+In `tidyverse` (`tidyr`): 
+
+- `pivot_longer()` makes "wide" datasets longer
+- `pivot_wider()` makes "long" datasets wider
+
+What do we need here? 
+]
+
+.pull-right[ .small-output[
+
+```r
+vdw
+```
+
+```
+## # A tibble: 181 x 18
+##    country_name  country_text_id polyarchy_1980 polyarchy_1985
+##    &lt;chr&gt;         &lt;chr&gt;                    &lt;dbl&gt;          &lt;dbl&gt;
+##  1 Mexico        MEX                      0.302          0.328
+##  2 Suriname      SUR                      0.247          0.179
+##  3 Sweden        SWE                      0.906          0.908
+##  4 Switzerland   CHE                      0.872          0.87 
+##  5 Ghana         GHA                      0.549          0.101
+##  6 South Africa  ZAF                      0.166          0.183
+##  7 Japan         JPN                      0.834          0.835
+##  8 Burma/Myanmar MMR                      0.137          0.137
+##  9 Russia        RUS                      0.11           0.112
+## 10 Albania       ALB                      0.175          0.175
+## # … with 171 more rows, and 14 more variables: polyarchy_1990 &lt;dbl&gt;,
+## #   polyarchy_1995 &lt;dbl&gt;, polyarchy_2000 &lt;dbl&gt;, polyarchy_2005 &lt;dbl&gt;,
+## #   polyarchy_2010 &lt;dbl&gt;, polyarchy_2015 &lt;dbl&gt;, gdppc_1980 &lt;dbl&gt;,
+## #   gdppc_1985 &lt;dbl&gt;, gdppc_1990 &lt;dbl&gt;, gdppc_1995 &lt;dbl&gt;,
+## #   gdppc_2000 &lt;dbl&gt;, gdppc_2005 &lt;dbl&gt;, gdppc_2010 &lt;dbl&gt;, gdppc_2015 &lt;dbl&gt;
+```
+]]
+
+
+???
+
+We need to make this wide dataset longer
+
+---
+
+
+## `pivot_longer()`
+
+![](assets/pivot_longer.png)
+
+???
+
+Source: [RStudio cheatsheet for tidyr](https://www.rstudio.com/resources/cheatsheets/)
+
+---
+
+## Applying `pivot_longer()`
+
+
+```r
+vdw %&gt;% 
+  pivot_longer(cols = polyarchy_1980:gdppc_2015,
+               names_to = "name", values_to = "value")
+```
+
+```
+## # A tibble: 2,896 x 4
+##    country_name country_text_id name              value
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;             &lt;dbl&gt;
+##  1 Mexico       MEX             polyarchy_1980    0.302
+##  2 Mexico       MEX             polyarchy_1985    0.328
+##  3 Mexico       MEX             polyarchy_1990    0.387
+##  4 Mexico       MEX             polyarchy_1995    0.487
+##  5 Mexico       MEX             polyarchy_2000    0.634
+##  6 Mexico       MEX             polyarchy_2005    0.701
+##  7 Mexico       MEX             polyarchy_2010    0.652
+##  8 Mexico       MEX             polyarchy_2015    0.631
+##  9 Mexico       MEX             gdppc_1980     9929    
+## 10 Mexico       MEX             gdppc_1985     9785    
+## # … with 2,886 more rows
+```
+
+Hmm, that's a bit **too** long!
+
+--
+
+Also, we want a `year` column.
+
+---
+
+## `separate()`
+
+
+```r
+vdw %&gt;% 
+  pivot_longer(cols = polyarchy_1980:gdppc_2015,
+               names_to = "name", values_to = "value") %&gt;% 
+* separate(name, into = c("variable", "year"))
+```
+
+```
+## # A tibble: 2,896 x 5
+##    country_name country_text_id variable  year     value
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;     &lt;chr&gt;    &lt;dbl&gt;
+##  1 Mexico       MEX             polyarchy 1980     0.302
+##  2 Mexico       MEX             polyarchy 1985     0.328
+##  3 Mexico       MEX             polyarchy 1990     0.387
+##  4 Mexico       MEX             polyarchy 1995     0.487
+##  5 Mexico       MEX             polyarchy 2000     0.634
+##  6 Mexico       MEX             polyarchy 2005     0.701
+##  7 Mexico       MEX             polyarchy 2010     0.652
+##  8 Mexico       MEX             polyarchy 2015     0.631
+##  9 Mexico       MEX             gdppc     1980  9929    
+## 10 Mexico       MEX             gdppc     1985  9785    
+## # … with 2,886 more rows
+```
+
+
+---
+
+Same in a single step:
+
+```r
+vdw %&gt;% 
+  pivot_longer(cols = polyarchy_1980:gdppc_2015,
+*              names_to = c("variable", "year"),
+*              names_sep = "_",
+               values_to = "value")
+```
+
+```
+## # A tibble: 2,896 x 5
+##    country_name country_text_id variable  year     value
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;     &lt;chr&gt;    &lt;dbl&gt;
+##  1 Mexico       MEX             polyarchy 1980     0.302
+##  2 Mexico       MEX             polyarchy 1985     0.328
+##  3 Mexico       MEX             polyarchy 1990     0.387
+##  4 Mexico       MEX             polyarchy 1995     0.487
+##  5 Mexico       MEX             polyarchy 2000     0.634
+##  6 Mexico       MEX             polyarchy 2005     0.701
+##  7 Mexico       MEX             polyarchy 2010     0.652
+##  8 Mexico       MEX             polyarchy 2015     0.631
+##  9 Mexico       MEX             gdppc     1980  9929    
+## 10 Mexico       MEX             gdppc     1985  9785    
+## # … with 2,886 more rows
+```
+
+Now we're ready to make columns for `polyarchy` and `gdpppc` via `pivot_wider()`! 
+
+---
+
+
+## `pivot_wider()`
+
+![](assets/pivot_wider.png)
+
+???
+
+Source: [RStudio cheatsheet for tidyr](https://www.rstudio.com/resources/cheatsheets/)
+
+---
+
+## Applying `pivot_wider()`
+
+
+```r
+tidy_vd &lt;- vdw %&gt;% 
+  pivot_longer(cols = polyarchy_1980:gdppc_2015,
+               names_to = c("variable", "year"),
+               names_sep = "_", 
+               values_to = "value") %&gt;% 
+* pivot_wider(names_from = variable, values_from = "value")
+tidy_vd
+```
+
+```
+## # A tibble: 1,448 x 5
+##    country_name country_text_id year  polyarchy  gdppc
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+##  1 Mexico       MEX             1980      0.302  9929 
+##  2 Mexico       MEX             1985      0.328  9785 
+##  3 Mexico       MEX             1990      0.387  9699 
+##  4 Mexico       MEX             1995      0.487  9945.
+##  5 Mexico       MEX             2000      0.634 12613.
+##  6 Mexico       MEX             2005      0.701 13656.
+##  7 Mexico       MEX             2010      0.652 14697.
+##  8 Mexico       MEX             2015      0.631 16096 
+##  9 Suriname     SUR             1980      0.247    NA 
+## 10 Suriname     SUR             1985      0.179    NA 
+## # … with 1,438 more rows
+```
+
+Mission accomplished! 
+
+---
+
+## Merging datasets 
+
+Suppose we want to analyze by continent. No continent labels: 
+
+
+```r
+tidy_vd
+```
+
+```
+## # A tibble: 1,448 x 5
+##    country_name country_text_id year  polyarchy  gdppc
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+##  1 Mexico       MEX             1980      0.302  9929 
+##  2 Mexico       MEX             1985      0.328  9785 
+##  3 Mexico       MEX             1990      0.387  9699 
+##  4 Mexico       MEX             1995      0.487  9945.
+##  5 Mexico       MEX             2000      0.634 12613.
+##  6 Mexico       MEX             2005      0.701 13656.
+##  7 Mexico       MEX             2010      0.652 14697.
+##  8 Mexico       MEX             2015      0.631 16096 
+##  9 Suriname     SUR             1980      0.247    NA 
+## 10 Suriname     SUR             1985      0.179    NA 
+## # … with 1,438 more rows
+```
+
+---
+
+
+But from [this url](https://datahub.io/JohnSnowLabs/country-and-continent-codes-list/r/country-and-continent-codes-list-csv.csv) we can download this dataset (also in course repo):
+
+
+
+
+```r
+codes
+```
+
+```
+## # A tibble: 262 x 6
+##    Continent_Name Continent_Code Country_Name            Two_Letter_Countr…
+##    &lt;chr&gt;          &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;             
+##  1 Asia           AS             Afghanistan, Islamic R… AF                
+##  2 Europe         EU             Albania, Republic of    AL                
+##  3 Antarctica     AN             Antarctica (the territ… AQ                
+##  4 Africa         AF             Algeria, People's Demo… DZ                
+##  5 Oceania        OC             American Samoa          AS                
+##  6 Europe         EU             Andorra, Principality … AD                
+##  7 Africa         AF             Angola, Republic of     AO                
+##  8 North America  &lt;NA&gt;           Antigua and Barbuda     AG                
+##  9 Europe         EU             Azerbaijan, Republic of AZ                
+## 10 Asia           AS             Azerbaijan, Republic of AZ                
+## # … with 252 more rows, and 2 more variables:
+## #   Three_Letter_Country_Code &lt;chr&gt;, Country_Number &lt;dbl&gt;
+```
+
+---
+
+
+The key columns: 
+
+
+
+```r
+codes %&gt;% 
+  select(Three_Letter_Country_Code, Country_Name, Continent_Name)
+```
+
+```
+## # A tibble: 262 x 3
+##    Three_Letter_Country_C… Country_Name                      Continent_Name
+##    &lt;chr&gt;                   &lt;chr&gt;                             &lt;chr&gt;         
+##  1 AFG                     Afghanistan, Islamic Republic of  Asia          
+##  2 ALB                     Albania, Republic of              Europe        
+##  3 ATA                     Antarctica (the territory South … Antarctica    
+##  4 DZA                     Algeria, People's Democratic Rep… Africa        
+##  5 ASM                     American Samoa                    Oceania       
+##  6 AND                     Andorra, Principality of          Europe        
+##  7 AGO                     Angola, Republic of               Africa        
+##  8 ATG                     Antigua and Barbuda               North America 
+##  9 AZE                     Azerbaijan, Republic of           Europe        
+## 10 AZE                     Azerbaijan, Republic of           Asia          
+## # … with 252 more rows
+```
+
+---
+
+
+Compare:
+
+
+```r
+tidy_vd %&gt;% 
+  select(country_name, country_text_id, year, polyarchy, gdppc)
+```
+
+```
+## # A tibble: 1,448 x 5
+##    country_name country_text_id year  polyarchy  gdppc
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+##  1 Mexico       MEX             1980      0.302  9929 
+##  2 Mexico       MEX             1985      0.328  9785 
+##  3 Mexico       MEX             1990      0.387  9699 
+##  4 Mexico       MEX             1995      0.487  9945.
+##  5 Mexico       MEX             2000      0.634 12613.
+##  6 Mexico       MEX             2005      0.701 13656.
+##  7 Mexico       MEX             2010      0.652 14697.
+##  8 Mexico       MEX             2015      0.631 16096 
+##  9 Suriname     SUR             1980      0.247    NA 
+## 10 Suriname     SUR             1985      0.179    NA 
+## # … with 1,438 more rows
+```
+
+We want to merge `codes` into `tidy_vd`: wherever `country_text_id` in `tidy_vd` matches `Three_Letter_Country_Code` in `codes`, we want to add the `Continent_Name` from `codes`.    
+
+---
+
+## `left_join()` 
+
+
+```r
+tidy_vd %&gt;% 
+  left_join(codes, by = c("country_text_id" = "Three_Letter_Country_Code"))
+```
+
+```
+## # A tibble: 1,504 x 10
+##    country_name country_text_id year  polyarchy  gdppc Continent_Name
+##    &lt;chr&gt;        &lt;chr&gt;           &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;         
+##  1 Mexico       MEX             1980      0.302  9929  North America 
+##  2 Mexico       MEX             1985      0.328  9785  North America 
+##  3 Mexico       MEX             1990      0.387  9699  North America 
+##  4 Mexico       MEX             1995      0.487  9945. North America 
+##  5 Mexico       MEX             2000      0.634 12613. North America 
+##  6 Mexico       MEX             2005      0.701 13656. North America 
+##  7 Mexico       MEX             2010      0.652 14697. North America 
+##  8 Mexico       MEX             2015      0.631 16096  North America 
+##  9 Suriname     SUR             1980      0.247    NA  South America 
+## 10 Suriname     SUR             1985      0.179    NA  South America 
+## # … with 1,494 more rows, and 4 more variables: Continent_Code &lt;chr&gt;,
+## #   Country_Name &lt;chr&gt;, Two_Letter_Country_Code &lt;chr&gt;,
+## #   Country_Number &lt;dbl&gt;
+```
+
+---
+
+## Different kinds of `join`s:
+
+.pull-left[
+
+```r
+x %&gt;% left_join(y, by = "key")
+```
+
+&lt;br&gt;&lt;/br&gt;
+
+
+```r
+x %&gt;% right_join(y, by = "key")
+```
+
+&lt;br&gt;&lt;/br&gt;
+
+
+```r
+x %&gt;% full_join(y, by = "key")
+```
+]
+
+.pull-right[
+&lt;img src="assets/joins.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+See also `inner_join()`.
+
+Image source: [R4DS, "Relational data"](https://r4ds.had.co.nz/relational-data.html#relational-data)
+
+---
+
+
+```r
+vdw %&gt;% 
+  pivot_longer(cols = polyarchy_1980:gdppc_2015,
+               names_to = c("variable", "year"), names_sep = "_", 
+               values_to = "value") %&gt;% 
+  pivot_wider(names_from = variable, values_from = "value") %&gt;%
+  left_join(codes, by = c("country_text_id" = "Three_Letter_Country_Code")) %&gt;% 
+  filter(!is.na(Continent_Name)) %&gt;% 
+  group_by(year, Continent_Name) %&gt;% 
+  summarize(mean_polyarchy = mean(polyarchy, na.rm = T)) %&gt;%
+  ggplot(aes(x = year, y = mean_polyarchy, col = Continent_Name, group = Continent_Name)) + 
+  geom_point() + 
+  geom_line()
+```
+
+![](slides_22_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "atelier-lakeside-light",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

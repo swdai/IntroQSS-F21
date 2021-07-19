@@ -148,17 +148,60 @@ Basic components of plotting with `ggplot`:
 - mapping of attributes (columns of data) to aesthetics
 - geometric representations of data (`geom`s)
 
-<br></br>
+
+
+---
+
+class: inverse, middle, center
+
+# Quick detour: getting data into `R`
+
+---
+
+# Getting data into `R` (and `RStudio`)
+
+An interactive option: `Import Dataset` button in `Environment` pane of `RStudio`
 
 --
 
-A simple example: 
+But note it's showing you the code it's using! 
 
-```{r echo = F}
+(Live coding example.)
+
+---
+
+# Getting data into `R` (cont'd)
+
+Most commonly used functions: 
+
+- `read_csv()` and `read_rds()` in `readr` (`tidyverse`)
+- `readstata13::read.dta13()` for Stata files (`.dta`)
+- `readxl::read_excel()` for Excel files (`.xls`, `.xlsx`)
+- `load()` in base R for "R objects"
+
+All require "path" to file as argument. 
+
+--
+
+Sometimes data is a package, e.g. `babynames`, `gapminder`, `vdemdata` 
+
+--
+
+See Chapter 11 of R4DS and "Data Import" cheatsheet.
+
+
+---
+
+## A simple example
+
+Get data in: 
+
+```{r}
 gapminder_2007 <- gapminder::gapminder %>% 
-  filter(year == 2007)
+  filter(year == 2007)   # will explain next week
 ```
 
+Make a plot:
 
 ```{r, eval = F}
 ggplot(data = gapminder_2007, 

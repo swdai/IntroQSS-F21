@@ -1,5 +1,5 @@
 ---
-title: "Data wrangling (sessions 2.1 & 2.2)"
+title: "Data wrangling 1"
 output:
   xaringan::moon_reader:
     css: [default, robot, robot-fonts]
@@ -28,53 +28,14 @@ Components of a `ggplot`:
 - mapping of attributes to aesthetics (x, y, size, shape, color, transparency, etc)
 - geometric objects (`geom`s)
 
-Next: getting data ready for plotting (and analysis).
+This week: "data wrangling" to prepare data for plotting (and analysis).
 
 
 ---
 
 class: inverse, middle, center
 
-# Getting data into `R`
-
----
-
-# Getting data into `R` (and `RStudio`)
-
-An interactive option: `Import Dataset` button in `Environment` pane of `RStudio`
-
---
-
-But note it's showing you the code it's using! 
-
-(Live coding example.)
-
----
-
-# Getting data into `R` (cont'd)
-
-Most commonly used functions: 
-
-- `read_csv()` and `read_rds()` in `readr` (`tidyverse`)
-- `readstata13::read.dta13()` for Stata files (`.dta`)
-- `readxl::read_excel()` for Excel files (`.xls`, `.xlsx`)
-- `load()` in base R for "R objects"
-
-All require "path" to file as argument. 
-
---
-
-Sometimes data is a package, e.g. `babynames`, `gapminder`, `vdemdata` 
-
---
-
-See Chapter 11 of R4DS and "Data Import" cheatsheet.
-
----
-
-class: inverse, middle, center
-
-# Some key data wrangling tools: `select()`, `filter()`, `group_by()`, `summarize()`
+# Some key data wrangling tools in `dplyr`: `select()`, `filter()`, `group_by()`, `summarize()`, `mutate()`
 
 ---
 
@@ -91,9 +52,11 @@ library(vdemdata)
 
 Now by typing `vdem` you can access the dataset.
 
+
 ???
 
-NB: Maybe we should provide an alternative way to load in case their github goes down or something.
+Can also get necessary subset on repository: data/vdem_long_extract.csv
+
 
 ---
 
@@ -107,7 +70,7 @@ dim(vdem)
 
 --
 
-Typing `vdem` is unenlightening; `View(vdem)` better but takes a while to load. 
+Typing `vdem` is overwhelming and unhelpful; `View(vdem)` better but takes a while to load. 
 
 ---
 
@@ -131,9 +94,25 @@ for shortcut
 
 .small-output[
 ```{r}
-vdem %>% as_tibble()
+vdem %>% as_tibble()   # "tibble" package is part of "tidyverse"
 ```
 ]
+
+
+---
+
+#### The "pipe": `%>%`
+
+Equivalent code:
+```{r, eval = F}
+as_tibble(vdem)
+vdem %>% as_tibble()
+
+mean(c(1,2,3))
+c(1,2,3) %>% mean()
+```
+
+Can be more readable.
 
 ---
 
@@ -158,7 +137,20 @@ vd %>%
 
 ---
 
-### Plotting history for each country 
+### Create new variables with `mutate()`
+
+```{r}
+vd %>% 
+  select(country_text_id, year, e_regionpol_6C, v2x_polyarchy, e_migdppc) %>% 
+  filter(year == 2015) %>% 
+  mutate(polyarchy_times_100 = 100*v2x_polyarchy) %>% #<<
+  select(country_text_id, year, v2x_polyarchy, polyarchy_times_100)
+```
+
+
+
+
+### Plotting democratization for each country 
 
 ```{r fig.height=4.5, fig.width=9, fig.align="center", message = F, warning = F}
 vd %>% 
@@ -170,7 +162,7 @@ vd %>%
 
 ---
 
-### Plotting history for each country (2)
+### Plotting democratization for each country (2)
 
 ```{r fig.height=4.5, fig.width=9, fig.align="center", message = F, warning = F}
 vd %>% 
@@ -200,6 +192,17 @@ A "base `R`" alternative:
 ```{r}
 apply(vd[vd$year == 2015, c("v2x_polyarchy", "e_migdppc")],
       2, mean, na.rm = T)
+```
+
+---
+
+### Why `na.rm = T`? 
+
+```{r}
+vd %>% 
+  filter(year == 2015) %>% 
+  summarize(mean_poly = mean(v2x_polyarchy),
+            mean_gdppc = mean(e_migdppc)) 
 ```
 
 
@@ -233,7 +236,7 @@ vd %>%
 
 ---
 
-### Plotting grouped summaries (alternative approach)
+### Alternative way to do something similar
 
 
 ```{r fig.height=4.5, fig.width=9, fig.align="center", warning = F, message = F}
@@ -247,7 +250,7 @@ vd %>%
 ---
 
 
-### Plotting grouped summaries (3)
+### Plotting grouped summaries (2)
 
 
 ```{r fig.height=4.5, fig.width=10.5, fig.align="center", warning = F}
@@ -256,7 +259,7 @@ vd %>%
   group_by(year) %>%
   summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
             mean_gdppc = mean(e_migdppc, na.rm = T)) %>% 
-  mutate(my_size = 8*as.integer(year %in% c(1946, 1960, 1989, 2015))) %>% 
+  mutate(my_size = ifelse(year %in% c(1946, 1960, 1989, 2018), 8, 0)) %>% 
   ggplot(aes(x = mean_gdppc, y = mean_poly)) +  #<<
   geom_path() + 
   geom_point() + 
@@ -267,7 +270,7 @@ vd %>%
 ---
 
 
-### Plotting grouped summaries (4)
+### Plotting grouped summaries (3)
 
 
 ```{r fig.height=4.5, fig.width=9, fig.align="center", message = F}
@@ -300,11 +303,21 @@ class: inverse, middle, center
 
 # Structure of "tidy" data
 
-Observations in rows, each attribute has its own column
+Each observation has a row, each attribute has a column.
 
-Main task then is to tell `R` which columns should represent which attributes. 
+--
+
+Definition of "observation" may depend on application. 
+
 
 ---
+
+## "Wide" version of the V-Dem data 
+
+```{r echo = F, message = F}
+vdw <- read_csv("~/Dropbox/teaching/chicago/methods_sequence/IntroQSS/data/vdem_extract_wide.csv")
+vdw
+```
 
 <!-- ## Plan  -->
 
