@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="author" content="co-taught by Molly Offer-Westort &amp; Andy Eggers" />
     <meta name="author" content=".small-text[(This lecture with references to Aronow &amp; Miller (2019) and Wasserman (2004))]" />
-    <script src="slides_31_files/header-attrs-2.9/header-attrs.js"></script>
+    <script src="slides_31_files/header-attrs-2.10/header-attrs.js"></script>
     <link href="slides_31_files/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="slides_31_files/remark-css-0.0.1/robot.css" rel="stylesheet" />
     <link href="slides_31_files/remark-css-0.0.1/robot-fonts.css" rel="stylesheet" />
@@ -28,12 +28,15 @@ class: center, middle, inverse, title-slide
   font-size: x-small;
 }
 
-.small-text {
-  font-size: small;
-}
+# .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
+#     display: none;
+# }
 &lt;/style&gt;
 
-## What do we do with data
+
+
+ 
+# What do we do with data
 
 Now that we've gotten started on working with data...what do we want to get from that data?
 
@@ -62,8 +65,8 @@ This is already a really useful start, but beyond just describing the data we se
 These latter two are called *inference*, and we'll need some additional tools and assumptions to make headway on them
 
 ---
-
-# Why we use probability theory
+# Probability
+## Why do we use probability theory?
 
 - Probability theory allows us to talk about *random* events in structured way. 
 
@@ -113,7 +116,7 @@ Suppose we are flipping a coin twice, and the coin is fair. This is a random pro
 
 name: terms
 
-## Useful terms
+## Useful terms in probability
 
 &lt;small&gt;
 --
@@ -186,16 +189,16 @@ We have just used probability notation as a way to fully describe any random gen
 
 ---
 
-We can simulate our double coinflip process in R as well, using the `sample()` function. 
+We can simulate our double coin flip process in R, using the `sample()` function. There are four possible outcomes, and all are equally likely. 
 
 --
 
 
 ```r
-omega &lt;- c('HH', 'HT', 'TH', 'TT')
+Omega &lt;- c('HH', 'HT', 'TH', 'TT')
 probs &lt;- c(0.25, 0.25, 0.25, 0.25)
 
-sample(x = omega,
+sample(x = Omega,
        size = 1,
        prob = probs)
 ```
@@ -211,7 +214,7 @@ We can run this simulation many times, and our results should *approximately* fo
 
 ```r
 n &lt;- 1000
-result_n &lt;- sample(x = omega,
+result_n &lt;- sample(x = Omega,
        size = n,
        prob = probs,
        replace = TRUE)
@@ -225,281 +228,374 @@ table(result_n)
 ## 247 241 258 254
 ```
 
-
----
-## Random variables
-
-- A random variable is a mapping `\(X\)` from our sample space `\(\Omega\)`, to the Real numbers. 
-`$$X : \Omega \to {\rm I\!R}$$`
-
-- Random variables are ways to quantify random events described by our sample space. 
-- We'll mostly work with random variables going forward, but it's important to remember that the random variable is built on the foundations of the sample space -- and often, you'll be the one deciding how that quantification happens. 
-
 ---
 
-For example, with our two coin flips, let `\(X(\omega)\)` be the number of heads in the sequence `\(\omega\)`. Then the random variable, and its probability distribution, can be described as:
+## Independent events
 
-
-|     `\(\omega\)` | `\(P(\{\omega\})\)` | `\(X(\omega)\)` |
-|-------------:|----------------:|------------:|
-| TT           | 1/4             | 0           |
-| TH           | 1/4             | 1           |
-| HT           | 1/4             | 1           |
-| HH           | 1/4             | 2           |
-
-and,
-
-| `\(x\)`   | `\(P(X = x)\)`
-|----:|------------:|
-| 0   | 1/4         |
-| 1   | 1/2         |
-| 2   | 1/4         |
-
----
-
-We can simulate this in `R` as well. 
-
-
-```r
-X &lt;- c(0, 1, 2)
-probs &lt;- c(0.25, 0.5, 0.25)
-
-sample(x = X,
-       size = 1,
-       prob = probs)
-```
-
-```
-## [1] 0
-```
-
-
-```r
-result_n &lt;- sample(x = X,
-       size = n,
-       prob = probs,
-       replace = TRUE)
-
-table(result_n)
-```
-
-```
-## result_n
-##   0   1   2 
-## 273 507 220
-```
-
-
-```r
-prop.table(table(result_n))
-```
-
-```
-## result_n
-##     0     1     2 
-## 0.273 0.507 0.220
-```
-
----
-
-We can plot a histogram to look at the distribution of results. 
-
-```r
-ggplot(tibble(result_n), aes(x = result_n)) +
-  geom_histogram(bins = 3, position = 'identity', color = 'white')
-```
-
-&lt;img src="slides_31_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-## Probability Mass Function of a discrete random variable
-
-- A random variable is *discrete* if it takes countably many values. 
-- The probability mass function of a discrete RV `\(X\)` tells us the probability we will see an outcome at some value `\(x\)`. 
+- Two events are *independent* if
 
 $$
-f(x) = P(X = x)
+P(AB) = P(A)P(B)
 $$
-For our coin flip example, 
+
+--
+
+*Notational aside: The event `\(AB\)` is that both `\(A\)` and `\(B\)` happen. There are other ways to write this, including `\(A \cap B\)`.*
+
+---
+
+Returning to our example of flipping two fair coins. Let's say:
+
+- Event `\(A\)`: we get a head on the first coin flip; `\(A = \{HT, HH\}\)`. 
+- Event `\(B\)`: we get a head on the second coin flip; `\(B = \{TH, HH\}\)`. 
+- We can see the event `\(AB\)` as the overlap in their respective sets, `\(AB = \{HH\}\)`
+
+---
+The coin flips are unrelated, so the events should be independent. We can check this mathematically.
+
+--
+
+- First, we know that all of the outcomes `\(\Omega = \{HH, HT, TH, TT \}\)` are equally likely.
 
 
 $$
-f(x) = \begin{cases}
-1/4 &amp; x = 0 \\\
-1/2 &amp; x = 1 \\\
-1/4 &amp; x = 2 \\\
-0 &amp; \text{otherwise}
-\end{cases}
+`\begin{align}
+P(A) &amp;= P(\{HT\}) + P(\{HH\}) = 0.25 + 0.25 = 0.5\\\
+P(B) &amp;= P(\{TH\}) + P(\{HH\}) = 0.25 + 0.25 = 0.5
+\end{align}`
 $$
 
----
+--
 
-## Illustrating the PMF of a discrete RV
-
-&lt;img src="slides_31_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" /&gt;
-
----
-## Cumulative Distribution Functions
-
-- The cumulative distribution function of `\(X\)` tells us the probability we will see an outcome less than or equal to some value `\(x\)`. 
+Then, we can calculate the product of the probabilities, and the probability of the joint event.
 
 $$
-F(x) = P(X \le x)
+`\begin{align}
+P(A)P(B) &amp;= 0.5 \times 0.5 = 0.25\\\
+P(A B) &amp;= P(\{HH\}) = 0.25\
+\end{align}`
 $$
 
+--
 
-For our coin flip example, 
-
-
-$$
-F(x) = \begin{cases}
-0 &amp; x &lt; 0 \\\
-1/4 &amp; 0 \le x &lt; 1 \\\
-3/4 &amp; 1 \le x &lt; 2 \\\
-1 &amp; x \ge 2
-\end{cases}
-$$
-
----
-
-## Illustrating the CDF of a discrete RV
-
-&lt;img src="slides_31_files/figure-html/coinflip_plotRV-1.png" style="display: block; margin: auto;" /&gt;
-
----
-And we can use `ggplot2` to see what the *Empirical* CDF looks like
-
-```r
-ggplot(tibble(result_n), aes(x = result_n)) +
-  stat_ecdf() +
-  coord_cartesian(xlim = c(-0.5, 2.5)) +
-  ylab('Empirical Fx') +
-  ggtitle('ECDF of X as number of heads in 2 fair coin flips')
-```
-
-&lt;img src="slides_31_files/figure-html/coinflip_simRV-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-## Continuous random variables
-
-- So far, our coin flip example was for a *discrete* random variable.  
-- A random variable is *continuous* if it has a continuous density function
- - Practically, we will treat RVs as discrete if they have countably many outcomes, and RVs as continuous if the number of values they can take on is only constrained by our measurement tool.
-
----
-
-## Uniform distribution
-
-- If you take a draw from the standard uniform distribution, you are equally likely to draw any number between zero and one.
-
-- We can simulate this in R. R allows you to sample from a number of canonical distributions; to see which distributions are available, search `?Distributions`. 
-
-
-```r
-runif(n = 1, min = 0, max = 1)
-```
-
-```
-## [1] 0.7781779
-```
-
----
-
-We can again sample from the distribution many times, and plot a histogram to look at the distribution of results. 
-
-
-```r
-result_n &lt;- runif(n, min = 0, max = 1)
-
-ggplot(tibble(result_n), aes(x = result_n)) +
-  geom_histogram(breaks = seq(0, 1, length.out = 15),  
-                 position = 'identity', color = 'white')
-```
-
-&lt;img src="slides_31_files/figure-html/standard_uniform_many-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-## Probability Density Function of continuous random variables
-
-
-
-- Discrete random variables have non-zero mass on specific points, but for continuous random variables, `\(P(X = x) = 0\)`. Instead of mass, we refer to *density* for continuous variables. [2]
-
-
-
-.footnote[[2] Measure theory give a unified approach to measuring discrete and continuous random variables, but for simplicity, we'll keep the dichotomy of mass vs. density for discrete/continuous here. ]
-
-- The *probability density function* `\(f(x)\)` for a continuous random variable gives the slope of the CDF at any given point. This means that we can integrate the area under the PDF to get the relative probability of being between two points. 
+We see that they are the same, so we have independence.
 
 $$
-P(a &lt; X &lt; b) = \int_a^b f(x)dx
+P(A)P(B) = P(A B)
 $$
 
----
-
-## Illustrating the CDF of a continuous RV
-&lt;small&gt;
-- We start by showing the CDF of the standard uniform distribution, to illustrate how the PDF relates to the CDF. 
-
-- The CDF for the standard uniform distribution is:
-
-$$
-F(x) = 
-\begin{cases}
-0 &amp; x &lt; 0\\\
-x &amp; 0 \le x \le 1 \\\
-1 &amp; x &gt; 1
-\end{cases}
-$$
-
-- Notice that the slope is 1 between 0 and 1. 
 &lt;/small&gt;
 
-&lt;img src="slides_31_files/figure-html/uniform_plot-1.png" style="display: block; margin: auto;" /&gt;
+---
+
+&lt;small&gt;
+
+We can also check if observed proportions in our simulations show the same thing. 
+
+
+```r
+Omega &lt;- c('HH', 'HT', 'TH', 'TT');  probs &lt;- c(0.25, 0.25, 0.25, 0.25)
+result_n &lt;- sample(x = Omega, 
+                   size = n,
+                   prob = probs,
+                   replace = TRUE)
+
+(observed_props &lt;- prop.table(table(result_n)))
+```
+
+```
+## result_n
+##    HH    HT    TH    TT 
+## 0.273 0.264 0.243 0.220
+```
+
+--
+
+
+```r
+(PA &lt;- mean(result_n == 'HT' | result_n == 'HH'))
+```
+
+```
+## [1] 0.537
+```
+
+--
+
+
+```r
+(PB &lt;- mean(result_n == 'TH' | result_n == 'HH'))
+```
+
+```
+## [1] 0.516
+```
+
+--
+
+
+```r
+(PAB &lt;- mean(result_n == 'HH'))
+```
+
+```
+## [1] 0.273
+```
+
+```r
+PA*PB
+```
+
+```
+## [1] 0.277092
+```
+
+The proportions look pretty close. 
 
 ---
 
-## Illustrating the PDF of a continuous random variable
+&lt;small&gt;
 
-- The PDF for the standard uniform distribution is:
+What about for a case where `\(A\)` and `\(B\)` are not independent? 
+
+--
+
+- Let's say `\(A\)` is still the event that we get a head on the first coin flip; `\(A = \{HT, HH\}\)`. 
+
+- But event `\(B\)` is now the event that we get a head on both coin flips; `\(B = \{HH\}\)`. 
+
+- `\(AB\)` is the intersection of these two sets, which is just `\(AB = \{HH\}\)`. 
+
+
+```r
+(observed_props &lt;- prop.table(table(result_n)))
+```
+
+```
+## result_n
+##    HH    HT    TH    TT 
+## 0.273 0.264 0.243 0.220
+```
+
+--
+
+
+```r
+(PA &lt;- mean(result_n == 'HT' | result_n == 'HH'))
+```
+
+```
+## [1] 0.537
+```
+
+--
+
+
+```r
+(PB &lt;- mean(result_n == 'HH'))
+```
+
+```
+## [1] 0.273
+```
+
+--
+
+
+```r
+(PAB &lt;- mean(result_n == 'HH'))
+```
+
+```
+## [1] 0.273
+```
+
+```r
+PA*PB
+```
+
+```
+## [1] 0.146601
+```
+
+The proportions are then quite different. 
+
+---
+
+# Conditional probability
+
+If `\(P(B)&gt;0\)`, the *conditional probability* of an event `\(A\)` occurring, given event `\(B\)` has occurred is:
+
 $$
-f(x) = \begin{cases}
-1 &amp; 0 &lt; x &lt; 1\\\
-0 &amp; \text{otherwise.}
-\end{cases}
-$$
-
-&lt;img src="slides_31_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-- Notice that if we take the area under the density curve, the total area will sum to 1.  
-
-
-&lt;img src="slides_31_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-- Notice that if we take the area under the density curve, the total area will sum to 1. Relative density gives us relative probability. 
-
-
-&lt;img src="slides_31_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-- If we want to get the probability `\(X\)` is between 0 and 0.75, 
-
-$$
-P(0 \le x \le .75) = \int_0^.75 f(x)dx
+P(A|B) = \frac{P(A B)}{P(B)}
 $$
 --
-we take the area under the density curve between 0 and 0.75 -- which is also 0.75 (notice that we don't need to use calculus here). 
+This can also be read as, out of all of the times event `\(B\)` occurs, how many times does event `\(A\)` also occur?
+
+---
+
+For our coin flip example, we'll stick with:
+- `\(A\)` is  the event that we get a head on the first coin flip; `\(A = \{HT, HH\}\)`. 
+- `\(B\)` is the event that we get a head on the both coin flips; `\(B = \{HH\}\)`. 
+- `\(A  B\)` is `\(\{HH\}\)`
+
+--
+
+$$
+`\begin{align}
+P(A |B)&amp; = \frac{P(A B)}{P(B)}\\\
+&amp; = \frac{P(\{ HH \})}{P(\{ HH \})}\\\
+&amp; = 1
+\end{align}`
+$$
+
+--
+
+What is `\(P(B |A)\)`?
+---
+
+## Bayes Rule
+
+A useful theorem to return to is *Bayes Rule*
+
+$$
+P(A|B) = \frac{P(B|A)P(A)}{P(B)}
+$$
+
+--
+Why is Bayes rule so useful? 
+--
+It basically tells us how we update probability based on observed data. 
+
+---
+&lt;small&gt;
+
+## Bayes Rule
+
+Example: Suppose everyone in the University of Chicago community is given a new rapid test for COVID. 
+
+- We are concerned with *false negatives*, when we get a negative test for a person who actually *is* infected.
+- And *false positives*, when we get a positive test for a person who *is not* infected.
+
+---
+&lt;small&gt;
+
+## Bayes Rule
 
 
-&lt;img src="slides_31_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
+Example: Suppose everyone in the University of Chicago community is given a new rapid test for COVID. 
+
+A student gets a positive test back. What is the probability that they have COVID?
+
+--
+
+- Doctors know that the probability of having COVID is 3% in this population : `\(P(A)\)` 
+
+```r
+PA &lt;- 0.03
+```
+--
+- The overall rate of positive tests is 5% : `\(P(B)\)` 
+
+```r
+PB &lt;- 0.05
+```
+--
+- If you have COVID, your test will turn up positive 95% of the time. : `\(P(B|A)\)` 
+
+```r
+PB_if_A &lt;- 0.95
+```
+
+
+--
+
+$$
+`\begin{align*}
+P(A|B) &amp; = \frac{P(B|A)P(A)}{P(B)}
+\end{align*}`
+$$
+
+--
+
+
+```r
+( PB_if_A * PA )/PB
+```
+
+```
+## [1] 0.57
+```
+
+
+---
+## Prosecutor's fallacy
+
+$$
+P(A|B)\overset{?}= P(B|A)
+$$
+--
+
+As a general rule, we cannot assume the conditional probability of `\(A\)` given `\(B\)` is the same as the probability of `\(B\)` given `\(A\)`
+
+--
+- In a court case, the probability that a person is guilty given that we see a DNA match is NOT the same as the probability of a DNA match given  that they are guilty.  
+
+--
+
+- This fallacy often occurs when we observe evidence that we are very unlikely to see among innocent people, and very likely to observe among guilty people
+
+--
+
+- But the overall number of innocent people in the population is very large, so the number of false positives is much higher than the number of true positives
+
+---
+
+#### Why thinking about conditional probability is so important in social science research
+
+What data do you need to answer the question: "Do white officers shoot minority citizens at a higher rate than non-white officers?"
+
+---
+
+#### Why thinking about conditional probability is so important in social science research
+
+![Johnson et al. PNAS](slides_31_files/johnson-et-al-PNAS.png)
+- In a 2020 paper, Johnson and co-authors evaluated the relationship between race of victims shot by police, and the characteristics of the police shooters
+
+- The authors claim, "White officers are not more likely to shoot minority civilians than non-White officers"--and the paper has been used in congressional testimony to support the claim that diversity in police forces would not be beneficial in reducing bias in officer-involved shootings
+
+- Their database only has data on fatal shootings--not on cases where people were NOT shot. 
+- Their results report "whether a person fatally shot was more likely to be Black (or Hispanic) than White" conditional on the race of the officer involved
+
+- Does this address original claim?
+
+---
+"White officers are not more likely to shoot minority civilians than non-White officers"
+
+$$
+`\begin{align}
+P(\text{shot} | \text{White officer, minority civilian}) -\\\
+P(\text{shot} | \text{Minority officer, minority civilian})
+\end{align}`
+$$
+
+What data are we missing to address this question?
+
+--
+
+- Dean Knox &amp; Jonathan Mummolo wrote a letter critiquing tge original article, based on the authors' failure to appropriately apply Bayes Rule;
+- The article was eventually retracted
+- (It's a bit more complicated than that, but know your conditional probability when thinking about difficult subjects!)
+
+
+
+---
+## Some reference texts
+
+1. Aronow, P., &amp; Miller, B. (2019). Foundations of Agnostic Statistics. Cambridge: Cambridge University Press. Chapter 1. Probability Theory. 
+1. Wasserman, L. (2004). All of Statistics: A Concise Course in Statistical Inference. New York: Springer. Chapter 1. Probability Theory and Chapter 2. Random Variables. 
+1. Hernán MA, Robins JM (2020). Causal Inference: What If. Boca Raton: Chapman &amp; Hall/CRC.
 
 ---
 
@@ -517,16 +613,6 @@ S &amp; = \{\emptyset, \\
 \end{align}$$`
 
 [[Back to terms]](#terms)
-
-
----
-## Some reference texts
-
-1. Aronow, P., &amp; Miller, B. (2019). Foundations of Agnostic Statistics. Cambridge: Cambridge University Press. Chapter 1. Probability Theory. 
-1. Wasserman, L. (2004). All of Statistics: A Concise Course in Statistical Inference. New York: Springer. Chapter 1. Probability Theory and Chapter 2. Random Variables. 
-1. Hernán MA, Robins JM (2020). Causal Inference: What If. Boca Raton: Chapman &amp; Hall/CRC.
-
-
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
