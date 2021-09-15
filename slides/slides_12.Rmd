@@ -198,7 +198,7 @@ Get data in:
 
 ```{r}
 gapminder_2007 <- gapminder::gapminder %>% 
-  filter(year == 2007)   # will explain next week
+  filter(year == 2007 & continent != "Oceania")   # will explain next week
 ```
 
 Make a plot:
@@ -222,14 +222,14 @@ To note:
 
 - the **arguments** to `ggplot()` say what the data is (`data = gapminder_2007`) and how attributes are mapped to aesthetics (`mapping = aes(x = gdpPercap, y = lifeExp)`)
 - `geom_point()` says "plot a point for each observation"
-- **layers** of plat linked with plus sign (`+`)
+- **layers** of plot linked with plus sign (`+`)
 
 
 ---
 
 <!-- Let's map population to the size of the points:  -->
 
-```{r, fig.height=4.5, fig.width=5.5, fig.align="center"}
+```{r, fig.height=5.5, fig.width=6.5, fig.align="center"}
 ggplot(data = gapminder_2007, 
        mapping = aes(x = gdpPercap, y = lifeExp,
                      size = pop)) +  #<<
@@ -240,7 +240,7 @@ ggplot(data = gapminder_2007,
 
 <!-- Let's map continent to the color of the points:  -->
 
-```{r, fig.height=4.5, fig.width=5.5, fig.align="center"}
+```{r, fig.height=5.5, fig.width=6.5, fig.align="center"}
 ggplot(data = gapminder_2007, 
        mapping = aes(x = gdpPercap, y = lifeExp,
                      size = pop,
@@ -252,7 +252,7 @@ ggplot(data = gapminder_2007,
 
 <!-- Let's put the x-axis on the log scale:  -->
 
-```{r, fig.height=4.5, fig.width=5.5, fig.align="center"}
+```{r, fig.height=5.5, fig.width=6.5, fig.align="center"}
 ggplot(data = gapminder_2007, 
        mapping = aes(x = gdpPercap, y = lifeExp,
                      size = pop,
@@ -309,12 +309,34 @@ ggplot(data = gapminder_2007,
 
 ---
 
+# Adding a smoothing line
+
+`geom_smooth()` adds a "smoother". Let's try adding it!
+
+--
+
+```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop, col = continent)) +  
+  geom_point() +   
+  scale_x_log10() + 
+  geom_smooth()   #<<
+
+```
+
+Hmm.
+
+??? If you don't exclude Oceania, `ggplot` refuses to make a smoother using default settings because there are too few countries in Oceania.
+
+---
+
 # Inheritance of aesthetics 
 
 ```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-  geom_point(aes(size = pop, col = continent)) +   #<< 
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+  geom_point(aes(col = continent)) +   #<< 
   scale_x_log10() 
 ```
 
@@ -325,8 +347,8 @@ ggplot(data = gapminder_2007,
 
 ```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-  geom_point(aes(size = pop, col = continent)) + 
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+  geom_point(aes(col = continent)) + 
   scale_x_log10() +
   geom_smooth() #<<
 ```
@@ -338,8 +360,8 @@ ggplot(data = gapminder_2007,
 
 ```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-  geom_point(aes(size = pop, col = continent)) + 
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+  geom_point(aes(col = continent)) + 
   scale_x_log10() +
   geom_smooth(method = lm) # lm means "linear model" #<<  
 ```
@@ -355,8 +377,8 @@ Anything after # (on the same line) is a "comment" and is ignored by R. This is 
 
 ```{r, fig.height=5, fig.width=8.5, fig.align="center", warning = F,  message = F}
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-  geom_point(aes(size = pop)) + 
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+  geom_point() + 
   scale_x_log10() +
   geom_smooth(method = lm) +
   facet_wrap(vars(continent)) #<<

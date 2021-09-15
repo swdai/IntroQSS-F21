@@ -263,14 +263,61 @@ Basic components of plotting with `ggplot`:
 - mapping of attributes (columns of data) to aesthetics
 - geometric representations of data (`geom`s)
 
-&lt;br&gt;&lt;/br&gt;
+
+
+---
+
+class: inverse, middle, center
+
+# Quick detour: getting data into `R`
+
+---
+
+# Getting data into `R` (and `RStudio`)
+
+An interactive option: `Import Dataset` button in `Environment` pane of `RStudio`
 
 --
 
-A simple example: 
+But note it's showing you the code it's using! 
+
+(Live coding example.)
+
+---
+
+# Getting data into `R` (cont'd)
+
+Most commonly used functions: 
+
+- `read_csv()` and `read_rds()` in `readr` (`tidyverse`)
+- `readstata13::read.dta13()` for Stata files (`.dta`)
+- `readxl::read_excel()` for Excel files (`.xls`, `.xlsx`)
+- `load()` in base R for "R objects"
+
+All require "path" to file as argument. 
+
+--
+
+Sometimes data is a package, e.g. `babynames`, `gapminder`, `vdemdata` 
+
+--
+
+See Chapter 11 of R4DS and "Data Import" cheatsheet.
 
 
+---
 
+## A simple example
+
+Get data in: 
+
+
+```r
+gapminder_2007 &lt;- gapminder::gapminder %&gt;% 
+  filter(year == 2007 &amp; continent != "Oceania")   # will explain next week
+```
+
+Make a plot:
 
 
 ```r
@@ -295,7 +342,7 @@ To note:
 
 - the **arguments** to `ggplot()` say what the data is (`data = gapminder_2007`) and how attributes are mapped to aesthetics (`mapping = aes(x = gdpPercap, y = lifeExp)`)
 - `geom_point()` says "plot a point for each observation"
-- **layers** of plat linked with plus sign (`+`)
+- **layers** of plot linked with plus sign (`+`)
 
 
 ---
@@ -528,17 +575,41 @@ ggplot(data = gapminder_2007,
 
 ---
 
+# Adding a smoothing line
+
+`geom_smooth()` adds a "smoother". Let's try adding it!
+
+--
+
+
+```r
+ggplot(data = gapminder_2007, 
+       mapping = aes(x = gdpPercap, y = lifeExp,
+                     size = pop, col = continent)) +  
+  geom_point() +   
+  scale_x_log10() + 
+* geom_smooth()
+```
+
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+Hmm.
+
+??? If you don't exclude Oceania, `ggplot` refuses to make a smoother using default settings because there are too few countries in Oceania.
+
+---
+
 # Inheritance of aesthetics 
 
 
 ```r
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-* geom_point(aes(size = pop, col = continent)) +
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+* geom_point(aes(col = continent)) +
   scale_x_log10() 
 ```
 
-&lt;img src="slides_12_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -548,13 +619,13 @@ ggplot(data = gapminder_2007,
 
 ```r
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-  geom_point(aes(size = pop, col = continent)) + 
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+  geom_point(aes(col = continent)) + 
   scale_x_log10() +
 * geom_smooth()
 ```
 
-&lt;img src="slides_12_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -564,13 +635,13 @@ ggplot(data = gapminder_2007,
 
 ```r
 ggplot(data = gapminder_2007, 
-       mapping = aes(x = gdpPercap, y = lifeExp)) +  
-  geom_point(aes(size = pop, col = continent)) + 
+       mapping = aes(x = gdpPercap, y = lifeExp, size = pop)) +  
+  geom_point(aes(col = continent)) + 
   scale_x_log10() +
 * geom_smooth(method = lm) # lm means "linear model"
 ```
 
-&lt;img src="slides_12_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ???
@@ -591,7 +662,7 @@ ggplot(data = gapminder_2007,
 * facet_wrap(vars(continent))
 ```
 
-&lt;img src="slides_12_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -605,7 +676,7 @@ ggplot(data = gapminder_2007,
   scale_x_log10()
 ```
 
-&lt;img src="slides_12_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
 
 
 
@@ -621,7 +692,7 @@ ggplot(data = gapminder_2007,
   scale_x_log10()
 ```
 
-&lt;img src="slides_12_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_12_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 

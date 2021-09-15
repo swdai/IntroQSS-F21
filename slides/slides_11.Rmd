@@ -81,7 +81,7 @@ Attempt primers 1.1 and 1.2 on RStudio Cloud:
 To note: 
 
 - For beginners: these are not really sequential, so do 1.2 even if you are lost in 1.1
-- For non-beginners: if these are too basic, work on "Read For Data Science" (including exercises)
-- For experienced R programmers: if you already know R4DS, let's talk
+- For non-beginners: if these are too basic, work on "R For Data Science" (R4DS) (including exercises)
+- For experienced R programmers: if R4DS too easy for you, let's talk
 
 
