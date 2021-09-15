@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>6.1 Regression intuition</title>
+    <title>Regression intuition</title>
     <meta charset="utf-8" />
     <link href="slides_61_files/remark-css-0.0.1/default.css" rel="stylesheet" />
-    <link href="slides_61_files/remark-css-0.0.1/fc.css" rel="stylesheet" />
-    <link href="slides_61_files/remark-css-0.0.1/fc-fonts.css" rel="stylesheet" />
+    <link href="slides_61_files/remark-css-0.0.1/robot.css" rel="stylesheet" />
+    <link href="slides_61_files/remark-css-0.0.1/robot-fonts.css" rel="stylesheet" />
   </head>
   <body>
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 6.1 Regression intuition
+# Regression intuition
 ## PLSC30500, Fall 2021
 
 ---
@@ -139,9 +139,8 @@ This also works when you have many covariates `\(X_1, X_2, \ldots\)`, not just o
 
 ---
 
-
-###  The math behind the FWL theorem
-
+#### The math behind the FWL theorem
+s
 Consider three fitted regression equations:
 
 `$$\begin{eqnarray}
@@ -159,18 +158,15 @@ Now observe that
 - `\(X_i\)` is uncorrelated with `\(\hat{\varepsilon}\)` (**fact 2**), and
 - `\(\hat{r}_i\)` is uncorrelated with `\(\hat{\varepsilon}\)` b/c `\(D_i\)` is uncorrelated with `\(\hat{r}_i\)` (**fact 2**), and `\(\hat{\varepsilon}_i\)` is part of `\(D_i\)`.
 
-So:
-
-`$$\begin{eqnarray} \frac{\text{cov}(Y_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} = \frac{\text{cov}(\hat{\beta_1} D_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} =
-\hat{\beta_1} \frac{\text{cov}(\hat{\alpha}_0 + \hat{\alpha}_1 X_i  + \hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} =
-\hat{\beta_1}\frac{\text{cov}(\hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} = \hat{\beta_1}
-\end{eqnarray}$$`
+So: `\(\frac{\text{cov}(Y_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}\)` 
+`\(= \frac{\text{cov}(\hat{\beta_1} D_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}\)` 
+`\(=\hat{\beta_1} \frac{\text{cov}(\hat{\alpha}_0 + \hat{\alpha}_1 X_i  + \hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}\)` `\(= \hat{\beta_1}\frac{\text{cov}(\hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} = \hat{\beta_1}\)`
 
 
 
 ---
 
-## Using the FWL theorem
+### Using the FWL theorem
 
 To interpret `\(\hat{\beta}_1\)` in a regression like 
 $$
@@ -201,7 +197,7 @@ mtcars %&gt;%
        y = "Vehicle MPG")
 ```
 
-&lt;img src="slides_61_files/figure-html/unnamed-chunk-32-1.png" width="550px" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-1-1.png" width="550px" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -238,7 +234,7 @@ The question here is one you should ask when thinking about any empirical findin
 
 
 
-### The math behind the OVB equation 
+#### The math behind the OVB equation 
 
 Consider three fitted regression equations: 
 
@@ -312,7 +308,7 @@ mtcars %&gt;%
 ]
 
 .pull-right[
-&lt;img src="slides_61_files/figure-html/unnamed-chunk-33-1.png" width="450px" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-2-1.png" width="450px" style="display: block; margin: auto;" /&gt;
 ]
 
 
@@ -490,7 +486,7 @@ mtcars %&gt;%
            col = "red", size = 3)
 ```
 
-&lt;img src="slides_61_files/figure-html/unnamed-chunk-40-1.png" width="350px" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-9-1.png" width="350px" style="display: block; margin: auto;" /&gt;
 
 
 ---
@@ -513,7 +509,7 @@ mtcars %&gt;%
   facet_wrap(. ~ prediction_type)
 ```
 
-&lt;img src="slides_61_files/figure-html/unnamed-chunk-41-1.png" width="350px" style="display: block; margin: auto;" /&gt;
+&lt;img src="slides_61_files/figure-html/unnamed-chunk-10-1.png" width="350px" style="display: block; margin: auto;" /&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

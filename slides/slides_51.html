@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>5.1 Regression basics</title>
+    <title>Regression basics</title>
     <meta charset="utf-8" />
     <link href="slides_51_files/remark-css-0.0.1/default.css" rel="stylesheet" />
-    <link href="slides_51_files/remark-css-0.0.1/fc.css" rel="stylesheet" />
-    <link href="slides_51_files/remark-css-0.0.1/fc-fonts.css" rel="stylesheet" />
+    <link href="slides_51_files/remark-css-0.0.1/robot.css" rel="stylesheet" />
+    <link href="slides_51_files/remark-css-0.0.1/robot-fonts.css" rel="stylesheet" />
     <script src="slides_51_files/kePrint-0.0.1/kePrint.js"></script>
     <link href="slides_51_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
   </head>
@@ -13,7 +13,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 5.1 Regression basics
+# Regression basics
 ## PLSC30500, Fall 2021
 
 ---
@@ -79,7 +79,7 @@ Define `\(Y_i - \hat{Y_i} = \hat{r}_i\)` as the **residual**.
 
 We seek **coefficients** `\(\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2\)` that minimize the **sum of squared residuals**, i.e.
 
-$$ \underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min}  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right) $$
+$$ \underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min} \sum_i  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right)^2 $$
 
 
 ---

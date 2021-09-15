@@ -1,15 +1,13 @@
 ---
-title: "5.1 Regression basics"
-subtitle: "PLSC30500, Fall 2021"
-output: 
+title: "Regression basics"
+output:
   xaringan::moon_reader:
-    css: [default, fc, fc-fonts]
-    ration: '16:9'
+    css: [default, robot, robot-fonts]
     nature:
       highlightStyle: atelier-lakeside-light
-      highlightLines: true
-      countIncrementalSlides: false
-  
+      highlightLines: yes
+      countIncrementalSlides: no
+    pandoc_args: --metadata-file=./common.yaml
 ---
 
 ```{r setup, include=FALSE}
@@ -75,7 +73,7 @@ Define $Y_i - \hat{Y_i} = \hat{r}_i$ as the **residual**.
 
 We seek **coefficients** $\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2$ that minimize the **sum of squared residuals**, i.e.
 
-$$ \underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min}  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right) $$
+$$ \underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min} \sum_i  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right)^2 $$
 
 
 ---
