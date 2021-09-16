@@ -4,20 +4,30 @@ subtitle: "PLSC30500, Fall 2021"
 # author: "Andy Eggers & Molly Offer-Westort"
 output: 
   xaringan::moon_reader:
-    css: [default, shinobi]
-    nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: true
-      countIncrementalSlides: false
+    self_contained: true
+    css: [default]
   
 ---
 
+# This course
 
-# Big picture: the research process vs research training 
+- Instructors: Andy Eggers and Molly Offer-Westort
+- TA: Steven Boyd
+- brand new!
+- part of a sequence:
+  - Intro to Quant Soc Sci **(this course)** (fall)
+  - Linear Models (winter)
+  - Causal Inference (spring, also new)
+
+---
+
+
+# Big picture: the research process vs methods training 
 
 1. **Data collection**: run survey, enter data from archive, etc
 1. **Data processing (programming)**: merge, recode, reshape, aggregate, etc
-1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
+1. **Data analysis**: visualization, model fitting, statistical inference, etc 
+1. **Oh and don't forget**: thinking, reading, writing, etc
 
 --
 
@@ -44,7 +54,6 @@ Typical stats sequences basically deal with model fitting and hyp testing only. 
 - Regression (weeks 5 & 6) 
 - Inference (weeks 7 & 8)
 
-Cumulative -- please keep up.
 
 ???
 
@@ -54,13 +63,11 @@ Foregrounding "data science" skills, causality.
 
 # Expectations about background
 
-Some background in 
+Useful (but not required) to have some exposure to 
 
 - programming
 - probability & statistics
 - econometrics/regression modeling
-
-is useful, but not required.
 
 --
 
@@ -88,6 +95,7 @@ All welcome, but plan your work accordingly.
 
 - Prepare for class
 - Participate (ask and answer questions)
+- Speak up if you are confused
 
 ---
 
@@ -105,33 +113,39 @@ Please also *answer* questions on our private StackOverflow.
 
 # Assessment 
 
-- 60% problem sets
-- 30% final 
-
-
-# Useful resources 
-
-- RStudio Cloud primers (online, interactive) 
-- *R For Data Science* book (online or print)  
-- Google
-- StackOverflow: our private one and "real" one
-- Lectures and labs
+- 60% problem sets (8 in all)
+- 30% independent data analysis project
+- 10% class participation
 
 ---
 
-# Assignment for Thursday
+# Assignment for Thursday: 
 
-Attempt primers 1.1 and 1.2 on RStudio Cloud: 
+### Learning
 
-- "Data visualization basics" (https://rstudio.cloud/learn/primers/1.1)
-- "Programming basics" (https://rstudio.cloud/learn/primers/1.2)
+Attempt online RStudio primers 1.1 and 1.2: 
+  - "Data visualization basics" (https://rstudio.cloud/learn/primers/1.1)
+  - "Programming basics" (https://rstudio.cloud/learn/primers/1.2)
+
+### Technical setup
+
+On your own machine, 
+1. install R from https://cran.rstudio.com/ 
+1. Install RStudio from https://www.rstudio.com/products/rstudio/download/
+1. In RStudio, create an RMarkdown document, save it, and click "Knit". 
+
+Did it work? 
+- if so, great! You are ready to work on your own machine.
+- if not, use (free) RStudio Cloud until you resolve the issue.
 
 --
 
 To note: 
 
-- For beginners: these are not really sequential, so do 1.2 even if you are lost in 1.1
+- For beginners: primers are not really sequential, so do 1.2 even if you are lost in 1.1
 - For non-beginners: if these are too basic, work on "R For Data Science" (R4DS) (including exercises)
 - For experienced R programmers: if R4DS too easy for you, let's talk
 
+---
 
+## In class: some basics about R, RStudio, and RMarkdown.
