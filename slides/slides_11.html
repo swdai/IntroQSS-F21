@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Getting started</title>
+    <title>1.1 Getting started</title>
     <meta charset="utf-8" />
     <link href="slides_11_files/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="slides_11_files/remark-css-0.0.1/shinobi.css" rel="stylesheet" />
@@ -10,79 +10,83 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# Getting started
+# 1.1 Getting started
 ## PLSC30500, Fall 2021
 
 ---
 
 
 
-## This is it 
+# Workflow 
 
-$$ \frac{\text{cov}(Y, X)}{\text{var}(X)}$$
-
----
-class: inverse, middle, center 
-
-## What do you love? 
-
-I love **regression**.
-
-.pull-left[
-on your left
-]
-
-.pull-right[
-and on your right
-]
-
-
----
-
-background-image: url("http://bit.ly/cs631-donkey")
-background-size: cover
-
-# Would you ever want to have an animated background? 
-
-
----
-
-# Maybe not, but you would want this 
-
-![](http://bit.ly/cs631-pygmy)&lt;!-- --&gt;
-
----
-
-# Code highlighting
-
-
-```r
-library(ggplot2)
-ggplot(mtcars) + 
-  aes(mpg, disp) + 
-* geom_point() +
-* geom_smooth()
-```
-
-```
-## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-```
-
-&lt;img src="slides_11_files/figure-html/example-plot-1.png" style="display: block; margin: auto;" /&gt;
-
----
-
-# Comments on slides
-
-If you press "p", you get to see the comments for this slide.
+1. **Data collection**: run survey, enter data from archive, etc
+1. **Data processing**: merge, recode, reshape, aggregate, etc
+1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
 
 ???
 
-Isn't that interesting?
+Typical stats sequences basically deal with model fitting and hyp testing only. But you spend ~ 90% of time on 1 and 2, and visualization is very important. So we're redressing this somewhat.
 
 ---
 
-## The sky is the limit
+# Our plan (overview)
+
+- "Data science" first (weeks 1-2, every lab and homework)
+  - visualization on "tidied" data
+  - learn to "tidy" our data
+- Probability/stats essentials (week 3)
+- Research design essentials: causality and experiments (week 4)
+- Regression (weeks 5 &amp; 6) 
+- Inference (weeks 7 &amp; 8)
+
+Cumulative -- please keep up.
+
+???
+
+Foregrounding "data science" skills, causality.
+
+
+---
+
+# Programming in `R` 
+
+Which one is you? 
+
+1. Never done any programming
+1. Did some programming in another language (e.g. Python, Stata)
+1. Some experience programming in `R`
+1. Experienced at programming in `R`
+
+--
+
+All welcome, but plan your work accordingly.
+
+---
+
+# Useful resources 
+
+- RStudio Cloud primers (online, interactive) 
+- "R For Data Science" book (online or print)  
+- Google
+- StackOverflow: our private one and "real" one
+- Lectures and labs
+
+---
+
+# Assignment for Thursday
+
+Attempt primers 1.1 and 1.2 on RStudio Cloud: 
+
+- "Data visualization basics" (https://rstudio.cloud/learn/primers/1.1)
+- "Programming basics" (https://rstudio.cloud/learn/primers/1.2)
+
+--
+
+To note: 
+
+- For beginners: these are not really sequential, so do 1.2 even if you are lost in 1.1
+- For non-beginners: if these are too basic, work on "R For Data Science" (R4DS) (including exercises)
+- For experienced R programmers: if R4DS too easy for you, let's talk
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

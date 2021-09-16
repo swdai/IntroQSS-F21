@@ -13,11 +13,20 @@ output:
 ---
 
 
-# Workflow 
+# Big picture: the research process vs research training 
 
 1. **Data collection**: run survey, enter data from archive, etc
-1. **Data processing**: merge, recode, reshape, aggregate, etc
+1. **Data processing (programming)**: merge, recode, reshape, aggregate, etc
 1. **Data analysis**: visualization, model fitting, hypothesis testing, etc 
+
+--
+
+Compared to typical intro stats courses, we will do: 
+
+- more on visualization
+- more on programming 
+- more using those tools to learn other concepts
+
 
 ???
 
@@ -41,6 +50,22 @@ Cumulative -- please keep up.
 
 Foregrounding "data science" skills, causality.
 
+---
+
+# Expectations about background
+
+Some background in 
+
+- programming
+- probability & statistics
+- econometrics/regression modeling
+
+is useful, but not required.
+
+--
+
+If *lots* of this background, maybe you're in the wrong course!
+
 
 ---
 
@@ -48,10 +73,10 @@ Foregrounding "data science" skills, causality.
 
 Which one is you? 
 
-1 Never done any programming
-1 Did some programming in another language (e.g. Python, Stata)
-1 Some experience programming in `R`
-1 Experienced at programming in `R`
+1. Never done any programming
+1. Did some programming in another language (e.g. Python, Stata)
+1. Some experience programming in `R`
+1. Experienced at programming in `R`
 
 --
 
@@ -59,10 +84,35 @@ All welcome, but plan your work accordingly.
 
 ---
 
+# Expectations for the course 
+
+- Prepare for class
+- Participate (ask and answer questions)
+
+---
+
+# Getting and giving help
+
+You will get stuck.
+
+1. Use google.
+1. If you're still stuck, ask your question on our private StackOverflow (https://stackoverflow.com/c/uchicagopolmeth)
+1. Or if you're brave, ask on the real StackOverflow (https://stackoverflow.com/) if it's about `R` or CrossValidated (https://stats.stackexchange.com/) if it's about stats. 
+
+Please also *answer* questions on our private StackOverflow.
+
+---
+
+# Assessment 
+
+- 60% problem sets
+- 30% final 
+
+
 # Useful resources 
 
 - RStudio Cloud primers (online, interactive) 
-- "R For Data Science" book (online or print)  
+- *R For Data Science* book (online or print)  
 - Google
 - StackOverflow: our private one and "real" one
 - Lectures and labs
