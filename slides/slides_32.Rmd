@@ -7,6 +7,7 @@ author:
 output:
   xaringan::moon_reader:
     css: [default, robot, robot-fonts]
+    self_contained: true
     nature:
       highlightStyle: atelier-lakeside-light
       highlightLines: yes
@@ -59,9 +60,9 @@ set.seed(60637)
 - We use this in addition to the sample space, so we can describe all types of events that we can define the probability for. 
 
 
-- $P$ : Probability measure. A function that assigns probability to all of the events in the event space. 
+- $\textrm{P}$ : Probability measure. A function that assigns probability to all of the events in the event space. 
 
-- Here, since our coin is fair, for the event that we get a head on the first flip, $P(A) = 1/2$. 
+- Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
 
 
 </small>
@@ -80,7 +81,7 @@ $$X : \Omega \to {\rm I\!R}$$
 For example, with our two coin flips, let $X(\omega)$ be the number of heads in the sequence $\omega$. Then the random variable, and its probability distribution, can be described as:
 
 
-|     $\omega$ | $P(\{\omega\})$ | $X(\omega)$ |
+|     $\omega$ | $\textrm{P}(\{\omega\})$ | $X(\omega)$ |
 |-------------:|----------------:|------------:|
 | TT           | 1/4             | 0           |
 | TH           | 1/4             | 1           |
@@ -89,7 +90,7 @@ For example, with our two coin flips, let $X(\omega)$ be the number of heads in 
 
 and,
 
-| $x$   | $P(X = x)$
+| $x$   | $\textrm{P}(X = x)$
 |----:|------------:|
 | 0   | 1/4         |
 | 1   | 1/2         |
@@ -145,7 +146,7 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 - The probability mass function of a discrete RV $X$ tells us the probability we will see an outcome at some value $x$. 
 
 $$
-f(x) = P(X = x)
+f(x) = \textrm{P}(X = x)
 $$
 For our coin flip example, 
 
@@ -189,7 +190,7 @@ Note that the probabilities sum to 1. This is one of the foundational axioms of 
 - The cumulative distribution function of $X$ tells us the probability we will see an outcome less than or equal to some value $x$. 
 
 $$
-F(x) = P(X \le x)
+F(x) = \textrm{P}(X \le x)
 $$
 
 
@@ -259,14 +260,42 @@ Just like with univariate random variables, we can describe these bivariate rela
 ## Joint PMF of discrete random variables
 
 $$
-f(x,y) = P(X=x, Y=y)
+f(x,y) = \textrm{P}(X=x, Y=y)
 $$
 
-Returning to our coin flip example
-- Let $X$ be the number of heads in our joint coinflip
-- Let $Y$ be the number of tails in our joint coinflip
+---
+
+Returning to our example of flipping two fair coins
+- Let $X$ be 1 if we get *at least one heads*, and 0 otherwise
+- Let $Y$ be 1 if we get *two* heads in our two coin flips, and 0 otherwise
+
+--
+
+Then the joint probability distribution can be described as:
+
+
+|     $\omega$ | $\textrm{P}(\{\omega\})$ | $X(\omega)$ |  $Y(\omega)$ |
+|-------------:|----------------:|------------:|-------------:|
+| TT           | 1/4             | 0           | 0            |
+| TH           | 1/4             | 1           | 0            |
+| HT           | 1/4             | 1           | 0            |
+| HH           | 1/4             | 1           | 1            |
+
+and,
+
+
+$$
+f(x, y) = \begin{cases}
+1/4 & x = 0, y = 0 \\\
+1/2 & x = 1, y = 0 \\\
+1/4 & x = 1, y = 1 \\\
+0 & \text{otherwise}
+\end{cases}
+$$
 
 ---
+
+
 class: small-output
 
 ```{r coinflip, fig.width = 7, fig.height=4, fig.align = 'center'}
@@ -279,26 +308,51 @@ result_n <- sample(x = Omega,
                    replace = TRUE)
 
 result_mat <- tibble(omega = result_n,
-                     x = case_when(result_n == 'TT' ~ 0,
-                                   result_n == 'TH' | result_n == 'HT' ~ 1,
-                                   result_n == 'HH' ~ 2),
-                     y = 2-x)
+                     x = case_when(result_n == 'TT' ~ 0, TRUE ~ 1),
+                     y = case_when(result_n == 'HH' ~ 1, TRUE ~ 0))
 
-p1 <- ggplot(result_mat) + 
-  geom_histogram(aes(x = x), bins = 3, position = 'identity', color = 'white')
-p2 <- ggplot(result_mat) + 
-  geom_histogram(aes(x = y), bins = 3, position = 'identity', color = 'white')
+options <- list(theme(panel.grid.minor = element_blank()), scale_x_continuous(breaks = c(0, 1))) # save some style options
+
+p1 <- ggplot(result_mat) + geom_histogram(aes(x = x), bins = 3, position = 'identity', color = 'white') + options
+  
+p2 <- ggplot(result_mat) + geom_histogram(aes(x = y), bins = 3, position = 'identity', color = 'white') + options
 
 grid.arrange(p1, p2, ncol = 2)
 
 ```
 
 Seeing $X$ and $Y$ plotted side by side doesn't really give us a full picture of their relationship. 
+--
+
+These are the *marginal* distributions of $X$ and $Y$, i.e., their distributions where we *marginalize* or sum over the distribution of the other random variable. 
+
+---
+
+## Marginal distributions
+
+$$
+f_X(X) = \textrm{P}(X = x) \sum_y \textrm{P}(X=x, Y=y) = \sum_y f(x,y)
+$$
+
+--
+
+
+|         | $Y = 0$ | $Y = 1$ |     |
+|---------|---------|---------|-----|
+| $X = 0$ | 1/4     | 0       | **1/4** |
+| $X = 1$ | 1/2     | 1/4     | **3/4** |
+|         | **3/4**     | **1/4**     |     |
+
+
+--
+
+*Notational aside: we subscript $X$ in $f_X$ to denote that it is the mass function of $X$ specifically, as $X$ and $Y$ have different probability mass functions. If we are only dealing with one random variable at a time, we don't need to specify which distribution we're dealing with.*
+
 
 ---
 
 ```{r, fig.width = 5, fig.height=5, fig.align = 'center', echo=FALSE}
-hist_top <- p1
+hist_top <- p1 
 empty <- ggplot()+geom_point(aes(1,1), colour="white")+
   theme(axis.ticks=element_blank(), 
         panel.background=element_blank(), 
@@ -309,21 +363,48 @@ count_mat <- result_mat %>%
   group_by(x, y) %>% 
   summarize(count = n(), .groups = 'keep')
 
-scatter <- ggplot(count_mat, aes(x = x, y = y), size = count) +
-  geom_point(aes(size= count)) + 
-  geom_line(color = 'blue') + 
-  theme(legend.position = 'none')
+scatter <- ggplot(result_mat, aes(x = x, y = y, color = omega)) +
+  geom_jitter(width = 0.25, height = 0.25, alpha = 0.5) + 
+  scale_x_continuous(breaks = c(0, 1)) +
+  scale_y_continuous(breaks = c(0,1))+
+  theme(panel.grid.minor = element_blank(), legend.position = 'none') 
 
 hist_right <- p2 + coord_flip()
 
 grid.arrange(hist_top, empty, scatter, hist_right, ncol=2, nrow=2, widths=c(4, 2), heights=c(2, 4))
+
 ```
 
 Plotting $X$ and $Y$ jointly gives us a better understanding of their joint relationship. 
 
 ---
 
-# Summarizing distributions
+## Conditional distributions
+
+We are also often interested in conditional relationships. 
+
+$$
+f_{Y|X}(y|x) = \textrm{P}(Y = y | X = x) = \frac{\textrm{P}(X=x, Y=y)}{\textrm{P}(X=x)}  = \frac{f(x,y)}{f_X(x)} 
+$$
+--
+
+Here, what is the probability of observing two heads, conditional on having observed at least one heads?
+
+--
+
+$$
+f_{Y|X}(y|x) = \begin{cases}
+1 & x = 0, y = 0 \\\
+1/2 & x = 1, y =0  \\\
+1/2 & x = 1, y = 1 \\\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+
+---
+
+# Summarizing single variable distributions
 
 
 
@@ -663,8 +744,74 @@ $$
  = \sqrt{0.375} = 0.612
 $$
 
+
 ---
-## Continuous random variables
+# Summarizing joint distributions
+
+---
+
+## Covariance
+
+$$
+\textrm{Cov}[X,Y] = \textrm{E}[(X- \textrm{E}[X])(Y-\textrm{E[Y]})]
+$$
+
+--
+
+Covariance is how much $X$ and $Y$ vary together. 
+
+--
+- If covariance is positive, when the value of $X$ is large (relative to its mean), the value of $Y$ will also tend to be large (relative to its mean)
+- If covariance is negative, when the value of $X$ is large (relative to its mean), the value of $Y$ will tend to be small (relative to its mean)
+
+
+
+---
+## Correlation
+
+$$
+\rho[X, Y] = \frac{\textrm{Cov}[X,Y]}{\sigma[X] \sigma[Y]} 
+$$
+
+Rescaled version of covariance
+- positive when covariance is positive
+- negative when covariance is negative
+
+--
+
+$$
+-1 \le \rho[X, Y]  \le 1
+$$
+
+
+---
+
+Suppose we observe the following data from the joint distribution of $X$ and $Y$. 
+--
+We are given that $\textrm{Var}[X] = 3$ and $\textrm{Var}[Y] = 6$. 
+--
+
+```{r}
+df <- tibble(x = rpois(1e3, lambda = 3),
+             y = rpois(1e3, lambda = 3) + x)
+
+
+ggplot(df, aes(x = x, y = y)) +
+  geom_jitter(height = .2, width =.2, alpha = 0.6) +
+  geom_smooth(method = lm, se = FALSE)
+
+cov(df$x, df$y)
+```
+
+
+How 
+
+---
+<p style="color:red">Following content if time, or in handout.</p>
+
+---
+
+# Continuous random variables
 
 - So far, our coin flip example was for a *discrete* random variable.  
 - A random variable is *continuous* if it has a continuous density function
@@ -700,7 +847,7 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 
 
 
-- Discrete random variables have non-zero mass on specific points, but for continuous random variables, $P(X = x) = 0$. Instead of mass, we refer to *density* for continuous variables. [2]
+- Discrete random variables have non-zero mass on specific points, but for continuous random variables, $\textrm{P}(X = x) = 0$. Instead of mass, we refer to *density* for continuous variables. [2]
 
 
 
@@ -709,7 +856,7 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 - The *probability density function* $f(x)$ for a continuous random variable gives the slope of the CDF at any given point. This means that we can integrate the area under the PDF to get the relative probability of being between two points. 
 
 $$
-P(a < X < b) = \int_a^b f(x)dx
+\textrm{P}(a < X < b) = \int_a^b f(x)dx
 $$
 
 ---
@@ -819,7 +966,7 @@ ggplot(plotdata, aes(x = x, y = fx)) +
 - If we want to get the probability $X$ is between 0 and 0.75, 
 
 $$
-P(0 \le x \le .75) = \int_0^.75 f(x)dx
+\textrm{P}(0 \le x \le .75) = \int_0^.75 f(x)dx
 $$
 --
 we take the area under the density curve between 0 and 0.75 -- which is also 0.75. (Notice that we don't need to use calculus here.) 
@@ -897,9 +1044,9 @@ ggplot(plotdata, aes(x = x, y = Fx)) +
 
 
 
----
-## Applications
+<!-- --- -->
+<!-- ## Applications -->
 
-Applications with one of our datasets, using stat_summary() to get summaries by group (recall R4DS 3.7, statistical transformations; 5.6.4 Useful summary functions)
+<!-- Applications with one of our datasets, using stat_summary() to get summaries by group (recall R4DS 3.7, statistical transformations; 5.6.4 Useful summary functions) -->
 
 

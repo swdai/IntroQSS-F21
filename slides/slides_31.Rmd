@@ -7,6 +7,7 @@ author:
 output:
   xaringan::moon_reader:
     css: [default, robot, robot-fonts]
+    self_contained: true
     nature:
       highlightStyle: atelier-lakeside-light
       highlightLines: yes
@@ -149,11 +150,11 @@ name: terms
 
 --
 
-- $P$ : Probability measure. A function that assigns probability to all of the events in the event space. 
+- $\textrm{P}$ : Probability measure. A function that assigns probability to all of the events in the event space. 
 
 --
 
- - Here, since our coin is fair, for the event that we get a head on the first flip, $P(A) = 1/2$. 
+ - Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
 
 
 </small>
@@ -219,7 +220,7 @@ table(result_n)
 - Two events are *independent* if
 
 $$
-P(AB) = P(A)P(B)
+\textrm{P}(AB) = \textrm{P}(A)\textrm{P}(B)
 $$
 
 --
@@ -244,8 +245,8 @@ The coin flips are unrelated, so the events should be independent. We can check 
 
 $$
 \begin{align}
-P(A) &= P(\{HT\}) + P(\{HH\}) = 0.25 + 0.25 = 0.5\\\
-P(B) &= P(\{TH\}) + P(\{HH\}) = 0.25 + 0.25 = 0.5
+\textrm{P}(A) &= \textrm{P}(\{HT\}) + \textrm{P}(\{HH\}) = 0.25 + 0.25 = 0.5\\\
+\textrm{P}(B) &= \textrm{P}(\{TH\}) + \textrm{P}(\{HH\}) = 0.25 + 0.25 = 0.5
 \end{align}
 $$
 
@@ -255,8 +256,8 @@ Then, we can calculate the product of the probabilities, and the probability of 
 
 $$
 \begin{align}
-P(A)P(B) &= 0.5 \times 0.5 = 0.25\\\
-P(A B) &= P(\{HH\}) = 0.25\
+\textrm{P}(A)\textrm{P}(B) &= 0.5 \times 0.5 = 0.25\\\
+\textrm{P}(A B) &= \textrm{P}(\{HH\}) = 0.25\
 \end{align}
 $$
 
@@ -265,7 +266,7 @@ $$
 We see that they are the same, so we have independence.
 
 $$
-P(A)P(B) = P(A B)
+\textrm{P}(A)\textrm{P}(B) = \textrm{P}(A B)
 $$
 
 </small>
@@ -350,10 +351,10 @@ The proportions are then quite different.
 
 # Conditional probability
 
-If $P(B)>0$, the *conditional probability* of an event $A$ occurring, given event $B$ has occurred is:
+If $\textrm{P}(B)>0$, the *conditional probability* of an event $A$ occurring, given event $B$ has occurred is:
 
 $$
-P(A|B) = \frac{P(A B)}{P(B)}
+\textrm{P}(A|B) = \frac{\textrm{P}(A B)}{\textrm{P}(B)}
 $$
 --
 This can also be read as, out of all of the times event $B$ occurs, how many times does event $A$ also occur?
@@ -369,15 +370,16 @@ For our coin flip example, we'll stick with:
 
 $$
 \begin{align}
-P(A |B)& = \frac{P(A B)}{P(B)}\\\
-& = \frac{P(\{ HH \})}{P(\{ HH \})}\\\
+\textrm{P}(A |B)& = \frac{\textrm{P}(A B)}{\textrm{P}(B)}\\\
+& = \frac{\textrm{P}(\{ HH \})}{\textrm{P}(\{ HH \})}\\\
 & = 1
 \end{align}
 $$
 
 --
 
-What is $P(B |A)$?
+What is $\textrm{P}(B |A)$?
+
 ---
 
 ## Bayes Rule
@@ -385,7 +387,7 @@ What is $P(B |A)$?
 A useful theorem to return to is *Bayes Rule*
 
 $$
-P(A|B) = \frac{P(B|A)P(A)}{P(B)}
+\textrm{P}(A|B) = \frac{\textrm{P}(B|A)\textrm{P}(A)}{\textrm{P}(B)}
 $$
 
 --
@@ -416,17 +418,17 @@ A student gets a positive test back. What is the probability that they have COVI
 
 --
 
-- Doctors know that the probability of having COVID is 3% in this population : $P(A)$ 
+- Doctors know that the probability of having COVID is 3% in this population : $\textrm{P}(A)$ 
 ```{r}
 PA <- 0.03
 ```
 --
-- The overall rate of positive tests is 5% : $P(B)$ 
+- The overall rate of positive tests is 5% : $\textrm{P}(B)$ 
 ```{r}
 PB <- 0.05
 ```
 --
-- If you have COVID, your test will turn up positive 95% of the time. : $P(B|A)$ 
+- If you have COVID, your test will turn up positive 95% of the time. : $\textrm{P}(B|A)$ 
 ```{r}
 PB_if_A <- 0.95
 ```
@@ -436,7 +438,7 @@ PB_if_A <- 0.95
 
 $$
 \begin{align*}
-P(A|B) & = \frac{P(B|A)P(A)}{P(B)}
+\textrm{P}(A|B) & = \frac{\textrm{P}(B|A)\textrm{P}(A)}{\textrm{P}(B)}
 \end{align*}
 $$
 
@@ -451,7 +453,7 @@ $$
 ## Prosecutor's fallacy
 
 $$
-P(A|B)\overset{?}= P(B|A)
+\textrm{P}(A|B)\overset{?}= \textrm{P}(B|A)
 $$
 --
 
@@ -470,21 +472,47 @@ As a general rule, we cannot assume the conditional probability of $A$ given $B$
 
 ---
 
-#### Why thinking about conditional probability is so important in social science research
+### Why thinking about conditional probability is so important in social science research
+
+"20% of people hospitalized with COVID-19 are vaccinated"
+
+--
+
+Does this tell us that vaccines aren't very effective?
+
+--
+
+Some things we should think about:
+- What percentage of the population in areas served by hospitals are vaccinated?
+- Are people who are vaccinated at higher risk for breakthrough cases? Or more likely to be hospitalized? Are they older, or have pre-existing conditions?
+
+
+
+---
+
+### Why thinking about conditional probability is so important in social science research
+
+
 
 What data do you need to answer the question: "Do white officers shoot minority citizens at a higher rate than non-white officers?"
 
 ---
 
-#### Why thinking about conditional probability is so important in social science research
+### Why thinking about conditional probability is so important in social science research
 
-![Johnson et al. PNAS](slides_31_files/johnson-et-al-PNAS.png)
+![Johnson et al. PNAS](assets/johnson-et-al-PNAS.png)
 - In a 2020 paper, Johnson and co-authors evaluated the relationship between race of victims shot by police, and the characteristics of the police shooters
+
+--
 
 - The authors claim, "White officers are not more likely to shoot minority civilians than non-White officers"--and the paper has been used in congressional testimony to support the claim that diversity in police forces would not be beneficial in reducing bias in officer-involved shootings
 
+--
+
 - Their database only has data on fatal shootings--not on cases where people were NOT shot. 
 - Their results report "whether a person fatally shot was more likely to be Black (or Hispanic) than White" conditional on the race of the officer involved
+
+--
 
 - Does this address original claim?
 
@@ -493,8 +521,8 @@ What data do you need to answer the question: "Do white officers shoot minority 
 
 $$
 \begin{align}
-P(\text{shot} | \text{White officer, minority civilian}) -\\\
-P(\text{shot} | \text{Minority officer, minority civilian})
+\textrm{P}(\text{shot} | \text{White officer, minority civilian}) -\\\
+\textrm{P}(\text{shot} | \text{Minority officer, minority civilian})
 \end{align}
 $$
 
@@ -504,6 +532,9 @@ What data are we missing to address this question?
 
 - Dean Knox & Jonathan Mummolo wrote a letter critiquing tge original article, based on the authors' failure to appropriately apply Bayes Rule;
 - The article was eventually retracted
+
+--
+
 - (It's a bit more complicated than that, but know your conditional probability when thinking about difficult subjects!)
 
 
@@ -531,3 +562,9 @@ S & = \{\emptyset, \\
 \end{align}$$
 
 [[Back to terms]](#terms)
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+pagedown::chrome_print("slides_31.Rmd")
+```
+
