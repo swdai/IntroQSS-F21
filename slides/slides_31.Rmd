@@ -498,10 +498,30 @@ What data do you need to answer the question: "Do white officers shoot minority 
 
 ---
 
-### Why thinking about conditional probability is so important in social science research
+Remember this article?
 
-![Johnson et al. PNAS](assets/johnson-et-al-PNAS.png)
-- In a 2020 paper, Johnson and co-authors evaluated the relationship between race of victims shot by police, and the characteristics of the police shooters
+```{r, echo=FALSE}
+knitr::include_graphics('assets/npr.png')
+```
+
+---
+
+Remember this article?
+
+```{r, echo=FALSE}
+knitr::include_graphics('assets/guardian.png')
+```
+
+
+---
+
+
+
+```{r, echo=FALSE}
+knitr::include_graphics('assets/johnson-et-al-PNAS.png')
+```
+
+- In a 2020 PNAS paper, Johnson and co-authors evaluated the relationship between race of victims shot by police, and the characteristics of the police shooters
 
 --
 
@@ -531,6 +551,7 @@ What data are we missing to address this question?
 --
 
 - Dean Knox & Jonathan Mummolo wrote a letter critiquing tge original article, based on the authors' failure to appropriately apply Bayes Rule;
+
 - The article was eventually retracted
 
 --
