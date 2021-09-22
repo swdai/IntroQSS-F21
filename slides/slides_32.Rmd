@@ -10,6 +10,7 @@ output:
     css: [default, uchicago_pol_meth.css]
     nature:
       highlightLines: true
+      countIncrementalSlides: no
 ---
 
 exclude: true
