@@ -97,6 +97,10 @@ All welcome, but plan your work accordingly.
 - Participate (ask and answer questions)
 - Speak up if you are confused
 
+???
+
+Participation will be both in class as well as on our StackOverflow Q&A platform
+
 ---
 
 # Getting and giving help
@@ -111,11 +115,34 @@ Please also *answer* questions on our private StackOverflow.
 
 ---
 
+# What we do with data
+
+We'll get started on working with data, and we'll also get started on thinking critically about how you use data to answer questions.
+
+What data would you need to make the argument in the article below?
+
+![Johnson et al. PNAS](assets/guardian.png)
+
+---
+
+# Inferential questions
+
+
+- What can the data you *do* have tell you about data you *don't* have?
+- What data would you need to answer questions about *what would have happened*?
+- What can we say about our *uncertainty* about estimates or predictions?
+
+---
+
 # Assessment 
 
 - 60% problem sets (8 in all)
 - 30% independent data analysis project
 - 10% class participation
+
+???
+
+Brief overview of data analysis project
 
 ---
 
