@@ -1,13 +1,14 @@
 ---
-title: "Data wrangling 2: reshaping and merging"
-output:
+title: "PLSC30500, Fall 2021"
+subtitle: "2.2 Data wrangling 2: reshaping and merging"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
+    self_contained: true
+    css: [default, uoc_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
-      countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
+      highlightLines: true
+
 ---
 
 ```{r setup, include=FALSE}
@@ -47,6 +48,17 @@ Definition of "observation" may depend on application.
 
 ## "Wide" version of some V-Dem data 
 
+```{css, echo=FALSE}
+pre {
+  white-space: pre-wrap;
+  font-size: 80%
+}
+.remark-code {
+  font-size: 80%;
+}
+```
+
+
 ```{r echo = F, message = F}
 vdw <- read_csv("~/Dropbox/teaching/chicago/methods_sequence/IntroQSS/data/vdem_extract_wide.csv")
 vdw
@@ -72,20 +84,16 @@ Reasons to prefer "country-year":
 
 ## Let's reshape/pivot! 
 
-.pull-left[
 In `tidyverse` (`tidyr`): 
 
 - `pivot_longer()` makes "wide" datasets longer
 - `pivot_wider()` makes "long" datasets wider
 
 What do we need here? 
-]
 
-.pull-right[ .small-output[
 ```{r}
 vdw
 ```
-]]
 
 
 ???

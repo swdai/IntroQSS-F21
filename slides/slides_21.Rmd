@@ -1,13 +1,14 @@
 ---
-title: "Data wrangling 1"
-output:
+title: "PLSC30500, Fall 2021"
+subtitle: "2.1 Data wrangling 1"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
+    self_contained: true
+    css: [default, uoc_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
-      countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
+      highlightLines: true
+
 ---
 
 ```{r setup, include=FALSE}
@@ -41,9 +42,9 @@ class: inverse, middle, center
 
 # Load V-Dem dataset
 
-1. `install.packages("devtools")`
-1. `devtools::install_github("vdeminstitute/vdemdata")`
-1. `library(vdemdata)`
+1. Install the installer: `install.packages("devtools")`
+1. Install the package from github: `devtools::install_github("vdeminstitute/vdemdata")`
+1. Load the package: `library(vdemdata)`
 
 ```{r echo = F}
 library(vdemdata)
@@ -107,7 +108,9 @@ Equivalent code:
 ```{r, eval = F}
 as_tibble(vdem)
 vdem %>% as_tibble()
+```
 
+```{r, eval = F}
 mean(c(1,2,3))
 c(1,2,3) %>% mean()
 ```
@@ -118,10 +121,13 @@ Can be more readable.
 
 ### Pick out columns with `select()`
 
+
+
 ```{r}
 vd <- as_tibble(vdem)
 vd %>% 
-  select(country_text_id, year, e_regionpol_6C, v2x_polyarchy, e_migdppc)
+  select(country_text_id, year, e_regionpol_6C, 
+         v2x_polyarchy, e_migdppc)
 ```
 
 ---
@@ -131,7 +137,8 @@ vd %>%
 
 ```{r}
 vd %>% 
-  select(country_text_id, year, e_regionpol_6C, v2x_polyarchy, e_migdppc) %>% 
+  select(country_text_id, year, e_regionpol_6C, 
+         v2x_polyarchy, e_migdppc) %>% 
   filter(year == 2015) #<<
 ```
 
@@ -147,7 +154,7 @@ vd %>%
   select(country_text_id, year, v2x_polyarchy, polyarchy_times_100)
 ```
 
-
+---
 
 
 ### Plotting democratization for each country 
@@ -169,9 +176,8 @@ vd %>%
   filter(year > 1900) %>% 
   ggplot(aes(x = year, y = v2x_polyarchy, 
              group = country_name, 
-             col = factor(e_regionpol_6C))) + 
-  geom_line(alpha = .5) + 
-  labs(col = "Region")
+             col = factor(e_regionpol_6C))) +  #<<
+  geom_line(alpha = .5)
 ```
 
 ---
@@ -182,7 +188,7 @@ vd %>%
 vd %>% 
   filter(year == 2015) %>% 
   summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
-            mean_gdppc = mean(e_migdppc, na.rm = T)) #<<
+            mean_gdppc = mean(e_migdppc, na.rm = T))
 ```
 
 --
@@ -212,7 +218,7 @@ vd %>%
 
 ```{r}
 vd %>% 
-  filter(year > 1900) %>% #<<
+  filter(year > 1900) %>% 
   group_by(year) %>%  #<<
   summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
             mean_gdppc = mean(e_migdppc, na.rm = T))
@@ -293,51 +299,5 @@ vd %>%
 excluding German Democratic Republic)
 6: Asia and Pacific (excluding Australia and New Zealand; see 5)
 
----
-class: inverse, middle, center
 
-# Reshaping data (`pivot_longer()`, `pivot_wider()`, joins)
-
----
-
-
-# Structure of "tidy" data
-
-Each observation has a row, each attribute has a column.
-
---
-
-Definition of "observation" may depend on application. 
-
-
----
-
-## "Wide" version of the V-Dem data 
-
-```{r echo = F, message = F}
-vdw <- read_csv("~/Dropbox/teaching/chicago/methods_sequence/IntroQSS/data/vdem_extract_wide.csv")
-vdw
-```
-
-<!-- ## Plan  -->
-
-<!-- First, examples where data columns already map to desired aesthetics 1 to 1. -->
-
-<!-- - use (`gapminder`?) example to connect data to aesthetics (a la Heiss) -->
-<!-- - introduce types of plots (from the cheatsheet?) -->
-<!-- - `facet_wrap()`, `facet_grid()` -->
-<!-- - practice and use examples -->
-
-<!-- Then, cases where this is not true, and we need to do some data wrangling. -->
-
-<!-- - making a new variable (`mutate()`) -->
-<!-- - subsetting (`filter()`) -->
-<!-- - summarizing? `group_by()`, `summarize()` -->
-<!-- - `pivot_longer()`, `pivot_wider()` -->
-
-<!-- but always ending with a figure I guess. -->
-
-<!-- And that's basically it.  -->
-
-  
-
+<!-- This seems a little thin. What else could we do with class time? Start Thursday stuff I guess. --> 
