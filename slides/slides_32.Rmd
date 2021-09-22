@@ -2,18 +2,23 @@
 title: 3.2 More Probability/Statistics Foundations
 subtitle: PLSC30500, Fall 2021
 author: 
-  - co-taught by Molly Offer-Westort & Andy Eggers
+  # - co-taught by Molly Offer-Westort & Andy Eggers
   - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
-output:
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
     self_contained: true
+    css: [default, uchicago_pol_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
-      countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
+      highlightLines: true
 ---
+
+exclude: true
+
+# Review
+
+---
+
+class: footnotesize
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -31,41 +36,26 @@ set.seed(60637)
 # }
 ```
 
-**Recall our terms from probability. Our random process: flipping a fair coin twice.**
+
+### Recall our terms from probability. Our random process: flipping a fair coin twice.
 
 --
 
-<small>
+- $\Omega$ : Sample space. Describes all possible outcomes in our setting.
 
--  $\Omega$ : Sample space. Describes all possible outcomes in our setting.
-
-
-- $\omega$ : Generic notation for the realized outcomes in the sample space.
-
-
-- Here, $\Omega = \{HH, HT, TH, TT \}$.
-
+  - $\omega$ : Generic notation for the realized outcomes in the sample space.
+  - Here, $\Omega = \{HH, HT, TH, TT \}$.
 
 - Event: a subset of $\Omega$. 
-
-- We will often use terms like $A$ or $B$ to define events. 
-
-
-- In our example, the event that we get a head on the first flip is $A = \{HT, HH\}$. 
-
+  - We will often use terms like $A$ or $B$ to define events. 
+  - In our example, the event that we get a head on the first flip is $A = \{HT, HH\}$. 
 
 - $S$ : Event space. Describes all subsets of events, including the null set. [[Full event space]](#event_space)
-
-
-- We use this in addition to the sample space, so we can describe all types of events that we can define the probability for. 
-
-
+  - We use this in addition to the sample space, so we can describe all types of events that we can define the probability for. 
+  
 - $\textrm{P}$ : Probability measure. A function that assigns probability to all of the events in the event space. 
+  - Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
 
-- Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
-
-
-</small>
 
 ---
 # Random variables
@@ -98,9 +88,9 @@ and,
 
 ---
 
-<!-- class: show-only-last-code-result -->
+class: small-output, small
 
-We can simulate this in `R` as well. 
+#### We can simulate this in `R` as well. 
 
 ```{r coinflipRV}
 X <- c(0, 1, 2)
@@ -296,9 +286,9 @@ $$
 ---
 
 
-class: small-output
+class: small-output, scriptsize
 
-```{r coinflip, fig.width = 7, fig.height=4, fig.align = 'center'}
+```{r coinflip, fig.width = 6, fig.height=3.5, fig.align = 'center'}
 Omega <- c('HH', 'HT', 'TH', 'TT')
 probs <- c(0.25, 0.25, 0.25, 0.25)
 
@@ -783,31 +773,11 @@ $$
 -1 \le \rho[X, Y]  \le 1
 $$
 
-
 ---
 
-Suppose we observe the following data from the joint distribution of $X$ and $Y$. 
---
-We are given that $\textrm{Var}[X] = 3$ and $\textrm{Var}[Y] = 6$. 
---
 
-```{r}
-df <- tibble(x = rpois(1e3, lambda = 3),
-             y = rpois(1e3, lambda = 3) + x)
+#### Following content if time, or in handout.
 
-
-ggplot(df, aes(x = x, y = y)) +
-  geom_jitter(height = .2, width =.2, alpha = 0.6) +
-  geom_smooth(method = lm, se = FALSE)
-
-cov(df$x, df$y)
-```
-
-
-How 
-
----
-<p style="color:red">Following content if time, or in handout.</p>
 
 ---
 
@@ -847,11 +817,11 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 
 
 
-- Discrete random variables have non-zero mass on specific points, but for continuous random variables, $\textrm{P}(X = x) = 0$. Instead of mass, we refer to *density* for continuous variables. [2]
+- Discrete random variables have non-zero mass on specific points, but for continuous random variables, $\textrm{P}(X = x) = 0$. Instead of mass, we refer to *density* for continuous variables. [1]
 
 
 
-.footnote[[2] Measure theory give a unified approach to measuring discrete and continuous random variables, but for simplicity, we'll keep the dichotomy of mass vs. density for discrete/continuous here. ]
+.footnote[[1] Measure theory give a unified approach to measuring discrete and continuous random variables, but for simplicity, we'll keep the dichotomy of mass vs. density for discrete/continuous here. ]
 
 - The *probability density function* $f(x)$ for a continuous random variable gives the slope of the CDF at any given point. This means that we can integrate the area under the PDF to get the relative probability of being between two points. 
 
