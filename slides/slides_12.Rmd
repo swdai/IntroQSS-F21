@@ -1,13 +1,13 @@
 ---
-title: "Data visualization (session 1.2)"
-output:
+title: "PLSC30500, Fall 2021"
+subtitle: "1.2 Data visualization"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
   xaringan::moon_reader:
-    css: [default, shinobi]
+    self_contained: true
+    css: [default, uoc_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
       highlightLines: true
-      countIncrementalSlides: false
-    pandoc_args: ["--metadata-file=./common.yaml"]
 ---
 
 ```{r setup, include=FALSE}
@@ -69,10 +69,11 @@ background-image: url("assets/Minard.png")
 background-position: center
 background-size: contain
 
-### One of the "best statistical drawings ever created" (Tufte, *VDQI*): Minard's graphic on Napoléon in Russia   
+### Minard's graphic on Napoléon in Russia   
 
 ???
 
+One of the "best statistical drawings ever created" (Tufte, *VDQI*)
 Source: [Wikipedia](https://en.wikipedia.org/wiki/File:Minard.png)
 
 
@@ -121,7 +122,8 @@ gapminder::gapminder %>%
   filter(year == 2007) %>% 
   select(-year) %>% 
   slice(1:10) %>% 
-  kableExtra::kbl()
+  kableExtra::kbl() %>% 
+  kableExtra::kable_styling(font_size=12)
 
 ```
 
@@ -273,7 +275,8 @@ minard <- read.table("assets/troops.txt", header = T)
 ```{r, echo = F}
 minard %>% 
   slice(1:18) %>% 
-  kableExtra::kbl()
+  kableExtra::kbl()  %>% 
+  kableExtra::kable_styling(font_size=15)
 ```
 
 ---
@@ -283,7 +286,7 @@ ggplot(data = minard,
        mapping = aes(x = long, y = lat, 
                      size = survivors, col = direction,
                      group = group)) + 
-  geom_path()
+  geom_path() #<<
   
 ```
 
@@ -342,7 +345,7 @@ ggplot(data = gapminder_2007,
 
 ---
 
-# Data summary w. `geom_smooth()` 
+## Data summary w. `geom_smooth()` 
 
 
 ```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
@@ -355,7 +358,7 @@ ggplot(data = gapminder_2007,
 
 ---
 
-# Linear version w. `geom_smooth()` 
+## Linear version w. `geom_smooth()` 
 
 
 ```{r, fig.height=4.5, fig.width=5.5, fig.align="center", warning = F, message = F}
@@ -373,7 +376,7 @@ Anything after # (on the same line) is a "comment" and is ignored by R. This is 
 
 ---
 
-# Small multiples w. `facet_wrap()` 
+## Small multiples: `facet_wrap()` 
 
 ```{r, fig.height=5, fig.width=8.5, fig.align="center", warning = F,  message = F}
 ggplot(data = gapminder_2007, 

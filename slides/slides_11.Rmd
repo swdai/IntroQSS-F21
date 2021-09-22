@@ -1,12 +1,14 @@
 ---
-title: "1.1 Getting started"
-subtitle: "PLSC30500, Fall 2021"
+title: "PLSC30500, Fall 2021"
+subtitle: "1.1 Getting started"
 # author: "Andy Eggers & Molly Offer-Westort"
 output: 
   xaringan::moon_reader:
     self_contained: true
-    css: [default]
-  
+    css: [default, uoc_meth.css]
+    nature:
+      highlightLines: true
+
 ---
 
 # This course
@@ -146,13 +148,25 @@ Brief overview of data analysis project
 
 ---
 
-# Assignment for Thursday: 
+# Assignment for Thursday (1): 
 
 ### Learning
 
 Attempt online RStudio primers 1.1 and 1.2: 
   - "Data visualization basics" (https://rstudio.cloud/learn/primers/1.1)
   - "Programming basics" (https://rstudio.cloud/learn/primers/1.2)
+
+--
+
+To note: 
+
+- For beginners: primers are not really sequential, so do 1.2 even if you are lost in 1.1
+- For non-beginners: if these are too basic, work on "R For Data Science" (R4DS) (including exercises)
+- For experienced R programmers: if R4DS too easy for you, let's talk
+
+---
+
+# Assignment for Thursday (2): 
 
 ### Technical setup
 
@@ -162,16 +176,9 @@ On your own machine,
 1. In RStudio, create an RMarkdown document, save it, and click "Knit". 
 
 Did it work? 
-- if so, great! You are ready to work on your own machine.
+- if so, <span class="yellow">great</span>! You are ready to work on your own machine.
 - if not, use (free) RStudio Cloud until you resolve the issue.
 
---
-
-To note: 
-
-- For beginners: primers are not really sequential, so do 1.2 even if you are lost in 1.1
-- For non-beginners: if these are too basic, work on "R For Data Science" (R4DS) (including exercises)
-- For experienced R programmers: if R4DS too easy for you, let's talk
 
 ---
 
