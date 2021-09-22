@@ -5,7 +5,7 @@ subtitle: "2.2 Data wrangling 2: reshaping and merging"
 output: 
   xaringan::moon_reader:
     self_contained: true
-    css: [default, uoc_meth.css]
+    css: [default, uchicago_pol_meth.css]
     nature:
       highlightLines: true
 
