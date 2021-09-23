@@ -2,17 +2,15 @@
 title: 3.1 Brief Overview of Probability
 subtitle: PLSC30500, Fall 2021
 author: 
-  - co-taught by Molly Offer-Westort & Andy Eggers
+  # - co-taught by Molly Offer-Westort & Andy Eggers
   - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
-output:
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
     self_contained: true
+    css: [default, uchicago_pol_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
+      highlightLines: true
       countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
 ---
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -21,7 +19,7 @@ set.seed(60637)
 
 ```{css, echo=FALSE}
 .small-output .remark-code{
-  font-size: x-small;
+  font-size: small;
 }
 
 # .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
@@ -111,19 +109,19 @@ Suppose we are flipping a coin twice, and the coin is fair. This is a random pro
 
 
 name: terms
+class: footnotesize
 
 ## Useful terms in probability
 
-<small>
+
+
 --
 
 -  $\Omega$ : Sample space. Describes all possible outcomes in our setting.
 
 --
 
- - $\omega$ : Generic notation for the realized outcomes in the sample space.[1]
- 
-  .footnote[[1]In probability, we often use uppercase terms to denote the random process, and lowercase terms to denote specific outcomes of that random process.]
+ - $\omega$ : Generic notation for the realized outcomes in the sample space.
 
 --
 
@@ -157,7 +155,10 @@ name: terms
  - Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
 
 
-</small>
+???
+
+In probability, we often use uppercase terms to denote the random process, and lowercase terms to denote specific outcomes of that random process.
+
 
 ---
 ## An aside on mathematical notation 
@@ -236,6 +237,8 @@ Returning to our example of flipping two fair coins. Let's say:
 - We can see the event $AB$ as the overlap in their respective sets, $AB = \{HH\}$
 
 ---
+class: scriptsize
+
 The coin flips are unrelated, so the events should be independent. We can check this mathematically.
 
 --
@@ -269,13 +272,12 @@ $$
 \textrm{P}(A)\textrm{P}(B) = \textrm{P}(A B)
 $$
 
-</small>
 
 ---
 
-<small>
+class: small-output
 
-We can also check if observed proportions in our simulations show the same thing. 
+#### We can also check if observed proportions in our simulations show the same thing. 
 
 ```{r}
 Omega <- c('HH', 'HT', 'TH', 'TT');  probs <- c(0.25, 0.25, 0.25, 0.25)
@@ -309,10 +311,9 @@ PA*PB
 The proportions look pretty close. 
 
 ---
+class: small-output, footnotesize
 
-<small>
-
-What about for a case where $A$ and $B$ are not independent? 
+#### What about for a case where $A$ and $B$ are not independent? 
 
 --
 
@@ -381,6 +382,7 @@ $$
 What is $\textrm{P}(B |A)$?
 
 ---
+class: small-output, small
 
 ## Bayes Rule
 
@@ -396,7 +398,7 @@ Why is Bayes rule so useful?
 It basically tells us how we update probability based on observed data. 
 
 ---
-<small>
+class: small-output, small
 
 ## Bayes Rule
 
@@ -406,7 +408,7 @@ Example: Suppose everyone in the University of Chicago community is given a new 
 - And *false positives*, when we get a positive test for a person who *is not* infected.
 
 ---
-<small>
+class: small-output, small
 
 ## Bayes Rule
 

@@ -4,17 +4,12 @@ subtitle: PLSC30500, Fall 2021
 author: 
   - co-taught by Molly Offer-Westort & Andy Eggers
   - .small-text[(This lecture with references to Gerber & Green (2012))]
-output:
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
     self_contained: true
+    css: [default, uchicago_pol_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
-      countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
-    pdf_document:
-      extra_dependencies: ["mathtools"]
+      highlightLines: true
 ---
 
 ```{r setup, include=FALSE}

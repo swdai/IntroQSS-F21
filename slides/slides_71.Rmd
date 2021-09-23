@@ -2,17 +2,15 @@
 title: 7.1 Statistical Inference
 subtitle: PLSC30500, Fall 2021
 author: 
-  - co-taught by Molly Offer-Westort & Andy Eggers
-  - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
-output:
+  # - co-taught by Molly Offer-Westort & Andy Eggers
+  # - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
     self_contained: true
+    css: [default, uchicago_pol_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
+      highlightLines: true
       countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
 ---
 
 ```{r setup, include=FALSE}
