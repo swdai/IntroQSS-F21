@@ -10,14 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-*\textsc{Note}: Start with the file `ps1_2021.Rmd` (available from the github repository at https://github.com/aeggers/IntroQSS-F21/tree/main/assignments). Save that file locally, open it with RStudio, and modify it to include your answers. To produce a pdf for submission, "knit" the file by clicking on the `Knit` button. Submit both the Rmd file and the knitted PDF via Canvas.* 
+*\textsc{Note}: Start with the file `ps1_2021.Rmd` (available from the github repository at https://github.com/UChicago-pol-methods/IntroQSS-F21/tree/main/assignments). Save that file locally, open it with RStudio, and modify it to include your answers. To produce a pdf for submission, "knit" the file by clicking on the `Knit` button. Submit both the Rmd file and the knitted PDF via Canvas.* 
 
 ## Question 1: US presidential election results 
 
 **This week we will load data directly from the course github repository. If you have loaded the `tidyverse` library and you have an internet connection, the next code chunk will load the data. Don't worry if you don't understand this code yet.**
 
 ```{r, message = F}
-data_path <- "https://raw.github.com/aeggers/IntroQSS-F21/main/data/"
+data_path <- "https://raw.githubusercontent.com/UChicago-pol-methods/IntroQSS-F21/main/data/"
 df <- read_csv(str_c(data_path, "yearly_county_pres_results_wide.csv"))
 ```
 
@@ -68,7 +68,7 @@ vd <- read_csv(str_c(data_path, "vdem_2010_extract.csv"))
 ```{r, warning = F}
 # replace this with your 2a plot code
 ```
-**2b) Now make the same figure faceted by population. Add a linear regression line (use `geom_line(method = lm)`). How does the relationship between GDP per capita and democracy differ across continents?** 
+**2b) Now make the same figure faceted by continent. Add a linear regression line (use `geom_smooth(method = lm)`). How does the relationship between GDP per capita and democracy differ across continents?** 
 
 ```{r, warning = F}
 # replace this with your 2b plot code
