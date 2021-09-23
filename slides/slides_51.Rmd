@@ -1,13 +1,13 @@
 ---
-title: "Regression basics"
-output:
+title: "PLSC30500, Fall 2021"
+subtitle: "5.1 Regression basics"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
+    self_contained: true
+    css: [default, uchicago_pol_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
-      countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
+      highlightLines: true
 ---
 
 ```{r setup, include=FALSE}

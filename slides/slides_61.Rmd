@@ -1,14 +1,13 @@
 ---
-title: "Regression intuition"
-output:
+title: "PLSC30500, Fall 2021"
+subtitle: "6.1 Regression Intuition"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
   xaringan::moon_reader:
-    css: [default, robot, robot-fonts]
+    self_contained: true
+    css: [default, uchicago_pol_meth.css]
     nature:
-      highlightStyle: atelier-lakeside-light
-      highlightLines: yes
-      countIncrementalSlides: no
-    pandoc_args: --metadata-file=./common.yaml
-
+      highlightLines: true
 ---
 
 ```{r setup, include=FALSE}
@@ -22,7 +21,6 @@ class: inverse, middle, center
 # Two key facts about regression 
 
 
-<!-- Todo: might add a thing about interpreting the coefficient by plotting it via predictions, etc -- what IS the best way to do that, anyway? might be sjplot plot_model  -->
 
 ---
 
@@ -168,7 +166,7 @@ This also works when you have many covariates $X_1, X_2, \ldots$, not just one
 ---
 
 #### The math behind the FWL theorem
-s
+
 Consider three fitted regression equations:
 
 $$\begin{eqnarray}
