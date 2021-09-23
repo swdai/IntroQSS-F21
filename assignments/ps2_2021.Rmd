@@ -1,7 +1,7 @@
 ---
 title: "Problem set 2"
 author: "Your name here"
-date: "Due 10/11/2021 at 5pm"
+date: "Due 10/8/2021 at 5pm"
 output: pdf_document
 ---
 
@@ -9,12 +9,12 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-*\textsc{Note}: Start with the file `ps2_2021.Rmd` (available from the github repository at https://github.com/aeggers/IntroQSS-F21/tree/main/assignments). Modify that file to include your answers. Make sure you can "knit" the file (e.g. in RStudio by clicking on the `Knit` button). Submit both the Rmd file and the knitted PDF via XXXX.* 
+*\textsc{Note}: Start with the file `ps2_2021.Rmd` (available from the github repository at https://github.com/UChicago-pol-methods/IntroQSS-F21/tree/main/assignments). Modify that file to include your answers. Make sure you can "knit" the file (e.g. in RStudio by clicking on the `Knit` button). Submit both the Rmd file and the knitted PDF via Canvas* 
 
 
 ## Question 1: US presidential election results (again) 
 
-**Download the file "tidy_county_pres_results.csv.zip" from the repository (https://github.com/aeggers/IntroQSS-F21/tree/main/data), unzip it, and put the CSV file in the same directory as your Rmd file.**
+**Download the file "tidy_county_pres_results.csv.zip" from the repository (https://github.com/UChicago-pol-methods/IntroQSS-F21/tree/main/data), unzip it, and put the CSV file in the same directory as your Rmd file.**
 
 **Then load the data:**
 
@@ -66,6 +66,10 @@ df <- read_csv("tidy_county_pres_results.csv")
 ```{r}
 # your code here 
 ```
+
+## Question 2: independent project data
+
+Choose a dataset that you will use for your independent project. As noted last week, it should have many observations (but not too many) and many variables. And it should be interesting to you! Load the data and make a figure using tools we have learned in class.
 
 
 
