@@ -115,6 +115,10 @@ You will get stuck.
 
 Please also *answer* questions on our private StackOverflow.
 
+--
+
+If you need to email one of us, please email both of us. 
+
 ---
 
 # What we do with data
