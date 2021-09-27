@@ -1,4 +1,4 @@
-﻿Country,Year,Proportion_Consumption_Imported,Proportion_Consumption_From_UK,Proportion_Imported_From_UK,Tons_Imported ,Tons_Produced,Tons_Exported,,,
+﻿Country,Year,Proportion_Consumption_Imported,Proportion_Consumption_From_UK,Proportion_Imported_From_UK,Tons_Imported ,Tons_Produced,Tons_Exported
 United Kingdom,1893,0.02,99.98,N/A,25000,164326000,37488000
 United Kingdom,1894,0,100,N/A,7000,188277000,42687000
 United Kingdom,1895,0.01,99.99,N/A,14000,189661000,42907000
