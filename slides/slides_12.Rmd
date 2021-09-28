@@ -150,6 +150,13 @@ Basic components of plotting with `ggplot`:
 - mapping of attributes (columns of data) to aesthetics
 - geometric representations of data (`geom`s)
 
+--
+
+To get started: 
+
+- install the package: `install.packages("tidyverse")` [first time]
+- load the package: `library(tidyverse)` [every time]
+
 
 
 ---
