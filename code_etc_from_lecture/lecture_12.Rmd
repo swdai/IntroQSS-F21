@@ -1,0 +1,60 @@
+---
+title: "Day 2 Live Coding"
+author: "Andy Eggers"
+date: "9/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Loading data
+
+```{r}
+getwd()
+roster_IQSS_F21 <- read_csv("~/teaching/data_2021/roster_IQSS-F21.csv")
+View(roster_IQSS_F21)
+```
+
+
+## Built-in data 
+
+```{r}
+head(iris)
+head(mtcars)
+
+
+library(tidyverse)
+head(mpg)
+```
+
+## Geom_path example
+
+```{r}
+gm <- gapminder::gapminder
+gm_usa <- gm %>% 
+  filter(country == "United States")
+
+ggplot(data = gm_usa,
+       mapping = aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() + 
+  geom_path()
+  
+
+gm_iraq <- gm %>% 
+  filter(country == "Iraq")
+
+gm_iraq %>% 
+  mutate(year_selected = ifelse(year %in% c(1977, 1987, 1992), year, "")) %>% 
+ggplot(mapping = aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() + 
+  geom_path() + 
+  geom_text(aes(label = year_selected)) + 
+  theme_minimal()
+
+ggsave("save_it.pdf")
+
+```
+
