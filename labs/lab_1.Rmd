@@ -11,6 +11,7 @@ library(tidyverse)
 library(scales)
 ```
 
+## Use scales package to force regular notation
 
 ## Goals for today
 
@@ -41,11 +42,11 @@ head(df)  #show col names and several rows of data
 
 **What are the variables in the data set?**
 
-YOUR ANSWER HERE
+Country, Year, Propotion_Consumption_Imported, etc.
 
 **What does each row represent? (i.e. what is the \textit{unit of observation}?)**
 
-YOUR ANSWER HERE 
+Observations
  
 **Notice that the first several rows of ``Proportion_Imported_From_UK'' are empty. Why might this data be missing? (hint: look at column 1) **
 
@@ -71,6 +72,16 @@ Incomplete code:
 
 ```{r, message = FALSE}
 #YOUR CODE HERE
+plot_1 <- ggplot(data = df, 
+                     mapping = aes(x = Year, 
+                                   y = Proportion_Imported_From_UK, 
+                                   linetype = Country)) + 
+      geom_line() + 
+      labs(x = "Year", 
+           y = "Proportion of Consumed Coal Imported from UK", 
+           title = "Dependence on UK Coal Over Time") 
+    
+plot_1
 ```
 
 
@@ -95,6 +106,18 @@ Incomplete code:
 
 ```{r, message = FALSE}
 #YOUR CODE HERE
+plot_2 <- ggplot(data = df, 
+                     mapping = aes(x = Tons_Produced, 
+                                   y = Tons_Exported)) + 
+      geom_point() +
+      geom_smooth(method = "lm", 
+                  color = "red") + 
+    # normally the line would be blue
+      labs(x = "Tons Produced", 
+           y = "Tons Exported", 
+           title = "Coal Production and Exports")
+    
+    plot_2
 ```
 
 **What relationship does this plot represent?**
@@ -134,6 +157,17 @@ Incomplete code:
 
 ```{r, message = FALSE}
 #YOUR CODE HERE
+    plot_3 <- ggplot(data = df, 
+                          mapping = aes(x = Tons_Produced, 
+                                         y = Tons_Exported, 
+                                         color = Country)) + 
+      geom_point() + 
+      geom_smooth(method = "lm") + 
+      labs(x = "Tons Produced", 
+      y = "Tons Exported", 
+      title = "Production/Exports") +
+      facet_wrap(vars(Country), scales = 'free')
+    plot_3
 ```
 
 **What issues do you see with this plot?**
@@ -150,6 +184,7 @@ None of the code is provided for you. Think about what you can use from the prev
 
 ```{r, message = FALSE}
 #YOUR CODE HERE
+df <- ggplot(data)
 ```
 
 *While colors can be a powerful visualization tool, line type, point shape, and other visual elements can make your work more accessible to people who are colorblind. Alternatively, there are packages outside the tidyverse (e.g. ``ggthemes``) which contain colorblind friendly palettes or allow you to manually define a palette using several different color reference systems.*
