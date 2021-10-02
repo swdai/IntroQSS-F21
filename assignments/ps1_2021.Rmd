@@ -1,7 +1,7 @@
 ---
 title: "Problem set 1"
 author: "Siwei Dai"
-date: "Due Monday 10/4/2021 at 5pm"
+date: \today
 output: pdf_document
 ---
 
@@ -67,10 +67,15 @@ df2 <- read_csv(str_c(data_path, "yearly_county_pres_results_long.csv"))
 **1d) Make a plot showing both the Democratic vote share and Democratic county share (vertical axis) in each year (horizontal axis), with a different color for each series. Your figure should include a legend.**
 
 ```{r}
-# replace this with your 1d plot code 
+plot1d <- ggplot (data = df, mapping = aes(x = year)) +
+          geom_line(mapping = aes(y = dem_vote_share, color = 'Democratic vote share')) +
+          geom_line(mapping = aes(y = dem_county_share, color = 'Democratic county share')) 
+plot1d
+          
 ```
 
-**1e) Which of these two plots do you prefer, and why?**
+**1e) Which of these two plots do you prefer, and why?**  
+I prefer the 1d plot as it shows the variance in which democratic county vote share and vote share changes through time.  
 
 ## Question 2: democracy and GDP
 
@@ -83,13 +88,22 @@ vd <- read_csv(str_c(data_path, "vdem_2010_extract.csv"))
 **2a) Make a scatterplot of the V-Dem polyarchy score (vertical axis) against GDP per capita (horizontal axis). Make the color of the dots reflect the continent, and the size reflect the population. Show the horizontal axis on the log scale.**
 
 ```{r, warning = F}
-# replace this with your 2a plot code
+plot2a <- ggplot(data = vd, mapping = aes(x = gdppc, y = polyarchy)) +
+        geom_point(mapping = aes(color = continent_name, size = pop)) +
+        scale_x_continuous(trans = 'log')
+plot2a
 ```
 **2b) Now make the same figure faceted by continent. Add a linear regression line (use `geom_smooth(method = lm)`). How does the relationship between GDP per capita and democracy differ across continents?** 
 
 ```{r, warning = F}
-# replace this with your 2b plot code
+plot2b <- ggplot(data = vd, 
+                 mapping = aes(x = gdppc, y = polyarchy)) +
+        geom_point(mapping = aes(size = pop, color = continent_name)) +
+        geom_smooth(method = 'lm') +
+        facet_wrap(facets = vars(continent_name))
+plot2b
 ```
+In Asia and in Africa, democracy and GDP per capita have a negative correlation whereas in Europe, North America and South America, they have a positive correlation. 
 
 ## Question 3: independent project brainstorming (not graded)
 
