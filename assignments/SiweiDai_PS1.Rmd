@@ -75,7 +75,7 @@ plot1d
 ```
 
 **1e) Which of these two plots do you prefer, and why?**  
-I prefer the 1d plot as it shows the variance in which democratic county vote share and vote share changes through time.  
+I prefer the 1d plot as it shows the variance in which democratic county vote share and vote share changes over time.  
 
 ## Question 2: democracy and GDP
 
@@ -103,10 +103,19 @@ plot2b <- ggplot(data = vd,
         facet_wrap(facets = vars(continent_name))
 plot2b
 ```
-In Asia and in Africa, democracy and GDP per capita have a negative correlation whereas in Europe, North America and South America, they have a positive correlation. 
+In Asia and in Africa, democracy and GDP per capita have a negative correlation whereas in Europe, North America and South America, they have a positive correlation. The correlation is hard to identify in Oceania.  
 
 ## Question 3: independent project brainstorming (not graded)
 
 For your independent project you will find and analyze a dataset using the tools we learn in this course. At this stage we want you to think about possible datasets. Identify three datasets you might like to work with, and assess how practical and appropriate the dataset might be for our class. It should have many observations (but not e.g. billions, so that you can't easily work with it) and it should have more than one variable/attribute for each observation. 
+
+**Dataset 1: Chinese Political Elite Database**  
+This dataset needs some recoding but could be used in this course.  
+
+**Dataset 2: V-Dem**
+
+**Dataset 3: Global Transitional Justice Dataset (1946 - 2016)**  
+Or the Dataset on Authoritarian Elites to be published Dec. 2021.
+
 
 
