@@ -34,6 +34,83 @@ This week: "data wrangling" to prepare data for plotting (and analysis).
 
 ---
 
+background-image: url("assets/healy_1.jpeg")
+background-position: center
+background-size: contain
+
+.tiny[Credit: Kieran Healy]
+
+---
+
+background-image: url("assets/healy_2.jpeg")
+background-position: center
+background-size: contain
+
+.tiny[Credit: Kieran Healy]
+
+---
+
+background-image: url("assets/healy_3.jpeg")
+background-position: center
+background-size: contain
+
+.tiny[Credit: Kieran Healy]
+
+---
+
+class: inverse, middle, center
+
+# Quick detour: paths and code completion in RStudio
+
+---
+
+# What is a file path? 
+
+`R` finds a file (e.g. to load a dataset) using its **file path**.
+
+For example: 
+```{r, eval = F}
+~/Dropbox/courses/PLSC_30500_2021/slides_21.Rmd
+C:\Schoolwork\stats_courses\PLSC_30500\File.txt
+```
+
+--
+
+Above are examples of **absolute** paths: these are like street addresses.
+
+--
+
+There are also **relative** paths: these are like street directions (and thus the meaning depends on where you are).
+
+```{r, eval = F}
+PLSC_305000_2021/slides_21.Rmd 
+.\..\PLSC_30500\File.txt  # .. means "go up one level"
+```
+
+"Where you are" is the **working directory**.
+
+---
+
+# How to use paths in your code: our recommendation
+
+1. Open RStudio by double-clicking on the file you're working on: your working directory is the location of the file
+2. Use relative paths (relative to the file) 
+
+--
+
+
+#### To show with live coding:
+
+- how to find out what your working directory is (`getwd()`)
+- how to specify a relative path using code completion (tab key)
+- how to use code completion for other things (variable names, function names, function arguments, help file extracts)
+
+???
+
+Start with an Rmd file; double click on it; show `getwd()`; load a file. 
+
+---
+
 class: inverse, middle, center
 
 # Some key data wrangling tools in `dplyr`: `select()`, `filter()`, `group_by()`, `summarize()`, `mutate()`
@@ -57,6 +134,8 @@ Now by typing `vdem` you can access the dataset.
 ???
 
 Can also get necessary subset on repository: data/vdem_long_extract.csv
+
+Note one objective here is just to practice the skills on political science data rather than e.g. `mpg` or `diamonds`.
 
 
 ---
@@ -95,7 +174,9 @@ for shortcut
 
 .small-output[
 ```{r}
-vdem %>% as_tibble()   # "tibble" package is part of "tidyverse"
+library(tidyverse)
+vdem %>% 
+  as_tibble()   # "tibble" package is part of "tidyverse"
 ```
 ]
 
@@ -122,12 +203,10 @@ Can be more readable.
 ### Pick out columns with `select()`
 
 
-
 ```{r}
-vd <- as_tibble(vdem)
-vd %>% 
-  select(country_text_id, year, e_regionpol_6C, 
-         v2x_polyarchy, e_migdppc)
+vd <- as_tibble(vdem) %>%  
+  select(country_name, year, e_regionpol_6C,  #<<
+         v2x_polyarchy, e_migdppc)  #<<
 ```
 
 ---
@@ -137,8 +216,6 @@ vd %>%
 
 ```{r}
 vd %>% 
-  select(country_text_id, year, e_regionpol_6C, 
-         v2x_polyarchy, e_migdppc) %>% 
   filter(year == 2015) #<<
 ```
 
@@ -148,99 +225,135 @@ vd %>%
 
 ```{r}
 vd %>% 
-  select(country_text_id, year, e_regionpol_6C, v2x_polyarchy, e_migdppc) %>% 
   filter(year == 2015) %>% 
   mutate(polyarchy_times_100 = 100*v2x_polyarchy) %>% #<<
-  select(country_text_id, year, v2x_polyarchy, polyarchy_times_100)
+  select(country_name, v2x_polyarchy, polyarchy_times_100)
 ```
 
 ---
 
+### Coding exercise: reverse-engineer the plot!
 
-### Plotting democratization for each country 
-
-```{r fig.height=4.5, fig.width=9, fig.align="center", message = F, warning = F}
+```{r rev-eng-0, echo = F, fig.height=5.5, fig.width=9}
 vd %>% 
-  filter(year > 1900) %>% 
-  ggplot(aes(x = year, y = v2x_polyarchy, 
-             group = country_name)) + 
-  geom_line(alpha = .5)
+  filter(country_name %in% c("Iraq", "France", "China", #<<
+                             "United States of America")) %>%  #<<
+  ggplot(aes(x = year, y = v2x_polyarchy, col = country_name)) +
+  geom_line()
+```
+---
+
+```{r ref.label = "rev-eng-0", fig.height=5.5, fig.width=9}
 ```
 
 ---
 
-### Plotting democratization for each country (2)
+### Coding exercise: reverse-engineer the plot!
 
-```{r fig.height=4.5, fig.width=9, fig.align="center", message = F, warning = F}
+```{r rev-eng-1, echo = F, fig.height=5.5, fig.width=9, message = F}
 vd %>% 
-  filter(year > 1900) %>% 
-  ggplot(aes(x = year, y = v2x_polyarchy, 
-             group = country_name, 
-             col = factor(e_regionpol_6C))) +  #<<
-  geom_line(alpha = .5)
+  group_by(e_regionpol_6C, year) %>% 
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) %>% 
+  ggplot(aes(x = year, y = mean_polyarchy, 
+             col = factor(e_regionpol_6C))) +
+  geom_line() + 
+  scale_color_discrete(labels = c("E. Europe & Central Asia",
+                                "Latin America & Caribbean",
+                                "Middle East & N. Africa",
+                                "Sub-Saharan Africa",
+                                "W. Europe & N. America",
+                                "Asia & Pacific")) +
+  labs(color = "Region",
+       caption = "Regions from e_regionpol_6C (V-Dem)",
+       x = "Year",
+       y = "Average polyarchy score in region")
 ```
-
 ---
 
-### Extract column summaries with `summarize()`
+## First task: compute average polyarchy score within region over time
 
+First for the whole dataset:
 ```{r}
 vd %>% 
-  filter(year == 2015) %>% 
-  summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
-            mean_gdppc = mean(e_migdppc, na.rm = T))
+  group_by(e_regionpol_6C) %>% 
+  summarize(mean_polyarchy = mean(v2x_polyarchy))
 ```
 
 --
 
-A "base `R`" alternative: 
+Oops! 
 
+
+---
+
+## Try again: compute average polyarchy score within region over time
+
+First for the whole dataset:
 ```{r}
-apply(vd[vd$year == 2015, c("v2x_polyarchy", "e_migdppc")],
-      2, mean, na.rm = T)
+vd %>% 
+  group_by(e_regionpol_6C) %>% 
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) #<<
 ```
 
 ---
 
-### Why `na.rm = T`? 
+## Getting closer:
+
+Now for a single year:
+```{r}
+vd %>% 
+  filter(year == 2015) %>%  #<<
+  group_by(e_regionpol_6C) %>% 
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) 
+```
+
+---
+
+## Average polyarchy score within region over time 
 
 ```{r}
 vd %>% 
-  filter(year == 2015) %>% 
-  summarize(mean_poly = mean(v2x_polyarchy),
-            mean_gdppc = mean(e_migdppc)) 
+  group_by(e_regionpol_6C, year) %>%  #<<
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) 
 ```
-
 
 ---
 
-### Grouped summaries
+### Now to plot it
 
-```{r}
+```{r, fig.height=4, fig.width=9}
 vd %>% 
-  filter(year > 1900) %>% 
-  group_by(year) %>%  #<<
-  summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
-            mean_gdppc = mean(e_migdppc, na.rm = T))
+  group_by(e_regionpol_6C, year) %>%
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) %>% 
+  ggplot(aes(x = year, y = mean_polyarchy, col = e_regionpol_6C)) + 
+  geom_line()
 ```
+
+Hmm.
 
 ---
 
-### Plotting grouped summaries 
+We need to tell `ggplot` that `e_regionpol_6C` is a categorical variable, not a  continuous variable.
 
-
-```{r fig.height=4.5, fig.width=9, fig.align="center"}
+```{r, fig.height=4, fig.width=9}
 vd %>% 
-  filter(year > 1900) %>% 
-  group_by(year) %>%
-  summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
-            mean_gdppc = mean(e_migdppc, na.rm = T)) %>% 
-  ggplot(aes(x = year, y = mean_poly)) +  #<<
-  geom_line()  #<<
+  group_by(e_regionpol_6C, year) %>%
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) %>% 
+  ggplot(aes(x = year, y = mean_polyarchy, col = factor(e_regionpol_6C))) + #<< 
+  geom_line()
 ```
 
 
 ---
+
+#### The rest is fiddly stuff with labels. 
+
+
+```{r ref.label = "rev-eng-1", fig.height=5.5, fig.width=9, eval = F}
+```
+---
+
+
 
 ### Alternative way to do something similar
 
@@ -248,7 +361,8 @@ vd %>%
 ```{r fig.height=4.5, fig.width=9, fig.align="center", warning = F, message = F}
 vd %>% 
   filter(year > 1900) %>% 
-  ggplot(aes(x = year, y = v2x_polyarchy)) +  #<<
+  ggplot(aes(x = year, y = v2x_polyarchy,
+             col = factor(e_regionpol_6C))) +  #<<
   geom_smooth(span = .5)  #<<
 ```
 
@@ -273,31 +387,3 @@ vd %>%
 ```
 
 
----
-
-
-### Plotting grouped summaries (3)
-
-
-```{r fig.height=4.5, fig.width=9, fig.align="center", message = F}
-vd %>% 
-  filter(year > 1900) %>% 
-  group_by(year, e_regionpol_6C) %>% #<<
-  summarize(mean_poly = mean(v2x_polyarchy, na.rm = T),
-            mean_gdppc = mean(e_migdppc, na.rm = T)) %>% 
-  ggplot(aes(x = year, y = mean_poly, col = factor(e_regionpol_6C))) +  #<<
-  geom_line()
-```
-
-???
-
-1: Eastern Europe and Central Asia (including Mongolia and German Democratic Republic)
-2: Latin America and the Caribbean
-3: The Middle East and Northern Africa (including Israel and Turkey, excluding Cyprus)
-4: Sub-Saharan Africa
-5: Western Europe and North America (including Cyprus, Australia and New Zealand, but
-excluding German Democratic Republic)
-6: Asia and Pacific (excluding Australia and New Zealand; see 5)
-
-
-<!-- This seems a little thin. What else could we do with class time? Start Thursday stuff I guess. --> 
