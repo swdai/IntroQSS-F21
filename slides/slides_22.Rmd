@@ -21,7 +21,7 @@ library(tidyverse)
 }
 ```
 
-# The big picture 
+# The big picture (again)
 
 Components of a `ggplot`: 
 
@@ -59,8 +59,8 @@ pre {
 ```
 
 
-```{r echo = F, message = F}
-vdw <- read_csv("~/Dropbox/teaching/chicago/methods_sequence/IntroQSS/data/vdem_extract_wide.csv")
+```{r echo = T, message = F}
+vdw <- read_csv("./../data/vdem_extract_wide.csv")
 vdw
 ```
 
@@ -181,6 +181,18 @@ Mission accomplished!
 
 ---
 
+## Advanced version 
+
+```{r}
+vdw %>% 
+  pivot_longer(cols = polyarchy_1980:gdppc_2015,
+               names_to = c(".value", "year"),
+               names_pattern = "(.+)_(.+)")
+```
+
+
+---
+
 ## Merging datasets 
 
 Suppose we want to analyze by continent. No continent labels: 
@@ -194,11 +206,8 @@ tidy_vd
 
 But from [this url](https://datahub.io/JohnSnowLabs/country-and-continent-codes-list/r/country-and-continent-codes-list-csv.csv) we can download this dataset (also in course repo):
 
-```{r, echo = F, message = F, warning = F}
+```{r, echo = T, message = F, warning = F}
 codes <- read_csv("./../data/country-and-continent-codes-list-csv.csv")
-```
-
-```{r}
 codes
 ```
 
@@ -215,13 +224,18 @@ codes %>%
 
 ---
 
-
-Compare:
-
 ```{r}
 tidy_vd %>% 
-  select(country_name, country_text_id, year, polyarchy, gdppc)
+  select(country_name, country_text_id, year, polyarchy, gdppc) %>% 
+  print(n = 4)
 ```
+
+```{r}
+codes %>% 
+  select(Three_Letter_Country_Code, Country_Name, Continent_Name) %>% 
+  print(n = 4)
+```
+
 
 We want to merge `codes` into `tidy_vd`: wherever `country_text_id` in `tidy_vd` matches `Three_Letter_Country_Code` in `codes`, we want to add the `Continent_Name` from `codes`.    
 

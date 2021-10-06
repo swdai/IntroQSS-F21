@@ -98,12 +98,16 @@ PLSC_305000_2021/slides_21.Rmd
 
 --
 
+Why use relative paths? To facilitate **collaboration**.
+
+--
+
 
 #### To show with live coding:
 
-- how to find out what your working directory is (`getwd()`)
-- how to specify a relative path using code completion (tab key)
-- how to use code completion for other things (variable names, function names, function arguments, help file extracts)
+- how to find out what your working directory is (in RStudio, and using `getwd()`)
+- how to specify a relative path using code completion in RStudio (tab key)
+- how to use code completion in RStudio for other things (variable names, function names, function arguments, help file extracts)
 
 ???
 
@@ -207,6 +211,7 @@ Can be more readable.
 vd <- as_tibble(vdem) %>%  
   select(country_name, year, e_regionpol_6C,  #<<
          v2x_polyarchy, e_migdppc)  #<<
+vd
 ```
 
 ---
@@ -241,6 +246,17 @@ vd %>%
   ggplot(aes(x = year, y = v2x_polyarchy, col = country_name)) +
   geom_line()
 ```
+
+???
+
+Polyarchy is a multiplicative ("necessary conditions") index with five components: 
+
+1. Elected officials
+2. Clean elections
+3. Associational autonomy
+4. Inclusive citizenship
+5. Freedom of expression and alternative sources of information
+
 ---
 
 ```{r ref.label = "rev-eng-0", fig.height=5.5, fig.width=9}

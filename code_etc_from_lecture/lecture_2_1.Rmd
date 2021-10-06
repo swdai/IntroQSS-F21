@@ -1,0 +1,23 @@
+---
+title: "Lecture 2.1"
+author: "Andy Eggers"
+date: "10/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+dat <- read_csv(file = "./../data/vdem_2010_extract.csv")
+
+dat %>% 
+  select(country_name, continent_name)
+
+
+```
+
+
+

@@ -104,12 +104,16 @@ PLSC_305000_2021/slides_21.Rmd
 
 --
 
+Why use relative paths? To facilitate **collaboration**.
+
+--
+
 
 #### To show with live coding:
 
-- how to find out what your working directory is (`getwd()`)
-- how to specify a relative path using code completion (tab key)
-- how to use code completion for other things (variable names, function names, function arguments, help file extracts)
+- how to find out what your working directory is (in RStudio, and using `getwd()`)
+- how to specify a relative path using code completion in RStudio (tab key)
+- how to use code completion in RStudio for other things (variable names, function names, function arguments, help file extracts)
 
 ???
 
@@ -2364,6 +2368,24 @@ Can be more readable.
 vd &lt;- as_tibble(vdem) %&gt;%  
 * select(country_name, year, e_regionpol_6C,
 *        v2x_polyarchy, e_migdppc)
+vd
+```
+
+```
+## # A tibble: 27,192 x 5
+##    country_name  year e_regionpol_6C v2x_polyarchy e_migdppc
+##    &lt;chr&gt;        &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+##  1 Mexico        1789              2         0.026      1304
+##  2 Mexico        1790              2         0.026      1298
+##  3 Mexico        1791              2         0.026      1331
+##  4 Mexico        1792              2         0.026      1353
+##  5 Mexico        1793              2         0.026      1374
+##  6 Mexico        1794              2         0.026      1385
+##  7 Mexico        1795              2         0.026      1388
+##  8 Mexico        1796              2         0.026      1380
+##  9 Mexico        1797              2         0.026      1356
+## 10 Mexico        1798              2         0.026      1341
+## # … with 27,182 more rows
 ```
 
 ---
@@ -2428,6 +2450,17 @@ vd %&gt;%
 ### Coding exercise: reverse-engineer the plot!
 
 ![](data:image/png;base64,#slides_21_files/figure-html/rev-eng-0-1.png)&lt;!-- --&gt;
+
+???
+
+Polyarchy is a multiplicative (&quot;necessary conditions&quot;) index with five components: 
+
+1. Elected officials
+2. Clean elections
+3. Associational autonomy
+4. Inclusive citizenship
+5. Freedom of expression and alternative sources of information
+
 ---
 
 
