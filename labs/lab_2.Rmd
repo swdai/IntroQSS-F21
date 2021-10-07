@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, echo=FALSE, include = FALSE}
 library(tidyverse)
+data_path <- './../data/gdp_per_cap/Data.csv'
 ```
 
 ## Getting started
@@ -22,7 +23,7 @@ First, we will make sure everyone can extract data from a zip file. One option i
 *Note that your file path may be different. Adjust accordingly!*
 
 ```{r}
-gdp_per_cap <- read_csv('data/gdp_per_cap.zip')
+gdp_per_cap <- read_csv(data_path)
 ```
 
 Notice the warning text. It is telling us that there are multiple csv files within the zip file. This data was downloaded from the World Bank earlier this year in this format. Read the name of the file carefully. What does it say at the end of the file name?
@@ -32,7 +33,7 @@ If you look inside the zip file, you'll notice another csv with \textit{almost} 
 We don't really need to worry that R didn't read the metadata, because it is only useful as documentation. If you do have multiple csv files in a zip file, you can sepcify which one you want to read, but you need to unzip first. 
 
 ```{r}
-gdp_per_cap_2 <- read_csv(unz(description =  'data/gdp_per_cap.zip', 
+gdp_per_cap_2 <- read_csv(unz(description =  './../data/gdp_per_cap.zip', 
                   filename =   'b9988620-72da-4463-b88c-93fa96b7075f_Data.csv'))
 ```
 
@@ -84,7 +85,8 @@ gdp_per_cap_tidy <- gdp_per_cap %>%
 
 
 ```{r}
-
+gdp_per_cap_tidy <- gdp_per_cap %>%
+  pivot_longer(cols= '1995 [YR1995]':'2015 [YR2015]', names_to = "Year", values_to = 'gdppc')
 ```
 
 *There are more efficent ways to specify your columns. Try to come up with at least one.*
@@ -104,7 +106,7 @@ head(gdp_per_cap_tidy)
 Fill in this code to make the "year" variable more useable: 
 
 gdp_per_cap_tidy <- ________ %>% 
-  ______(year = ______(year, 
+  mutate(year = ______(year, 
                        '1995 [YR1995]' = 1995,
                        '1996 [YR1996]' = 1996,
                        '_____________' = 1997,
@@ -128,7 +130,8 @@ gdp_per_cap_tidy <- ________ %>%
                        '2015 [YR2015]' = 2015))
                        
 ```{r}
-
+gdp_per_cap_tidy <- gdp_per_cap_tidy %>% 
+  separate(Year, into = c('Year', NA), sep = ' ')
 ```
 
 Do we need all of the variables in the dataset? Which would you remove and why? Are there any you would rename? Fill in the code to rename and remove variables you want to change:
@@ -138,19 +141,22 @@ gdp_per_cap_tidy <- gdp_per_cap_tidy %>%
   select(_______)
 
 ```{r}
-
+gdp_per_cap_tidy <- gdp_per_cap_tidy %>%
+  rename('country' = `Country Name`, 'ccode' = `Country Code`)
 ```
 
 ## Subsetting the Data
 
 This dataset now looks much cleaner, is easier to work with, and does not contain as much unnecessary information. Now suppose that we only want to keep countries for which we have at least some data (i.e. remove countries which are missing "gdppc" for all years in the data). How would you approach this problem? Fill in the code to do it for you.
 
-gdp_per_cap_tidy_subset <- __________ %>%
+gdp_per_cap_tidy_subset <- gdp_per_cap_tidy %>%
   group_by(_______) %>%
   _______(!all(______(gdppc))) 
 
 ```{r}
-
+gdp_per_cap_tidy_subset <- gdp_per_cap_tidy %>%
+  group_by(country) %>% #if you don't group_by, then no change would been done at all
+  filter(!all(is.na(gdppc))) 
 ```
 
 This doesn't seem to work. Any guesses as to why? We can check if values we expect to be "NA" actually are by running this code:
@@ -170,7 +176,8 @@ It is not numeric, but we want it to be. How can we coerce these values to be nu
 **Your Answer**
 
 ```{r}
-
+gdp_per_cap_tidy <- gdp_per_cap_tidy %>% 
+  mutate(gdppc = as.numeric(gdppc))
 ```
 
 As you can see, when we told R that the column should contain numbers, there were some values that it didn't know how to handle (because they weren't numbers). By default, it sets these values to "NA" which actually makes them easier for us to filter out.
@@ -186,20 +193,29 @@ We've managed to remove all the countries (the dataset actually includes regions
 Complete this code:
 
 gdp_per_cap_change <- gdp_per_cap_tidy_subset %>%
-  _____(_____) %>%
-  _____(country, year, by_group = TRUE) %>%
-  _____(rate = 100 * (gdppc - ___ (gdppc)) /____(gdppc)) %>%
+  group_by(country) %>%
+  arrange(country, year, by_group = TRUE) %>%
+  mutate(rate = 100 * (gdppc - lag (gdppc)) /lag(gdppc)) %>%
   ungroup()
 
 ```{r}
+gdp_per_cap_change <- gdp_per_cap_tidy_subset %>%
+  group_by(country) %>%
+  arrange(country, Year, by_group = TRUE) %>%
+  mutate(rate = 100 * (gdppc - lag (gdppc)) /lag(gdppc)) %>%
+  ungroup()
 
 ```
 
 Code for your plot goes here:
 
 ```{r}
-
+plot <- gdp_per_cap_change %>% 
+  ggplot(aes(x = rate)) + 
+  geom_histogram(binwidth = 1) # binwidth matches with the scale on x
+plot
 ```
+
 
 ## Merging datasets
 
