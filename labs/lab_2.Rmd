@@ -22,7 +22,7 @@ First, we will make sure everyone can extract data from a zip file. One option i
 *Note that your file path may be different. Adjust accordingly!*
 
 ```{r}
-gdp_per_cap <- read_csv('data/gdp_per_cap_1995_2015.zip')
+gdp_per_cap <- read_csv('data/gdp_per_cap.zip')
 ```
 
 Notice the warning text. It is telling us that there are multiple csv files within the zip file. This data was downloaded from the World Bank earlier this year in this format. Read the name of the file carefully. What does it say at the end of the file name?
@@ -32,7 +32,7 @@ If you look inside the zip file, you'll notice another csv with \textit{almost} 
 We don't really need to worry that R didn't read the metadata, because it is only useful as documentation. If you do have multiple csv files in a zip file, you can sepcify which one you want to read, but you need to unzip first. 
 
 ```{r}
-gdp_per_cap_2 <- read_csv(unz(description =  'data/gdp_per_cap_1995_2015.zip', 
+gdp_per_cap_2 <- read_csv(unz(description =  'data/gdp_per_cap.zip', 
                   filename =   'b9988620-72da-4463-b88c-93fa96b7075f_Data.csv'))
 ```
 
