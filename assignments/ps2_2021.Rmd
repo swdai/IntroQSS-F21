@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r message=F}
 library(tidyverse)
-df <- read_csv("tidy_county_pres_results.csv")
+df <- read_csv("./../data/tidy_county_pres_results.csv")
 ```
 
 **For each US county (uniquely identified by `FIPS` and labeled with `county` and `state`) in each presidential election `year`, we have the total number of votes cast (`total_vote`), number of votes for the Democratic candidate (`dem_vote`), and number of votes for the Republican candidate (`rep_vote`).**
@@ -29,12 +29,17 @@ df <- read_csv("tidy_county_pres_results.csv")
 
 ```{r}
 # your code here
+df <- df %>% 
+    mutate(other_vote_share = (total_vote - dem_vote - rep_vote) / total_vote)
+head(df)
 ```
 
 **(1b) Show a histogram of `other_vote_share` in 2000.**
 
 ```{r}
 # histogram code here 
+plot1b <- df %>% 
+    
 ```
 
 **(1c) Identify the counties with the highest `other_vote_share` in 2000. Output a table showing the county name, state, and `other_vote_share` for the six counties with the highest `other_vote_share` in 2000. (Don't worry about making the table look nice; just produce the raw `R` output.)**
@@ -70,6 +75,15 @@ df <- read_csv("tidy_county_pres_results.csv")
 ## Question 2: independent project data
 
 Choose a dataset that you will use for your independent project. As noted last week, it should have many observations (but not too many) and many variables. And it should be interesting to you! Load the data and make a figure using tools we have learned in class.
+
+```{r}
+# Objective: trying to find the number of bureaucrats who got demoted yet (re)promoted afterwards by province
+datapath <- './ps2_data/FullData.xlsx'
+df <- readxl::read_xlsx(datapath)
+
+```
+
+
 
 
 
