@@ -1,6 +1,6 @@
 ---
 title: "Lab 2"
-author: "Steven Boyd"
+author: "YOUR NAME"
 date: "10/7/2021"
 output: pdf_document
 ---
@@ -15,7 +15,7 @@ library(tidyverse)
 
 ## Getting started
 
-Today, we are going to work on loading and tidying data. Step 1 is to download the following zip file from the course git repository "gdp_per_cap_1995_2015.zip." Save it in a place that you can locate it with a relative file path. Use ``getwd()'' if you are unsure what your working directory is.  
+Today, we are going to work on loading and tidying data. Step 1 is to download the following zip file from the course git repository "gdp_per_cap_1995_2015.zip". Save it in a place that you can locate it with a relative file path. Use "getwd()" if you are unsure what your working directory is.  
 
 First, we will make sure everyone can extract data from a zip file. One option is to open the zipped file and use your OS' built in extraction capabilities (assuming it has those). However, it is also possible to access the data within R Studio. In fact, readr can grab data inside a zip without extracting at all. 
 
@@ -27,7 +27,7 @@ gdp_per_cap <- read_csv('data/gdp_per_cap_1995_2015.zip')
 
 Notice the warning text. It is telling us that there are multiple csv files within the zip file. This data was downloaded from the World Bank earlier this year in this format. Read the name of the file carefully. What does it say at the end of the file name?
 
-If you look inside the zip file, you'll notice another csv with \textit{almost} the same name. The only difference is in the suffix. The one marked ``metadata'' contains information \textit{about} the data, but no data we can actually analyze. It is common for csv files like this to be generated automatically when you download data from a huge database like the World Bank's DataBank.
+If you look inside the zip file, you'll notice another csv with \textit{almost} the same name. The only difference is in the suffix. The one marked "metadata" contains information \textit{about} the data, but no data we can actually analyze. It is common for csv files like this to be generated automatically when you download data from a huge database like the World Bank's DataBank.
 
 We don't really need to worry that R didn't read the metadata, because it is only useful as documentation. If you do have multiple csv files in a zip file, you can sepcify which one you want to read, but you need to unzip first. 
 
@@ -82,11 +82,12 @@ gdp_per_cap_tidy <- gdp_per_cap %>%
                names_to = "_____", 
                ______ = "gdppc")
 
-*There are more efficent ways to specify your columns. Try to come up with at least one.*
 
 ```{r}
 
 ```
+
+*There are more efficent ways to specify your columns. Try to come up with at least one.*
 
 ## Cleaning up the data
 
@@ -100,7 +101,7 @@ head(gdp_per_cap_tidy)
 
 *There may be easier methods that make use of regular expressions. If you are familiar with regex and want to try, please feel free. If you don't know regex, you should be able manage this problem with dplyr functions like recode() or case_when()*
 
-Fill in this code to make the ``year'' variable more useable: 
+Fill in this code to make the "year" variable more useable: 
 
 gdp_per_cap_tidy <- ________ %>% 
   ______(year = ______(year, 
