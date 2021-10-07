@@ -82,11 +82,11 @@ gdp_per_cap_tidy <- gdp_per_cap %>%
                names_to = "_____", 
                ______ = "gdppc")
 
+*There are more efficent ways to specify your columns. Try to come up with at least one.*
 
 ```{r}
 
 ```
-
 
 ## Cleaning up the data
 
