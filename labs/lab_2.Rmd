@@ -45,9 +45,9 @@ str(gdp_per_cap_2)
 ```
 
 
-## ``Tidy''ing the data
+## "Tidy"ing the data
 
-Is this data in ``tidy'' format? Why or why not?
+Is this data in "tidy" format? Why or why not?
 
 **Your Answer**
 
@@ -98,7 +98,7 @@ head(gdp_per_cap_tidy)
 
 **Your Answer**
 
-\textit{There may be easier methods that make use of regular expressions. If you are familiar with regex and want to try, please feel free. If you don't know regex, you should be able manage this problem with dplyr functions like recode() or case_when():}
+*There may be easier methods that make use of regular expressions. If you are familiar with regex and want to try, please feel free. If you don't know regex, you should be able manage this problem with dplyr functions like recode() or case_when()*
 
 Fill in this code to make the ``year'' variable more useable: 
 
