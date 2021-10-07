@@ -15,7 +15,7 @@ library(tidyverse)
 
 ## Getting started
 
-Today, we are going to work on loading and tidying data. Step 1 is to download the following zip file from the course git repository "gdp_per_cap_1995_2015.zip". Save it in a place that you can locate it with a relative file path. Use "getwd()" if you are unsure what your working directory is.  
+Today, we are going to work on loading and tidying data. Step 1 is to download the following zip file from the course git repository "gdp_per_cap.zip". Save it in a place that you can locate it with a relative file path. Use "getwd()" if you are unsure what your working directory is.  
 
 First, we will make sure everyone can extract data from a zip file. One option is to open the zipped file and use your OS' built in extraction capabilities (assuming it has those). However, it is also possible to access the data within R Studio. In fact, readr can grab data inside a zip without extracting at all. 
 
