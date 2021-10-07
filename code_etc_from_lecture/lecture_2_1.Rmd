@@ -1,0 +1,87 @@
+---
+title: "Lecture 2.1 in-class code and follow-up"
+author: "Andy Eggers"
+date: "10/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+We used this code in class to show code completion: 
+
+```{r}
+dat <- read_csv(file = "./../data/vdem_2010_extract.csv")
+
+dat %>% 
+  select(country_name, continent_name)
+
+```
+## Recoding variables
+
+I wrote on the board how to use `case_when` to create a new variable on the basis of one or more existing variables.
+
+First we show the varaible we want to recode:
+
+```{r}
+vd <- vdemdata::vdem
+
+vd %>% 
+  count(e_regionpol_6C)
+```
+
+Now we create a new variable to replace the numerical regions with text strings:
+
+```{r}
+vd %>% 
+  mutate(region = case_when(
+    e_regionpol_6C == 1 ~ "E. Europe & Central Asia",
+    e_regionpol_6C == 2 ~ "Latin America & Caribbean",
+    e_regionpol_6C == 3 ~ "Middle East & N. Africa",
+    e_regionpol_6C == 4 ~ "Sub-Saharan Africa",
+    e_regionpol_6C == 5 ~ "W. Europe & N. America",
+    e_regionpol_6C == 6 ~ "Asia & Pacific")) %>% 
+  count(region)
+```
+
+Another option suggested in class is `recode`. (I said I don't use this but I realized later that I actually do!)
+
+```{r}
+# demonstrating recode for recoding 
+vd1 <- vd %>% 
+  mutate(region = recode(e_regionpol_6C, 
+                         `1` = "E. Europe & Central Asia", 
+                         `2` = "Latin America & Caribbean", 
+                         `3` = "Middle East & N. Africa", 
+                         `4` = "Sub-Saharan Africa", 
+                         `5` = "W. Europe & N. America", 
+                         `6` = "Asia & Pacific")) 
+
+vd1 %>% 
+  count(region)
+```
+
+We stored the result of that recode in `vd1` so now we can use it to reproduce the plot we made in class.
+
+```{r}
+# plotting year-region average polyarchy over time
+vd1 %>% 
+  group_by(year, region) %>% 
+  summarize(mean_polyarchy = mean(v2x_polyarchy, na.rm = T)) %>% 
+  ggplot(aes(x = year, y = mean_polyarchy, col = region)) + 
+  geom_line()
+```
+
+At the end of lecture I showed how you can get something similar using `geom_smooth()`. You can get closer if you specify method `loess` and reduce the default `span` argument. (I also drop the confidence intervals using `se = F` and make the lines thinner to match the default for `geom_line()`.) It's a little bit smoother than just the grouped means, but if I make the span smaller I get an error.
+
+```{r, warning = F, message = F}
+# demonstrating using geom_smooth to get something very close to group means 
+vd1 %>% 
+  ggplot(aes(x = year, y = v2x_polyarchy, col = region)) + 
+  geom_smooth(method = "loess", span = .02, se = F, lwd = .5)
+# by trial and error I set the span as small as I could.
+```
+
+
