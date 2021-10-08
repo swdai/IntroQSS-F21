@@ -117,6 +117,19 @@ plot_1f
 
 ```{r}
 # your code here 
+tb_1g <- tb_1f %>% 
+     rename('Democratic vote share' = two_party_vote_share, 'Democratic county share' = prop) %>% 
+    pivot_longer(cols = 2:3,
+                 names_to = 'variable',
+                 values_to = 'value')
+
+plot_1g <- tb_1g %>% 
+    ggplot(aes(x = year, y = value, color = variable)) +
+    geom_point() +
+    geom_line() +
+    labs(x = 'Year', y = "Proportion")
+
+plot_1g
 ```
 
 ## Question 2: independent project data
@@ -124,9 +137,45 @@ plot_1f
 Choose a dataset that you will use for your independent project. As noted last week, it should have many observations (but not too many) and many variables. And it should be interesting to you! Load the data and make a figure using tools we have learned in class.
 
 ```{r}
-# Objective: trying to find the number of bureaucrats who got demoted yet (re)promoted afterwards by province
-datapath <- './ps2_data/FullData.xlsx'
-df <- readxl::read_xlsx(datapath)
+# Objective: trying to find the number of events in which a Chinese political 
+# elite who got demoted yet (re)promoted afterwards
+# The original dataset is in Simplified Chinese, so I have added a recoding step
+# to translate
+datapath <- './ps2_data/FullData.csv'
+df_ori <- read.csv(datapath)
+df_tidy <- df_ori %>% 
+    as_tibble() %>% 
+    # select and rename the variables describing the elite's name, 
+    # position on the hierarchy, and the province he's in
+    select(姓名, 级别, 经历序号, 地方一级关键词) %>% 
+    rename('name' = 姓名,
+           'position_ori' = 级别, 
+           'exper_num' = 经历序号, 
+           'province' = 地方一级关键词) %>% 
+    # recode the position from character into a numeric ranking
+    mutate('position_numeric' = case_when(position_ori == '无级别' ~ 0, 
+                                          position_ori == '小于副处' ~ 1,
+                                          position_ori == '副处' ~ 2,
+                                          position_ori == '正处' ~ 3,
+                                          position_ori == '副厅' ~ 4,
+                                          position_ori == '正厅' ~ 5,
+                                          position_ori == '副部' ~ 6,
+                                          position_ori == '正部' ~ 7,
+                                          position_ori == '副国' ~ 8,
+                                          position_ori == '正国' ~ 9)) %>%
+    group_by(name) %>% 
+    # rank the experiences in the temporal order
+    arrange(exper_num, by_group = TRUE) %>% 
+    # create a new variable to indicate if the elite has been demoted and promoted afterwards
+    mutate(demprom = (lag(position_numeric) > position_numeric) & 
+               (lead(position_numeric) > position_numeric)) %>% 
+    filter(demprom) %>% 
+    group_by(province) %>% 
+    summarize(total = n())
+df_tidy
+    
+    
+    
 
 ```
 
