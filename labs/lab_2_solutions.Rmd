@@ -134,7 +134,7 @@ This doesn't seem to work. Any guesses as to why? We can check if values we expe
 is.na(gdp_per_cap_tidy$gdppc)       #check for NA in gdppc column 
 ```
 
-It appears that a lot of of our missing data is not being recognized as NA. What values appear where you expect to see NA? One  thing we can check when our code isn't running as expected is the class of your values. Run the following code to check what class "gdppc" is:
+It appears that missing data is not being recognized as NA. What values are in the cells where you expect to see NA? One thing I like to check when my code isn't running as expected is the class of the column. Run the following code to check what class "gdppc" is:
 
 ```{r}
 class(gdp_per_cap_tidy$gdppc)      #check class of gdppc column
@@ -191,13 +191,15 @@ Upon examination, we can see that it is in the same format as the GDP data.
 head(gni_per_cap)
 ```
 
-Since we want to merge it with the gdp data, we need it to be in country-year format as well. Again, we need to use pivot_longer(). 
+Since we want to merge it with the gdp data, we need it to be in country-year format as well. Again, we need to use pivot_longer(). Since it looks like we have the same issue that missing data is represented by .. instead of `NA` and the class of `gnipc` is character instead of numeric. We can coerce the values in the new "gnipc" column to numeric within the call of pivot_longer() to save ourselves some time. 
 
 ```{r}
 gni_per_cap_tidy <- gni_per_cap %>%  #pipe in data
   pivot_longer(c(`1993 [YR1993]`:`2015 [YR2015]`), #specify which cols to pivot
                names_to = "year",    #new col name for gathered cols
-               values_to = "gnipc")  #new col name for gathered values
+               values_to = "gnipc",  #new col name for gathered values
+               values_transform = list(gnipc = as.numeric))  
+                              #coerce gnipc to numeric
 ```
 
 Let's recode the years like we did with the gdp data. Note that it has 2 more years (1993 and 1994) than the gdp data, so we need to account for those as well.
@@ -237,13 +239,6 @@ gni_per_cap_tidy <- gni_per_cap_tidy %>%   #pipe in data (notice: overwriting)
   rename('country' = `Country Name`,       #rename columns
          'ccode' = `Country Code`) %>%
   select(-c('Series Name', 'Series Code'))    #exclude uninformative columns
-```
-
-We have the same issue that missing data is represented by .. instead of `NA` and the class of `gnipc` is character instead of numeric. Let's coerce the values in the column to numeric.
-
-```{r}
-gni_per_cap_tidy <- gni_per_cap_tidy %>%  #pipe data (notice: overwriting)
-  mutate(gnipc = as.numeric(gnipc))       #coerce gdppc to num and overwrite
 ```
 
 Now, let's remove countries for which we have no data in the sample.
