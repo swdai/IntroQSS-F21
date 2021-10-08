@@ -39,31 +39,78 @@ head(df)
 ```{r}
 # histogram code here 
 plot1b <- df %>% 
-    
+    filter(year == 2000) %>% 
+    ggplot(aes(x = other_vote_share)) +
+    geom_histogram() +
+    labs(x = 'Vote proportion for the other candidates', y = 'Count')
+plot1b
 ```
 
 **(1c) Identify the counties with the highest `other_vote_share` in 2000. Output a table showing the county name, state, and `other_vote_share` for the six counties with the highest `other_vote_share` in 2000. (Don't worry about making the table look nice; just produce the raw `R` output.)**
 
 ```{r}
 # table code here 
+tb_1c <- df %>% 
+    filter(year == 2000) %>% 
+    select(county, state, other_vote_share) %>% 
+    arrange(desc(other_vote_share)) %>% 
+    slice_head(n=6)
+tb_1c
 ```
 
 **(1d) Using `group_by()` and `summarize()`, produce and store a new `tibble` showing the two-party vote share for the Democrat in each election year. ("Two-party vote share for the Democrat" is the votes for the Democrat divided by the votes for either the Democrat or the Republican.) Use it to make a plot showing the Democrats' two-party vote share (vertical axis) across years (horizontal axis).**
 
 ```{r}
 # your code here 
+tb_1d <- df %>% 
+    group_by(year) %>% 
+    summarise('two_party_vote_share' = sum(dem_vote, na.rm = TRUE) / (sum(dem_vote, na.rm = TRUE) + sum(rep_vote, na.rm = TRUE)))
+
+plot_1d <- tb_1d %>% 
+    ggplot(aes(x = year, y = two_party_vote_share)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Year", y = "Democrat's two-party vote share")
+
+tb_1d
+plot_1d
 ```
 
 **(1e) Using `group_by()` and `summarize()`, produce and store a new `tibble` showing the proportion of counties in which the Democrat got more votes than the Republican in each election year. Use it to make plot showing the share of counties won by the Democrat (vertical axis) across years (horizontal axis).**
 
 ```{r}
 # your code here
+tb_1e <- df %>% 
+    mutate(demwin = (dem_vote > rep_vote)) %>% 
+    group_by(year) %>% 
+    summarize(prop = mean(demwin, na.rm = TRUE))
+
+plot_1e <- tb_1e %>% 
+    ggplot(aes(x = year, y = prop)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Year", y = "Proportion of counties won by Democrats")
+
+tb_1e
+plot_1e
 ```
 
 **(1f) Use `left_join()` to merge the two tibbles (one with county share, the other with vote share) and store the result. Use this new tibble to plot the Democratic county share (vertical axis) against the Democratic vote share (horizontal axis) over time, as in the last problem set.**
 
 ```{r}
-# your code here 
+# your code here
+tb_1f <- tb_1d %>% 
+    left_join(tb_1e, by = 'year')
+
+plot_1f <- tb_1f %>% 
+    ggplot(aes(x = two_party_vote_share, y = prop)) +
+    geom_point() +
+    geom_path() +
+    geom_text(aes(label = year)) +
+    labs(x = 'Democratic vote share', y = 'Democratic county share')
+
+tb_1f
+plot_1f
 ```
 
 **(1g) Use `pivot_longer()` to convert the tibble created in the last question to a format appropriate for plotting both the Democratic vote share and the Democratic county share (vertical axis) against the year (horizontal axis) as on the last problem set. Make that plot.**
