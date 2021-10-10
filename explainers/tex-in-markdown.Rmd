@@ -2,7 +2,7 @@
 title: "Basics of writing LaTeX in markdown"
 author: "Molly Offer-Westort"
 date: "10/10/2021"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -42,7 +42,7 @@ $$
 | beta    | $\beta$      | `\beta`       | $\textrm{B}$     | `\textrm{B}`  |
 | gamma   | $\gamma$     | `\gamma`      | $\Gamma$         | `\Gamma`      |
 | delta   | $\delta$     | `\delta`      | $\Delta$         | `\Delta`      |
-| epsilon | $\epsilon $  | `\epsilon `   | $\textrm{E}<br>$ | `\textrm{E}`  |
+| epsilon | $\epsilon$   | `\epsilon`    | $\textrm{E}<br>$ | `\textrm{E}`  |
 | zeta    | $\zeta$      | `\zeta`       | $\textrm{Z}$     | `\textrm{Z}`  |
 | eta     | $\eta$       | `\eta`        | $\textrm{H}$     | `\textrm{H}`  |
 | theta   | $\theta$     | `\theta`      | $\Theta$         | `\Theta`      |
