@@ -2,8 +2,8 @@
 title: 3.1 Brief Overview of Probability
 subtitle: PLSC30500, Fall 2021
 author: 
-  # - co-taught by Molly Offer-Westort & Andy Eggers
-  - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
+  - co-taught by Molly Offer-Westort & Andy Eggers
+  - .small-text[(This lecture with references to Aronow & Miller, 2019, and Wasserman, 2004)]
 output: 
   xaringan::moon_reader:
     self_contained: true
@@ -22,9 +22,14 @@ set.seed(60637)
   font-size: small;
 }
 
-# .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
-#     display: none;
-# }
+.highlight-last-item > ul > li, 
+.highlight-last-item > ol > li {
+  opacity: 0.5;
+}
+.highlight-last-item > ul > li:last-of-type,
+.highlight-last-item > ol > li:last-of-type {
+  opacity: 1;
+}
 ```
 
 
@@ -104,15 +109,13 @@ Even if we don't necessarily believe that human behavior is "random."
 
 Suppose we are flipping a coin twice, and the coin is fair. This is a random process, and we will describe the probability space associated with this process. 
 
-
 ---
 
 
 name: terms
-class: footnotesize
+class: highlight-last-item
 
 ## Useful terms in probability
-
 
 
 --
@@ -136,11 +139,11 @@ class: footnotesize
  
 --
  
- - In our example, the event that we get a head on the first flip is $A = \{HT, HH\}$. 
+ - Here, the event that we get a head on first flip is $A = \{HT, HH\}$. 
 
 --
 
-- $S$ : Event space. Describes all subsets of events, including the null set. [[Full event space]](#event_space)
+- $S$ : Event space. Describes all subsets of events, including null set. [[Full event space]](#event_space)
 
 --
 
@@ -148,11 +151,11 @@ class: footnotesize
 
 --
 
-- $\textrm{P}$ : Probability measure. A function that assigns probability to all of the events in the event space. 
+- $\textrm{P}$ : Probability measure. An operator that assigns probability to all events in the event space. 
 
 --
 
- - Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
+ - Here, the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
 
 
 ???
@@ -237,7 +240,7 @@ Returning to our example of flipping two fair coins. Let's say:
 - We can see the event $AB$ as the overlap in their respective sets, $AB = \{HH\}$
 
 ---
-class: scriptsize
+class: size-tiny
 
 The coin flips are unrelated, so the events should be independent. We can check this mathematically.
 
@@ -279,7 +282,7 @@ class: small-output
 
 #### We can also check if observed proportions in our simulations show the same thing. 
 
-```{r}
+```{r check}
 Omega <- c('HH', 'HT', 'TH', 'TT');  probs <- c(0.25, 0.25, 0.25, 0.25)
 result_n <- sample(x = Omega, 
                    size = n,
@@ -291,19 +294,19 @@ result_n <- sample(x = Omega,
 
 --
 
-```{r}
+```{r PA}
 (PA <- mean(result_n == 'HT' | result_n == 'HH'))
 ```
 
 --
 
-```{r}
+```{r PB}
 (PB <- mean(result_n == 'TH' | result_n == 'HH'))
 ```
 
 --
 
-```{r}
+```{r PAB}
 (PAB <- mean(result_n == 'HH'))
 PA*PB
 ```
@@ -311,42 +314,43 @@ PA*PB
 The proportions look pretty close. 
 
 ---
-class: small-output, footnotesize
+class: small-output
 
 #### What about for a case where $A$ and $B$ are not independent? 
 
 --
 
-- Let's say $A$ is still the event that we get a head on the first coin flip; $A = \{HT, HH\}$. 
+- $A$ is still the event we get a head on the first coin flip; $A = \{HT, HH\}$.
 
-- But event $B$ is now the event that we get a head on both coin flips; $B = \{HH\}$. 
+- $B$ is now the event that we get a head on both coin flips; $B = \{HH\}$. 
 
 - $AB$ is the intersection of these two sets, which is just $AB = \{HH\}$. 
 
-```{r}
+--
+
+```{r check2}
 (observed_props <- prop.table(table(result_n)))
 ```
 
 --
 
-```{r}
+```{r PA2}
 (PA <- mean(result_n == 'HT' | result_n == 'HH'))
 ```
 
 --
 
-```{r}
+```{r PB2}
 (PB <- mean(result_n == 'HH'))
 ```
 
 --
 
-```{r}
+```{r PAB2}
 (PAB <- mean(result_n == 'HH'))
 PA*PB
 ```
 
-The proportions are then quite different. 
 
 ---
 
@@ -382,7 +386,7 @@ $$
 What is $\textrm{P}(B |A)$?
 
 ---
-class: small-output, small
+class: small-output, size-small
 
 ## Bayes Rule
 
@@ -398,7 +402,7 @@ Why is Bayes rule so useful?
 It basically tells us how we update probability based on observed data. 
 
 ---
-class: small-output, small
+class: small-output, size-small
 
 ## Bayes Rule
 
@@ -408,7 +412,7 @@ Example: Suppose everyone in the University of Chicago community is given a new 
 - And *false positives*, when we get a positive test for a person who *is not* infected.
 
 ---
-class: small-output, small
+class: small-output, size-small
 
 ## Bayes Rule
 
@@ -418,20 +422,46 @@ Example: Suppose everyone in the University of Chicago community is given a new 
 
 A student gets a positive test back. What is the probability that they have COVID?
 
+---
+
+class: small-output, size-small
+
+## Bayes Rule
+
+Event $A$: person has COVID
+
+Event $B$:  a positive test
+
 --
 
+- Should we think these events are independent?
+
+---
+
+class: small-output, size-small
+
+## Bayes Rule
+
+Event $A$: person has COVID
+
+Event $B$:  a positive test
+
+--
+
+
+
 - Doctors know that the probability of having COVID is 3% in this population : $\textrm{P}(A)$ 
-```{r}
+```{r PA3}
 PA <- 0.03
 ```
 --
 - The overall rate of positive tests is 5% : $\textrm{P}(B)$ 
-```{r}
+```{r PB3}
 PB <- 0.05
 ```
 --
-- If you have COVID, your test will turn up positive 95% of the time. : $\textrm{P}(B|A)$ 
-```{r}
+- If you have COVID, your test will turn up positive 95% of the time : $\textrm{P}(B|A)$ 
+```{r PBifA}
 PB_if_A <- 0.95
 ```
 
@@ -446,7 +476,7 @@ $$
 
 --
 
-```{r}
+```{r Bayes}
 ( PB_if_A * PA )/PB
 ```
 
@@ -502,7 +532,7 @@ What data do you need to answer the question: "Do white officers shoot minority 
 
 Remember this article?
 
-```{r, echo=FALSE}
+```{r npr, echo=FALSE}
 knitr::include_graphics('assets/npr.png')
 ```
 
@@ -510,7 +540,7 @@ knitr::include_graphics('assets/npr.png')
 
 Remember this article?
 
-```{r, echo=FALSE}
+```{r guardian, echo=FALSE}
 knitr::include_graphics('assets/guardian.png')
 ```
 
@@ -519,7 +549,7 @@ knitr::include_graphics('assets/guardian.png')
 
 
 
-```{r, echo=FALSE}
+```{r johnson, echo=FALSE}
 knitr::include_graphics('assets/johnson-et-al-PNAS.png')
 ```
 
@@ -552,7 +582,7 @@ What data are we missing to address this question?
 
 --
 
-- Dean Knox & Jonathan Mummolo wrote a letter critiquing tge original article, based on the authors' failure to appropriately apply Bayes Rule;
+- Dean Knox & Jonathan Mummolo wrote a letter critiquing the original article, based on the authors' failure to appropriately apply Bayes Rule;
 
 - The article was eventually retracted
 
@@ -587,7 +617,7 @@ S & = \{\emptyset, \\
 [[Back to terms]](#terms)
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
-pagedown::chrome_print("slides_31.Rmd")
+```{r knit, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+knitr::purl("slides_31.Rmd")
 ```
 

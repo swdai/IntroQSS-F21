@@ -2,8 +2,7 @@
 title: 3.2 More Probability/Statistics Foundations
 subtitle: PLSC30500, Fall 2021
 author: 
-  # - co-taught by Molly Offer-Westort & Andy Eggers
-  - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
+  - co-taught by Molly Offer-Westort & Andy Eggers
 output: 
   xaringan::moon_reader:
     self_contained: true
@@ -63,13 +62,19 @@ set.seed(60637)
 
 - A random variable is a mapping $X$ from our sample space $\Omega$, to the Real numbers. 
 $$X : \Omega \to {\rm I\!R}$$
+--
 
 - Random variables are ways to quantify random events described by our sample space. 
+
+--
+
 - We'll mostly work with random variables going forward, but it's important to remember that the random variable is built on the foundations of the sample space -- and often, **you'll be the one deciding how that quantification happens.** 
 
 ---
 
-For example, with our two coin flips, let $X(\omega)$ be the number of heads in the sequence $\omega$. Then the random variable, and its probability distribution, can be described as:
+For example, with our two coin flips, let $X(\omega)$ be the number of heads in the sequence $\omega$. 
+--
+Then the random variable, and its probability distribution, can be described as:
 
 
 |     $\omega$ | $\textrm{P}(\{\omega\})$ | $X(\omega)$ |
@@ -92,6 +97,7 @@ and,
 class: small-output, small
 
 #### We can simulate this in `R` as well. 
+--
 
 ```{r coinflipRV}
 X <- c(0, 1, 2)
@@ -103,6 +109,8 @@ sample(x = X,
 
 ```
 
+--
+
 ```{r coinflip_manyRV}
 n <- 1000
 result_n <- sample(x = X,
@@ -112,6 +120,9 @@ result_n <- sample(x = X,
 
 table(result_n)
 ```
+
+--
+
 
 ```{r coinflip_massRV}
 
@@ -133,12 +144,20 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 
 ## Probability Mass Function of a discrete random variable
 
-- A random variable is *discrete* if it takes countably many values. 
+- A random variable is *discrete* if it takes countably many values.
+
+--
+
 - The probability mass function of a discrete RV $X$ tells us the probability we will see an outcome at some value $x$. 
+
+--
 
 $$
 f(x) = \textrm{P}(X = x)
 $$
+
+--
+
 For our coin flip example, 
 
 
@@ -180,10 +199,13 @@ Note that the probabilities sum to 1. This is one of the foundational axioms of 
 
 - The cumulative distribution function of $X$ tells us the probability we will see an outcome less than or equal to some value $x$. 
 
+--
+
 $$
 F(x) = \textrm{P}(X \le x)
 $$
 
+--
 
 For our coin flip example, 
 
@@ -312,6 +334,8 @@ grid.arrange(p1, p2, ncol = 2)
 
 ```
 
+--
+
 Seeing $X$ and $Y$ plotted side by side doesn't really give us a full picture of their relationship. 
 --
 
@@ -403,13 +427,18 @@ $$
 
 ## Expectation
 
+--
 
 $$
 \textrm{E}[X] = \sum_x x f(x)
 $$
 
+--
 
 - Expectation is an *operator* on a random variable; it maps the distribution of $X$ to a specific number. 
+
+--
+
 - Specifically, the expectation operator tells us about the mean, or average value of $X$ across its distribution. 
 
 --
@@ -737,6 +766,96 @@ $$
 
 
 ---
+# Applications
+
+- Coin flips are a pretty trivial example of a random event $\rightarrow$ random variable.
+
+--
+
+- But often, as researchers, our job is to map events that happen in the world to variables in our data sets. 
+
+
+---
+## Presidential Daily Briefing
+
+```{r pdb_fig0, echo=FALSE, out.width = "75%", fig.align="center"}
+knitr::include_graphics('assets/pdb.png')
+```
+
+---
+## Presidential Daily Briefing
+
+
+.right-column[
+```{r pdb_fig, echo=FALSE, out.width = "75%", fig.align="center"}
+knitr::include_graphics('assets/pdb_7-AUG-65.jpg')
+```
+]
+
+--
+
+What goes into the data set?
+
+--
+
+.left-column[
+
+
+- .small[Unit of observation: "entries" in daily briefings]
+- .small[Record date]
+- .small[President]
+- .small[Pages in briefing]
+- .small[Number of maps]
+- .small[How to code redactions?]
+
+]
+
+---
+## Presidential Daily Briefing
+
+.right-column[
+```{r pdb_fig2, echo=FALSE, out.width = "75%", fig.align="center"}
+knitr::include_graphics('assets/pdb_7-AUG-65.jpg')
+```
+]
+
+
+What goes into the data set?
+
+
+.left-column[
+
+.small[The *event* that happens is a certain amount of the briefing is redacted before it's made public. 
+
+How is this encoded in a variable?]
+
+]
+
+---
+
+class: small-output
+
+## Presidential Daily Briefing
+
+```{r carson, message = FALSE}
+file <- "https://raw.githubusercontent.com/UChicago-pol-methods/IntroQSS-F21/main/data/carsonPDB.csv"
+df_pdb <- read_csv(file)
+
+df_pdb
+
+```
+
+--
+
+```{r}
+df_pdb %>% 
+  select(!c(PDBid, date, President)) %>% 
+  summarize(across(.fns = list("mean"= ~ mean(., na.rm = TRUE), 
+                               "var"= ~ var(., na.rm = TRUE))))
+```
+
+
+---
 # Summarizing joint distributions
 
 ---
@@ -775,7 +894,31 @@ $$
 $$
 
 ---
+class: small-output
 
+#### What relationship would you expect to see between number of pages in a Presidential Daily Brief and number of redactions?
+
+--
+
+```{r, fig.height = 3.5, fig.width=5, fig.align='center', message=FALSE}
+df_pdb %>% 
+  ggplot(aes(x = Total_Pgs, y = Redaction_total) ) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+--
+
+Number of pages and number of redactions have a positive linear relationship. Covariance (and correlation) is positive. 
+
+```{r}
+cov(df_pdb$Total_Pgs, df_pdb$Redaction_total)
+cor(df_pdb$Total_Pgs, df_pdb$Redaction_total)
+```
+
+
+
+---
 
 #### Following content if time, or in handout.
 
