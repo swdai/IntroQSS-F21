@@ -1,8 +1,12 @@
 ---
 title: "Problem set 2"
-author: "Your name here"
-date: "Due 10/8/2021 at 5pm"
-output: pdf_document
+author: "Siwei Dai"
+date: \today
+header-includes:
+    - \usepackage{xeCJK}
+output: 
+    pdf_document:
+        latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -41,8 +45,9 @@ head(df)
 plot1b <- df %>% 
     filter(year == 2000) %>% 
     ggplot(aes(x = other_vote_share)) +
-    geom_histogram() +
-    labs(x = 'Vote proportion for the other candidates', y = 'Count')
+    geom_histogram(binwidth = 0.005) +
+    labs(x = 'Vote proportion for the other candidates', y = 'Count',
+         title = 'Vote share for other candidates in 2020')
 plot1b
 ```
 
@@ -64,13 +69,15 @@ tb_1c
 # your code here 
 tb_1d <- df %>% 
     group_by(year) %>% 
-    summarise('two_party_vote_share' = sum(dem_vote, na.rm = TRUE) / (sum(dem_vote, na.rm = TRUE) + sum(rep_vote, na.rm = TRUE)))
+    summarise('two_party_vote_share' = sum(dem_vote, na.rm = TRUE) / 
+                  (sum(dem_vote, na.rm = TRUE) + sum(rep_vote, na.rm = TRUE)))
 
 plot_1d <- tb_1d %>% 
     ggplot(aes(x = year, y = two_party_vote_share)) +
     geom_point() +
     geom_line() +
-    labs(x = "Year", y = "Democrat's two-party vote share")
+    labs(x = "Year", y = "Democrat's two-party vote share",
+         title = "Democrat's two-party vote share over time")
 
 tb_1d
 plot_1d
@@ -83,13 +90,14 @@ plot_1d
 tb_1e <- df %>% 
     mutate(demwin = (dem_vote > rep_vote)) %>% 
     group_by(year) %>% 
-    summarize(prop = mean(demwin, na.rm = TRUE))
+    summarize(prop_dem_county = mean(demwin, na.rm = TRUE))
 
 plot_1e <- tb_1e %>% 
-    ggplot(aes(x = year, y = prop)) +
+    ggplot(aes(x = year, y = prop_dem_county)) +
     geom_point() +
     geom_line() +
-    labs(x = "Year", y = "Proportion of counties won by Democrats")
+    labs(x = "Year", y = "Proportion of counties won by Democrats",
+         title = "Proportion of counties won by Democrats over time")
 
 tb_1e
 plot_1e
@@ -103,11 +111,12 @@ tb_1f <- tb_1d %>%
     left_join(tb_1e, by = 'year')
 
 plot_1f <- tb_1f %>% 
-    ggplot(aes(x = two_party_vote_share, y = prop)) +
+    ggplot(aes(x = two_party_vote_share, y = prop_dem_county)) +
     geom_point() +
     geom_path() +
     geom_text(aes(label = year)) +
-    labs(x = 'Democratic vote share', y = 'Democratic county share')
+    labs(x = 'Democratic vote share', y = 'Democratic county share',
+         title = 'Democratic vote share and county share over time')
 
 tb_1f
 plot_1f
@@ -118,16 +127,19 @@ plot_1f
 ```{r}
 # your code here 
 tb_1g <- tb_1f %>% 
-     rename('Democratic vote share' = two_party_vote_share, 'Democratic county share' = prop) %>% 
+    rename('Democratic vote share' = two_party_vote_share, 
+           'Democratic county share' = prop_dem_county) %>% 
     pivot_longer(cols = 2:3,
-                 names_to = 'variable',
+                 names_to = 'vote_county_share',
                  values_to = 'value')
 
 plot_1g <- tb_1g %>% 
-    ggplot(aes(x = year, y = value, color = variable)) +
+    ggplot(aes(x = year, y = value, color = vote_county_share)) +
     geom_point() +
     geom_line() +
-    labs(x = 'Year', y = "Proportion")
+    labs(x = 'Year', y = "Proportion",
+         title = 'Democratic vote share and county share over time',
+         color = 'Democratic vote share and country share')
 
 plot_1g
 ```
@@ -137,9 +149,10 @@ plot_1g
 Choose a dataset that you will use for your independent project. As noted last week, it should have many observations (but not too many) and many variables. And it should be interesting to you! Load the data and make a figure using tools we have learned in class.
 
 ```{r}
-# Objective: trying to find the number of events in which a Chinese political 
-# elite who got demoted yet (re)promoted afterwards
-# The original dataset is in Simplified Chinese, so I have added a recoding step
+# Objective: plot the distribution of events in which a Chinese political 
+# elite who got demoted yet promoted afterwards (vertical axis) against 
+# the position to which the elite was demoted to (horizontal axis)
+# The original dataset is in Simplified Chinese, so I have added a renaming step
 # to translate
 datapath <- './ps2_data/FullData.csv'
 df_ori <- read.csv(datapath)
@@ -152,7 +165,7 @@ df_tidy <- df_ori %>%
            'position_ori' = 级别, 
            'exper_num' = 经历序号, 
            'province' = 地方一级关键词) %>% 
-    # recode the position from character into a numeric ranking
+    # recode the position from strings into numeric
     mutate('position_numeric' = case_when(position_ori == '无级别' ~ 0, 
                                           position_ori == '小于副处' ~ 1,
                                           position_ori == '副处' ~ 2,
@@ -166,17 +179,24 @@ df_tidy <- df_ori %>%
     group_by(name) %>% 
     # rank the experiences in the temporal order
     arrange(exper_num, by_group = TRUE) %>% 
-    # create a new variable to indicate if the elite has been demoted and promoted afterwards
+    # create a new variable to indicate if the elite has been demoted and 
+    # promoted afterwards
     mutate(demprom = (lag(position_numeric) > position_numeric) & 
-               (lead(position_numeric) > position_numeric)) %>% 
-    filter(demprom) %>% 
-    group_by(province) %>% 
-    summarize(total = n())
-df_tidy
-    
-    
-    
+               (lead(position_numeric) > position_numeric)) 
 
+plot_2 <- df_tidy %>% 
+    filter(demprom) %>% 
+    # support for simplified Chinese is not very well, so I have to use 
+    # `position_numeric` to represent the rank in the numeric form; 
+    # the attached caption explains the ranking
+    ggplot(aes(x = position_numeric)) +
+    geom_bar() +
+    labs(x = 'The position to which the elite was demoted to', 
+         y = 'Count of promotions after being demoted', 
+         caption = 'Position numbers reflect an ascending order of bureacratic rank',
+         title = 'Counts of promotions after demotions across all bureaucratic ranks')
+
+plot_2
 ```
 
 

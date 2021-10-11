@@ -67,7 +67,7 @@ df2 <- read_csv(str_c(data_path, "yearly_county_pres_results_long.csv"))
 **1d) Make a plot showing both the Democratic vote share and Democratic county share (vertical axis) in each year (horizontal axis), with a different color for each series. Your figure should include a legend.**
 
 ```{r}
-plot1d <- ggplot (data = df, mapping = aes(x = year)) +
+plot1d <- ggplot (data = df2, mapping = aes(x = year)) +
           geom_line(mapping = aes(y = dem_vote_share, color = 'Democratic vote share')) +
           geom_line(mapping = aes(y = dem_county_share, color = 'Democratic county share')) 
 plot1d
