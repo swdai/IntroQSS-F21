@@ -1,0 +1,28 @@
+---
+title: "Lecture 2.2"
+author: "Andy Eggers"
+date: "10/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+```{r}
+vdw <- read_csv("./../data/vdem_extract_wide.csv")
+vdw %>% 
+  pivot_longer(cols = c(-country_name, -country_text_id))
+
+vdw %>% 
+  pivot_longer(cols = !c(country_name, country_text_id))
+
+codes <- read_csv("./../data/country-and-continent-codes-list-csv.csv")
+
+vdw %>% 
+  left_join(codes, by = c("country_text_id" = "Three_Letter_Country_Code"))
+
+```
+
