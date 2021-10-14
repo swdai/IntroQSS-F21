@@ -345,7 +345,7 @@ These are the *marginal* distributions of $X$ and $Y$, i.e., their distributions
 ## Marginal distributions
 
 $$
-f\_X(X) = \textrm{P}(X = x)\sum\_y \textrm{P}(X=x, Y=y) = \sum\_yf\_{X, Y}(x,y)
+f\_X(X) = \textrm{P}(X = x)=\sum\_y \textrm{P}(X=x, Y=y) = \sum\_yf\_{X, Y}(x,y)
 $$
 
 --
@@ -409,8 +409,8 @@ Here, what is the probability of observing two heads, conditional on having obse
 $$
 f_{Y|X}(y|x) = \begin{cases}
 1 & x = 0, y = 0 \\\
-1/2 & x = 1, y =0  \\\
-1/2 & x = 1, y = 1 \\\
+2/3 & x = 1, y =0  \\\
+1/3 & x = 1, y = 1 \\\
 0 & \text{otherwise}
 \end{cases}
 $$
@@ -696,7 +696,7 @@ ggplot(plotdata, aes(x = x, y = fx)) +
 Variance = average squared distance from the mean
 $$
 \begin{align}
-\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X)^2]
+\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X])^2]
 \end{align}
 $$
 
@@ -725,7 +725,7 @@ ggplot(plotdata, aes(x = x, y = fx)) +
 Variance = average squared distance from the mean
 $$
 \begin{align}
-\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X)^2]\\\\
+\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X])^2]\\\\
 & = 2.25 \times \frac{1}{16} + 0.25 \times \frac{3}{8} + 0.25 \times \frac{9}{16} \\\\
 & = 0.375
 \end{align}
