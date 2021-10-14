@@ -1,0 +1,274 @@
+---
+title: 4.1 Causality
+subtitle: PLSC30500, Fall 2021
+output: 
+  xaringan::moon_reader:
+    self_contained: true
+    css: [default, uchicago_pol_meth.css]
+    nature:
+      highlightLines: true
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+set.seed(60637)
+```
+
+```{css, echo=FALSE}
+.small-output .remark-code{
+  font-size: x-small;
+}
+
+# .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
+#     display: none;
+# }
+```
+
+## Big picture
+
+We can always **describe** a dataset:
+
+- means, medians; standard deviations, variances
+- covariances, correlations
+- regression coefficients
+
+--
+
+But it is a **huge leap** to infer **causal relationships** from a dataset:
+
+- does peacekeeping affect the risk of civil war? by how much?
+- what causes revolutions?
+
+---
+
+## The language of description & causality
+
+.pull-left[
+**Descriptive language**
+
+- `x` is correlated with `y`
+- `x` is associated with `y`
+- `x` is a predictor of `y`
+- `x` tends to precede `y`
+
+]
+
+.pull-right[
+**Causal language**
+
+- `x` increases/reduces `y`
+- `x` affects/impacts `y`
+- `x` is a determinant of `y`
+- `x` drives `y`
+]
+
+
+
+
+---
+
+## Correlation and causation
+
+Some possible attitudes about how they are related: 
+
+1. "Whenever I see that `x` is correlated with `y`, I know that `x` affects `y`."  
+2. "It is impossible to learn anything about causality in the social world unless you run a randomized experiment."
+3. "There are serious obstacles to learning about causality from data, but it is possible."  
+
+--
+
+**Learning goals today:** "Correlation is not causation", but also:
+
+- Why it's easier to study effects than causes
+- Tools for representing causal relationships
+
+---
+
+class: bg-full
+background-image: url("assets/fowler_bdm_book_cover.jpeg")
+background-position: right
+background-size: contain
+
+## The reading
+
+---
+
+## Causal inference: the counterfactual approach
+
+"UN Peacekeeping helps countries navigate the difficult path from conflict to peace."   --- UN Peacekeeping
+
+--
+
+What does this claim mean?
+
+--
+
+**Perhaps**: A country in conflict is more likely to become peaceful if there is a UN Peacekeeping mission than if there is no UN Peacekeeping mission.
+
+--
+
+```{r, echo = F, fig.height=3, fig.width = 5, fig.align = "center", out.width = "65%"}
+dat <- tribble(
+  ~x, ~y, ~label, ~grp, ~po_label,
+  0, 0, "Country in\nconflict", "Peace-\nkeeping","Country in\nconflict",
+  1, .5, "Peace?", "Peace-\nkeeping","Y(1)",
+  0, 0, "Country in\nconflict", "No peace-\nkeeping","Country in\nconflict",
+  1, -.5, "Peace?", "No peace-\nkeeping","Y(0)"
+)
+
+dat %>% 
+  ggplot(aes(x = x, y = y)) + 
+  geom_path(aes(group = grp), arrow = arrow(length = unit(.1, "inches"), type = "closed")) +
+  annotate("text", x = .5, y = .45, label = "Peace-\nkeeping", size = 3) + 
+  annotate("text", x = .5, y = -.45, label = "No peace-\nkeeping", size = 3) +
+  geom_label(aes(label = label), fill = "white", label.size = NA, nudge_x = c(0, .15, 0, .15), nudge_y = c(0, .05, 0, -.05)) + 
+  theme_void() + 
+  expand_limits(x = c(-0.25, 1.25), y = c(-.75, .75))
+```
+
+
+---
+
+## Notation and terminology
+
+The thing that may have an effect (here, peacekeeping):
+
+- Usually called **treatment** (often "independent variable")
+- Usually written $D$ (sometimes $W$, $T$, or $X$)
+
+The thing that might be affected (here, peace):
+
+- Usually called **outcome** (often "dependent variable")
+- Almost always written $Y$
+
+--
+
+**Potential outcomes**:
+
+$Y(d)$ is the value $Y$ would take if $D$ had value $d$.
+
+
+```{r, echo = F, fig.height=3, fig.width = 5, fig.align = "center"}
+dat %>% 
+  ggplot(aes(x = x, y = y)) + 
+  geom_path(aes(group = grp), arrow = arrow(length = unit(.1, "inches"), type = "closed")) +
+  annotate("text", x = .5, y = .5, label = "Peace-\nkeeping:\nD = 1", size = 3) + 
+  annotate("text", x = .5, y = -.5, label = "No peace-\nkeeping:\nD = 0", size = 3) +
+  geom_label(aes(label = po_label), fill = "white", label.size = NA, nudge_x = c(0, .15, 0, .15), nudge_y = c(0, .05, 0, -.05)) + 
+  theme_void() + 
+  expand_limits(x = c(-0.25, 1.25), y = c(-.75, .75))
+
+```
+
+???
+
+Sometimes people write potential outcomes e.g. $Y_1$ and $Y_0$. The Bueno de Mesquita and Fowler book does that.
+
+---
+
+## Potential outcomes 
+
+A potential outcome is the hypothetical value of some outcome $Y$ if a treatment $D$ took a value $d$.
+
+--
+
+"Causal effect" of $D$ is defined in terms of **differences** in potential outcomes (e.g. $Y(1)$ vs $Y(0)$).
+
+--
+
+For example: 
+
+```{r, echo = F}
+tribble(~"Y", ~"D", ~"Y(0)", ~"Y(1)",
+        "Adult height", "Amount of milk consumed as child", "Height if consume little milk as child", "Height if consume lots of milk as child",
+        "Level of democracy", "Amount of industrialization", "Amount of democracy if low industrialization", "Amount of democracy if high industrialization") %>% 
+  kableExtra::kbl(escape = F) %>% 
+  kableExtra::kable_styling(full_width = T) %>% 
+  kableExtra::row_spec(0, bold = T, align = "center", extra_css = "border-bottom: 1px solid")
+
+```
+
+???
+
+Idea here is to solidify concept of potential outcomes, causal effect in terms of POs.
+
+---
+
+## "Effects of causes" vs "Causes of effects" 
+
+**So far:** to answer "What is effect of $D$ on $Y$?", we compare potential outcomes at different values of $D$.
+
+--
+
+What about questions like "What causes $Y$?" or "Why did event $Y$ take place?"
+
+- What caused World War I?
+- Why are some countries rich and others poor? 
+- Why do democracies never fight wars against each other?
+
+--
+
+Some points (see book chapter for more):
+
+- one event/outcome can have many causes
+- "origin of life" can be seen as cause of many social phenomena
+- people attempt to designate "proximate", "necessary", "sufficient"
+
+--
+
+**Messy.**
+
+---
+
+## Fundamental problem of causal inference
+
+In the counterfactual approach, we define causal effects in terms of **potential outcomes** (e.g. $Y(1), Y(0)$).
+
+But usually, we can only observe 1 (at most) potential outcome per unit.
+
+--
+
+This is the **fundamental problem of causal inference** (Holland 1986).
+
+---
+
+## Fundamental problem of causal inference (2)
+
+What about repeated observations with the same unit?
+
+--
+
+This can be very useful.
+
+Does it work for measuring the effect of
+
+- state of light switch on brightness of room?
+- taking an aspirin on headache?
+- studying on final mark?
+- GDP on democracy?
+
+Depends on whether (a) other things change over time and (b) outcomes
+depend on past treatments.
+
+
+---
+
+## Fundamental problem of causal inference (3)
+
+FPOCI means that we end up comparing across units.
+
+--
+
+But this is hard because 
+
+1. **Heterogeneity**: different units have different potential outcomes
+1. **Confounding/endogeneity**: observed treatment is often related to potential outcomes
+
+---
+
+## An illustration
+
+(Do the studying thing? It's also on the problem set.
+
+
+
