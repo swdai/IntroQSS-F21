@@ -1,8 +1,11 @@
 ---
 title: "Problem set 3"
-author: "Your name here"
-date: "Due 10/15/2021 at 5pm"
-output: pdf_document
+author: "Siwei Dai"
+date: \today
+output: 
+    pdf_document:
+        latex_engine: xelatex
+    
 ---
 
 ```{r setup, include=FALSE}
@@ -23,7 +26,7 @@ Consider the random process of flipping a fair coin three times.
 **(1a) Describe the sample space, $\Omega$.** 
 
 $$
-\Omega = \{<\text{your answer here} >\}
+\Omega = \{(HHH), (HHT), (HTT), (HTH), (THH), (THT), (TTH), (TTT)\}
 $$
 
 
@@ -32,11 +35,18 @@ $$
 
 | $x$  | $P(X = x)$ |
 |------|------------|
-|      |            |
+| 0    |  1/8       |
+| 1    |  3/8       |
+| 2    |  3/8       |
+| 3    |  1/8       |
 
 
 **(1c) Calculate the mean of this random variable. Please show your work.**
-
+\begin{align*}
+E[X] & = \sum_x xf(x) \\
+&= 0 * \frac{1}{8} + 1 * \frac{3}{8} + 2 * \frac{3}{8} + 3 * \frac{1}{8} \\
+&= \frac{3}{2}
+\end{align*}
 
 
 **(1c) Write out code to simulate this random process, where the output is a single realization of the random variable (i.e., a number that represents the number of heads in your coin flips).**
@@ -46,6 +56,13 @@ $$
 ```{r, simulate}
 set.seed(60637)
 # your code here
+coin_flip <- sample(
+    x = c(0, 1),
+    size = 3, 
+    replace = TRUE
+)
+coin_heads <- sum(coin_flip)
+coin_heads
 ```
 
 
@@ -53,6 +70,7 @@ set.seed(60637)
 
 ```{r, simulate10k}
 # your code here
+coin_result <- mean()
 ```
 
 **(1e): Write your own function called `mymean()` to calculate the sample mean from a vector. Apply your function to your size 10k sample that you saved in the last problem. (Don't use `mean()` inside your function.)** 
