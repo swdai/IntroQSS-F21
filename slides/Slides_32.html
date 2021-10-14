@@ -39,7 +39,6 @@ class: footnotesize
 # }
 &lt;/style&gt;
 
-
 ### Recall our terms from probability. Our random process: flipping a fair coin twice.
 
 --
@@ -53,7 +52,7 @@ class: footnotesize
   - We will often use terms like `\(A\)` or `\(B\)` to define events. 
   - In our example, the event that we get a head on the first flip is `\(A = \{HT, HH\}\)`. 
 
-- `\(S\)` : Event space. Describes all subsets of events, including the null set. [[Full event space]](#event_space)
+- `\(S\)` : Event space. Describes all subsets of events, including the null set.
   - We use this in addition to the sample space, so we can describe all types of events that we can define the probability for. 
   
 - `\(\textrm{P}\)` : Probability measure. A function that assigns probability to all of the events in the event space. 
@@ -347,7 +346,7 @@ These are the *marginal* distributions of `\(X\)` and `\(Y\)`, i.e., their distr
 ## Marginal distributions
 
 $$
-f_X(X) = \textrm{P}(X = x) \sum_y \textrm{P}(X=x, Y=y) = \sum_y f(x,y)
+f\_X(X) = \textrm{P}(X = x)\sum\_y \textrm{P}(X=x, Y=y) = \sum\_yf\_{X, Y}(x,y)
 $$
 
 --
@@ -362,7 +361,7 @@ $$
 
 --
 
-*Notational aside: we subscript `\(X\)` in `\(f_X\)` to denote that it is the mass function of `\(X\)` specifically, as `\(X\)` and `\(Y\)` have different probability mass functions. If we are only dealing with one random variable at a time, we don&#39;t need to specify which distribution we&#39;re dealing with.*
+*Notational aside: we can subscript `\(X\)` in `\(f_X\)` to denote that it is the mass function of `\(X\)` specifically, as `\(X\)` and `\(Y\)` have different probability mass functions. But often we will just omit the subscript for convenience.*
 
 
 ---
@@ -378,7 +377,7 @@ Plotting `\(X\)` and `\(Y\)` jointly gives us a better understanding of their jo
 We are also often interested in conditional relationships. 
 
 $$
-f_{Y|X}(y|x) = \textrm{P}(Y = y | X = x) = \frac{\textrm{P}(X=x, Y=y)}{\textrm{P}(X=x)}  = \frac{f(x,y)}{f_X(x)} 
+f\_{Y|X}(y|x) = \textrm{P}(Y = y | X = x) = \frac{\textrm{P}(X=x, Y=y)}{\textrm{P}(X=x)}  = \frac{f\_{X,Y}(x,y)}{f\_X(x)} 
 $$
 --
 
@@ -539,7 +538,7 @@ SD = `\(\sqrt{0.25} = 0.5\)`
 
 ---
 
-Let&#39;s take another example, where we flip a coin twice, and let `\(X\)` be the number of heads. However, let&#39;s say our coin is *not* fair, and the probability of getting a heads is 0.8. 
+Let&#39;s take another example, where we flip a coin twice, and let `\(X\)` be the number of heads. However, let&#39;s say our coin is *not* fair, and the probability of getting a heads is 0.75. 
 
 --
 
@@ -624,6 +623,7 @@ $$
 
 ---
 ## Presidential Daily Briefing
+#### [thanks to Prof. Austin Carson]
 
 &lt;img src=&quot;data:image/png;base64,#assets/pdb.png&quot; width=&quot;75%&quot; style=&quot;display: block; margin: auto;&quot; /&gt;
 
@@ -956,6 +956,7 @@ It has a bell curve shape, with more density around the middle, and less density
 &lt;!-- ## Applications --&gt;
 
 &lt;!-- Applications with one of our datasets, using stat_summary() to get summaries by group (recall R4DS 3.7, statistical transformations; 5.6.4 Useful summary functions) --&gt;
+
 
 
     </textarea>
