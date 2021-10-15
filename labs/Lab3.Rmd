@@ -1,0 +1,41 @@
+---
+title: "Lab 3"
+author: "Siwei Dai"
+date: "10/14/2021"
+output: 
+    pdf_document:
+        latex_engine: xelatex
+---
+# Practice 1
+$$ \textrm{P} (A|B) = \frac{\textrm{P}(B|A) \textrm{P} (A)}{\textrm{P} (B)}$$  
+$$ f(x) = \textrm{Pr}[X = x], \forall x \in \mathbb{R}$$
+
+$$
+\Phi (x) = \int_{-\infty}^{x} \frac{1}{\sqrt{2\pi}} e^{-\frac{\mu ^ 2}{2}}d\mu
+$$
+
+# kable and stargazer to generate tables
+
+# Functions
+```{r}
+my_function <- function(x) { # x is the parameter
+    x - mean (x, na.rm = TRUE) #demeaning: moving the center to 0
+}
+# last line is usually the output function
+my_function(c(1, 2, 3))
+```
+
+## Exercise
+```{r}
+set.seed(60637)
+ce <- rnorm(100, 0, 1)
+my_function <- function(x) {
+    max(x) - min(x)
+}
+my_function(ce)
+ve <- rnorm(100, 0, 5)
+my_function(ve)
+```
+
+## purr: pure functional programming
+to iterate functions

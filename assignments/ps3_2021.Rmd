@@ -44,7 +44,7 @@ $$
 **(1c) Calculate the mean of this random variable. Please show your work.**
 \begin{align*}
 E[X] & = \sum_x xf(x) \\
-&= 0 * \frac{1}{8} + 1 * \frac{3}{8} + 2 * \frac{3}{8} + 3 * \frac{1}{8} \\
+&= 0 \times \frac{1}{8} + 1 \times \frac{3}{8} + 2 \times \frac{3}{8} + 3 \times \frac{1}{8} \\
 &= \frac{3}{2}
 \end{align*}
 
@@ -56,13 +56,11 @@ E[X] & = \sum_x xf(x) \\
 ```{r, simulate}
 set.seed(60637)
 # your code here
-coin_flip <- sample(
+coin_flip <- sum(sample(
     x = c(0, 1),
     size = 3, 
-    replace = TRUE
-)
-coin_heads <- sum(coin_flip)
-coin_heads
+    replace = TRUE))
+coin_flip
 ```
 
 
@@ -70,7 +68,15 @@ coin_heads
 
 ```{r, simulate10k}
 # your code here
-coin_result <- mean()
+omega <- c(0, 1, 2, 3)
+probs <- c(1/8, 3/8, 3/8, 1/8)
+coin_10k <- sample(
+    x = omega,
+    size = 10000,
+    replace = TRUE,
+    prob = probs)
+coin_heads <- mean(coin_10k)
+coin_heads
 ```
 
 **(1e): Write your own function called `mymean()` to calculate the sample mean from a vector. Apply your function to your size 10k sample that you saved in the last problem. (Don't use `mean()` inside your function.)** 
@@ -78,6 +84,10 @@ coin_result <- mean()
 
 ```{r, mymean}
 # your code here
+mymean <- function(x) {
+    sum(x) / length(x)
+}
+mymean(coin_10k)
 ```
 
 
@@ -89,35 +99,80 @@ Using the same random process of flipping three fair coins, code the random vari
 
 | $y$  | $P(X = x)$ |
 |------|------------|
-|      |            |
+|  0   |    7/8     |
+|  1   |    1/8     |
+
 
 
 **(2a) Write out the joint probability mass function for the joint distribution of $X$ and $Y$.** 
 
 | $x$  | $y$  | $P(X = x, Y = y)$ |
 |------|------|-------------------|
-|      |      |                   |
+|  0   |  0   |  1/8              |
+|  1   |  0   |  3/8              |
+|  2   |  0   |  3/8              |
+|  3   |  1   |  1/8              |
 
 
 **(2b) Write out the probability mass function for this random variable $X$ *conditional* on $Y$.** 
 
 | $x$  | $y$  | $P(X = x| Y = y)$ |
 |------|------|-------------------|
-|      |      |                   |
+|  0   |  0   |  1/7              |
+|  1   |  0   |  3/7              |
+|  2   |  0   |  3/7              |
+|  3   |  1   |  1                |
 
 
 ## Question 3: 
 **(3a) Load the data set that you selected for your independent project. If your data set is not already in tibble format, transform it into a tibble. Print the data set so that we can see the top few observations and the column names and types. **
 
+**The variables are in Chinese; essentially the variables included the name of the bureaucrat, when a particular expericence started and ended, where he assumed the office and the level of the office.**
+
 ```{r, dataset}
 # your code here
+datapath <- './ps_data/FullData.csv'
+df <- as.tibble(read.csv(datapath))
+head(df)
+
 ```
 
 
 **(3b) What do you think is the appropriate unit of observation in your data? Is your data set already formatted so that each row describes a unique unit of observation? If not, what does each row describe? **
+I want to investigate why certain bureaucrats, after being removed from office or being demoted, can be re-promoted while others didn't. An appropriate unit of observation should be the bureaucrat, with variables denoting if he has been demoted, if after demotion he has been promoted again, and personal variables (connections with upper-level elites, alma mater, etc.)  
 
+Currently, each row denotes one experience within a political elite's career, i.e. what one's job was at a given year. After adding new variables (if he has been demoted, if after demotion he has been promoted again) by mutating, and filtering the observations, the dataset would be ready.
 
 
 [**Extra credit:** if your data set will need to be reshaped using `pivot_longer()` or `pivot_wider()`, try reshaping it now. If it doesn't need to be reshaped, you can try reshaping it anyhow. Give your reshaped columns informative names. Explain what the unit of observation is in your reshaped data set. ]
+```{r}
+# The following reshaping is to integrate each observation from one career experience
+# to an observation on one bureacrat, with extra variables denoting the position he had
+# at each career stage
+df_tidy <- df %>% 
+    # translate the variables into English
+    # exper_num refers to the career stage
+    rename('name' = 姓名,
+           'position_ori' = 级别, 
+           'exper_num' = 经历序号) %>% 
+    select(name, position_ori, exper_num) %>% 
+    # recode the position from strings into numeric; larger the number, higher the position
+    mutate('position_numeric' = case_when(position_ori == '无级别' ~ 0, 
+                                          position_ori == '小于副处' ~ 1,
+                                          position_ori == '副处' ~ 2,
+                                          position_ori == '正处' ~ 3,
+                                          position_ori == '副厅' ~ 4,
+                                          position_ori == '正厅' ~ 5,
+                                          position_ori == '副部' ~ 6,
+                                          position_ori == '正部' ~ 7,
+                                          position_ori == '副国' ~ 8,
+                                          position_ori == '正国' ~ 9)) %>%
+    select(name, position_numeric, exper_num) %>% 
+    pivot_wider(
+        names_from = exper_num,
+        values_from = position_numeric)
+df_tidy
+
+```
 
 
