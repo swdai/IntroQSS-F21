@@ -34,6 +34,17 @@ set.seed(60637)
 
 
 
+### Housekeeping
+
+- Managing homework assignments
+  - Look over the homework early in the week
+  - If you spend $>30$ minutes without making progress, go to stack overflow
+  - Use office hours, that's why they are on Thursday evenings
+  
+- We'll use LaTeX on homework this week--check explainer on GitHub
+
+---
+
  
 # What do we do with data
 
@@ -610,7 +621,7 @@ $$\begin{align}
 S & = \{\emptyset, \\
 &\{HH\}, \{HT\},\{TH\}, \{TT\},\\
 &\{HH, HT\}, \{HH, TH\},\{HH, TT\}, \{HT, TH\}, \{HT, TT\}, \{TH, TT\}\\
-& \{HH, HT, TH\}, \{HH, HT, TT\}, \{HH TH, TT\}, \{HT, TH, TT\},\\
+& \{HH, HT, TH\}, \{HH, HT, TT\}, \{HH, TH, TT\}, \{HT, TH, TT\},\\
 &\{HH, HT, TH, TT\} \}
 \end{align}$$
 
