@@ -119,9 +119,9 @@ dat <- tribble(
 dat %>% 
   ggplot(aes(x = x, y = y)) + 
   geom_path(aes(group = grp), arrow = arrow(length = unit(.1, "inches"), type = "closed")) +
-  annotate("text", x = .5, y = .45, label = "Peace-\nkeeping", size = 3) + 
-  annotate("text", x = .5, y = -.45, label = "No peace-\nkeeping", size = 3) +
-  geom_label(aes(label = label), fill = "white", label.size = NA, nudge_x = c(0, .15, 0, .15), nudge_y = c(0, .05, 0, -.05)) + 
+  annotate("text", x = .5, y = .45, label = "Peace-\nkeeping", size = 4) + 
+  annotate("text", x = .5, y = -.45, label = "No peace-\nkeeping", size = 4) +
+  geom_label(aes(label = label), fill = "white", label.size = NA, nudge_x = c(0, .15, 0, .15), nudge_y = c(0, .05, 0, -.05), size = 5) + 
   theme_void() + 
   expand_limits(x = c(-0.25, 1.25), y = c(-.75, .75))
 ```
@@ -152,9 +152,9 @@ $Y(d)$ is the value $Y$ would take if $D$ had value $d$.
 dat %>% 
   ggplot(aes(x = x, y = y)) + 
   geom_path(aes(group = grp), arrow = arrow(length = unit(.1, "inches"), type = "closed")) +
-  annotate("text", x = .5, y = .5, label = "Peace-\nkeeping:\nD = 1", size = 3) + 
-  annotate("text", x = .5, y = -.5, label = "No peace-\nkeeping:\nD = 0", size = 3) +
-  geom_label(aes(label = po_label), fill = "white", label.size = NA, nudge_x = c(0, .15, 0, .15), nudge_y = c(0, .05, 0, -.05)) + 
+  annotate("text", x = .5, y = .5, label = "Peace-\nkeeping:\nD = 1", size = 5) + 
+  annotate("text", x = .5, y = -.5, label = "No peace-\nkeeping:\nD = 0", size = 5) +
+  geom_label(aes(label = po_label), fill = "white", label.size = NA, nudge_x = c(0, .15, 0, .15), nudge_y = c(0, .05, 0, -.05), size = 6) + 
   theme_void() + 
   expand_limits(x = c(-0.25, 1.25), y = c(-.75, .75))
 
@@ -168,11 +168,11 @@ Sometimes people write potential outcomes e.g. $Y_1$ and $Y_0$. The Bueno de Mes
 
 ## Potential outcomes 
 
-A potential outcome is the hypothetical value of some outcome $Y$ if a treatment $D$ took a value $d$.
+As above: A **potential outcome** is the hypothetical value of some outcome $Y$ if a treatment $D$ took a value $d$.
 
 --
 
-"Causal effect" of $D$ is defined in terms of **differences** in potential outcomes (e.g. $Y(1)$ vs $Y(0)$).
+"Causal effect" of $D$ is defined in terms of **differences** in potential outcomes, e.g. $Y(1)$ vs $Y(0)$.
 
 --
 
@@ -182,6 +182,7 @@ For example:
 tribble(~"Y", ~"D", ~"Y(0)", ~"Y(1)",
         "Adult height", "Amount of milk consumed as child", "Height if consume little milk as child", "Height if consume lots of milk as child",
         "Level of democracy", "Amount of industrialization", "Amount of democracy if low industrialization", "Amount of democracy if high industrialization") %>% 
+  relocate(D) %>% 
   kableExtra::kbl(escape = F) %>% 
   kableExtra::kable_styling(full_width = T) %>% 
   kableExtra::row_spec(0, bold = T, align = "center", extra_css = "border-bottom: 1px solid")
@@ -222,13 +223,11 @@ Some points (see book chapter for more):
 
 ## Fundamental problem of causal inference
 
-In the counterfactual approach, we define causal effects in terms of **potential outcomes** (e.g. $Y(1), Y(0)$).
-
-But usually, we can only observe 1 (at most) potential outcome per unit.
+As above, in the counterfactual approach, we define causal effects in terms of **potential outcomes**, e.g. $Y(1), Y(0)$.
 
 --
 
-This is the **fundamental problem of causal inference** (Holland 1986).
+**Fundamental problem of causal inference** (Holland 1986): "It is impossible to *observe* the value of $Y(1)$ and $Y(0)$ on the same unit and, therefore, it is impossible to *observe* the effect of $D$ on that unit."
 
 ---
 
@@ -244,11 +243,19 @@ Does it work for measuring the effect of
 
 - state of light switch on brightness of room?
 - taking an aspirin on headache?
-- studying on final mark?
+- studying on final grade?
 - GDP on democracy?
 
 Depends on whether (a) other things change over time and (b) outcomes
 depend on past treatments.
+
+
+---
+
+class: bg-full
+background-image: url("assets/correlation.png")
+background-position: center
+background-size: 80%
 
 
 ---
@@ -268,7 +275,132 @@ But this is hard because
 
 ## An illustration
 
-(Do the studying thing? It's also on the problem set.
+Let $D_i \in \{0,1\}$ denote whether a student studied.
+
+Let $Y_i \in \{0, 1, \ldots, 100\}$ denote the student's final grade.
+
+--
+
+Proposed measure of effect of studying: **difference in means**, i.e. average grade among students who studied minus average grade of students who did not study. 
+
+--
+
+Suppose there are two types of students:
+
+- "AB types": $Y_i(1) = 95$, $Y_i(0) = 85$
+- "BC types": $Y_i(1) = 85$, $Y_i(0) = 75$
+
+What is the true effect of studying? 
+
+--
+
+
+What is the **difference in means** if
+
+- all AB types study and all BC types do not? 
+- all AB types do not study and all BC types study?
+- there is no heterogeneity, i.e. only BC types or only AB types?
+- there is no confounding, i.e. half of AB types study and half of BC types study?
+
+???
+
+For every individual (and therefore on average), the effect of studying is 10 points.
+
+Difference in means is 
+
+- 20
+- 0
+- 10
+- 10
+
+**Next time:** how randomization eliminates confounding.
+
+
+---
+
+## Another view: DAGs 
+
+Let each variable be a **node** in a graph, and draw an arrow from a node $A$ to a node $B$ if and only if $A$ affects $B$.
+
+--
+
+Then our toy example might be represented via **Directed Acyclic Graph (DAG)** like this:
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "50%"}
+library(ggdag)
+coords <- tibble::tribble(
+  ~name, ~x,  ~y,
+  "D", 0,   0,
+  "X", -.25,   .5,
+  "Y",  1,   0
+)
+
+dagify(Y ~ X + D,
+       D ~ X,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+
+```
+
+
+$X$ is a **confounder**. What might it be in this example?
+
+--
+
+The association (e.g. correlation) between $D$ and $Y$ reflects both the direct effect of $D$ on $Y$ and the *backdoor path* $D \leftarrow X \rightarrow Y$. 
+
+???
+
+$X$ could be the type, or something like ability or prior experience in the subject matter.
+
+---
+
+## More generally
+
+**Definition**: A node is a *collider* for a given path if it has two arrows from the path going in and none going out
+
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "40%"}
+library(ggdag)
+coords <- tibble::tribble(
+  ~name, ~x,  ~y,
+  "D", 0,   0,
+  "X", -.25,   .25,
+  "Y",  1,   0,
+  "W", .5, -.25
+)
+
+dagify(Y ~ X + D,
+       D ~ X,
+       W ~ D,
+       W ~ Y,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+
+```
+
+--
+
+**Definition**: A path is *blocked* if
+
+- we condition (e.g. using regression) on a non-collider node on the path, or
+- there is a collider on the path and we do not condition on it (or its descendants)
+
+--
+
+**Key finding**: Given a  DAG, the association between two nodes will reflect all *unblocked* paths that connect them. (See Pearl 2000 or Imbens 2020 for more.)
+
+
+---
+
+## Where next?
+
+- Thursday: experiments as one solution to confounding
+- Next two weeks: regression (another solution)
 
 
 
