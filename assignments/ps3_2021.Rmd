@@ -2,6 +2,8 @@
 title: "Problem set 3"
 author: "Siwei Dai"
 date: \today
+header-includes:
+    - \usepackage{xeCJK}
 output: 
     pdf_document:
         latex_engine: xelatex
@@ -127,28 +129,32 @@ Using the same random process of flipping three fair coins, code the random vari
 ## Question 3: 
 **(3a) Load the data set that you selected for your independent project. If your data set is not already in tibble format, transform it into a tibble. Print the data set so that we can see the top few observations and the column names and types. **
 
-**The variables are in Chinese; essentially the variables included the name of the bureaucrat, when a particular expericence started and ended, where he assumed the office and the level of the office.**
-
 ```{r, dataset}
 # your code here
 datapath <- './ps_data/FullData.csv'
 df <- as.tibble(read.csv(datapath))
+# The variables are in Chinese; 
+# essentially the variables included the name of the bureaucrat, 
+# when a particular experience started and ended, 
+# where he assumed the office and the level of the office, 
+# and other personal variables (alma mater, etc.)
 head(df)
 
 ```
 
 
-**(3b) What do you think is the appropriate unit of observation in your data? Is your data set already formatted so that each row describes a unique unit of observation? If not, what does each row describe? **
-I want to investigate why certain bureaucrats, after being removed from office or being demoted, can be re-promoted while others didn't. An appropriate unit of observation should be the bureaucrat, with variables denoting if he has been demoted, if after demotion he has been promoted again, and personal variables (connections with upper-level elites, alma mater, etc.)  
+**(3b) What do you think is the appropriate unit of observation in your data? Is your data set already formatted so that each row describes a unique unit of observation? If not, what does each row describe? **  
 
-Currently, each row denotes one experience within a political elite's career, i.e. what one's job was at a given year. After adding new variables (if he has been demoted, if after demotion he has been promoted again) by mutating, and filtering the observations, the dataset would be ready.
+I want to investigate why certain bureaucrats, after being removed from office or being demoted, can be re-promoted while others didn't. An appropriate unit of observation should be the bureaucrat who got demoted, with variables denoting when he was demoted, if after demotion he has been promoted again, and personal variables (connections with upper-level elites, alma mater, etc.)  
+
+Currently, each row denotes a unique experience within a political elite's career, i.e. what one's job was at a given year, along with the personal variables. After adding new variables (if he has been demoted, if after demotion he has been promoted again) by mutating, and filtering the observations to leave the demoted bureaucrats within the dataset, the dataset would be fine.
 
 
-[**Extra credit:** if your data set will need to be reshaped using `pivot_longer()` or `pivot_wider()`, try reshaping it now. If it doesn't need to be reshaped, you can try reshaping it anyhow. Give your reshaped columns informative names. Explain what the unit of observation is in your reshaped data set. ]
+[**Extra credit:** if your data set will need to be reshaped using `pivot_longer()` or `pivot_wider()`, try reshaping it now. If it doesn't need to be reshaped, you can try reshaping it anyhow. Give your reshaped columns informative names. Explain what the unit of observation is in your reshaped data set. ]  
 ```{r}
 # The following reshaping is to integrate each observation from one career experience
-# to an observation on one bureacrat, with extra variables denoting the position he had
-# at each career stage
+# to an observation on one bureaucrat, with extra variables denoting the position he had
+# in each career phase
 df_tidy <- df %>% 
     # translate the variables into English
     # exper_num refers to the career stage
@@ -170,8 +176,11 @@ df_tidy <- df %>%
     select(name, position_numeric, exper_num) %>% 
     pivot_wider(
         names_from = exper_num,
+        names_prefix = 'Experience No.', 
         values_from = position_numeric)
-df_tidy
+# Each observation now describes the levels of every office a bureaucrat assumed in his career.
+# The columns denote the nth position the bureaucrat had in his career. 
+head(df_tidy)
 
 ```
 
