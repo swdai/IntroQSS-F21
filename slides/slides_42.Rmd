@@ -221,6 +221,15 @@ $$
 $$
 
 ---
+
+```{r, echo = FALSE, out.width = "72%", fig.align='center'}
+knitr::include_graphics('assets/eee.jpg')
+```
+
+
+---
+
+
 ## Difference in Means
 
 
