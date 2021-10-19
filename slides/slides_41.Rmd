@@ -7,6 +7,8 @@ output:
     css: [default, uchicago_pol_meth.css]
     nature:
       highlightLines: true
+      countIncrementalSlides: false
+
 ---
 
 ```{r setup, include=FALSE}
@@ -145,7 +147,7 @@ The thing that might be affected (here, peace):
 
 **Potential outcomes**:
 
-$Y(d)$ is the value $Y$ would take if $D$ had value $d$.
+$Y(d)$ is the value $Y$ *would take** if $D$ were set to $d$.
 
 
 ```{r, echo = F, fig.height=3, fig.width = 5, fig.align = "center"}
@@ -168,7 +170,7 @@ Sometimes people write potential outcomes e.g. $Y_1$ and $Y_0$. The Bueno de Mes
 
 ## Potential outcomes 
 
-As above: A **potential outcome** is the hypothetical value of some outcome $Y$ if a treatment $D$ took a value $d$.
+As above: A **potential outcome** is the hypothetical value of some outcome $Y$ if a treatment $D$ were set to $d$.
 
 --
 
@@ -189,9 +191,15 @@ tribble(~"Y", ~"D", ~"Y(0)", ~"Y(1)",
 
 ```
 
+--
+
+**Task:** Think of another example of interest to you.  
+
 ???
 
 Idea here is to solidify concept of potential outcomes, causal effect in terms of POs.
+
+
 
 ---
 
@@ -229,6 +237,13 @@ As above, in the counterfactual approach, we define causal effects in terms of *
 
 **Fundamental problem of causal inference** (Holland 1986): "It is impossible to *observe* the value of $Y(1)$ and $Y(0)$ on the same unit and, therefore, it is impossible to *observe* the effect of $D$ on that unit."
 
+--
+
+Define *individual treatment effect* for unit $i$ as 
+
+$$\mathrm{ITE}_i = Y_i(1) - Y_i(0)$$
+FPOCI says that the ITE cannot be observed for any unit. 
+
 ---
 
 ## Fundamental problem of causal inference (2)
@@ -257,6 +272,7 @@ background-image: url("assets/correlation.png")
 background-position: center
 background-size: 80%
 
+[Source: xkcd](https://xkcd.com/552/)
 
 ---
 
@@ -281,16 +297,16 @@ Let $Y_i \in \{0, 1, \ldots, 100\}$ denote the student's final grade.
 
 --
 
-Proposed measure of effect of studying: **difference in means**, i.e. average grade among students who studied minus average grade of students who did not study. 
+Proposed **estimator** for average effect of studying: **difference in means**, i.e. average grade among students who studied minus average grade of students who did not study. 
 
 --
 
-Suppose there are two types of students:
+Suppose there are two types of students (**heterogeneity**):
 
 - "AB types": $Y_i(1) = 95$, $Y_i(0) = 85$
 - "BC types": $Y_i(1) = 85$, $Y_i(0) = 75$
 
-What is the true effect of studying? 
+What is the true average effect of studying? 
 
 --
 
@@ -315,6 +331,7 @@ Difference in means is
 
 **Next time:** how randomization eliminates confounding.
 
+Useful activity at this point: apply this logic to another example.
 
 ---
 
@@ -324,7 +341,7 @@ Let each variable be a **node** in a graph, and draw an arrow from a node $A$ to
 
 --
 
-Then our toy example might be represented via **Directed Acyclic Graph (DAG)** like this:
+Then our toy example might be represented via a **Directed Acyclic Graph (DAG)** like this:
 
 ```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "50%"}
 library(ggdag)
@@ -345,7 +362,7 @@ dagify(Y ~ X + D,
 ```
 
 
-$X$ is a **confounder**. What might it be in this example?
+$X$ is a **confounder**. What might it be in the studying example?
 
 --
 
@@ -355,14 +372,16 @@ The association (e.g. correlation) between $D$ and $Y$ reflects both the direct 
 
 $X$ could be the type, or something like ability or prior experience in the subject matter.
 
+Vanderweele and Robins (2007): "A DAG is composed of variables (nodes) and arrows between nodes (directed edges) such that the graph is acyclic—that is, it is not possible to start at any node, follow the directed edges in the arrowhead direction, and end up back at the same node. A causal DAG is one in which the arrows can be interpreted as causal relations and in which all common causes of any pair of variables on the graph are also included on the graph."
+
 ---
 
-## More generally
+## Some DAG basics
 
-**Definition**: A node is a *collider* for a given path if it has two arrows from the path going in and none going out
+.pull-left[**Definition**: A **path** between two nodes is a set of connected edges going from one node to the other (regardless of direction of arrows.]
 
-
-```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "40%"}
+.pull-right[
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
 library(ggdag)
 coords <- tibble::tribble(
   ~name, ~x,  ~y,
@@ -382,17 +401,28 @@ dagify(Y ~ X + D,
   theme_void()
 
 ```
+]
+
+--
+
+**Definition**: A node is a *collider* for a given path if it has two arrows from the path going in and none going out
 
 --
 
 **Definition**: A path is *blocked* if
 
-- we condition (e.g. using regression) on a non-collider node on the path, or
-- there is a collider on the path and we do not condition on it (or its descendants)
+- we **condition** (e.g. using regression) on a non-collider node on the path, or
+- there is a collider on the path and we **do not** condition on it (or its descendants)
 
 --
 
 **Key finding**: Given a  DAG, the association between two nodes will reflect all *unblocked* paths that connect them. (See Pearl 2000 or Imbens 2020 for more.)
+
+???
+
+If the DAG is $A \leftarrow C \rightarrow B$, then $A$ and $B$ are not associated unless we condition on $C$. Here is the logic: suppose $A$ is height and $B$ is shooting ability, and $C$ is being a professional basketball player. It could be that in the population height and shooting ability is not related, but **conditional** on whether or not you are in the NBA they are negatively related. (That means, compute the association among NBA players and among non-NBA players and average those associations.) Among pro basketball players it may be negatively related (because you need to be tall or good at shooting to be in the NBA), in which case among non-basketball players it would also be negatively related (because the tallest and/or best shooting people are excluded).
+
+Similarly, conditional on whether or not you date them, it could be that the hottest people are the meanest (even if hotness and meanness not related in the population).
 
 
 ---

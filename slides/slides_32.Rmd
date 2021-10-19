@@ -345,7 +345,7 @@ These are the *marginal* distributions of $X$ and $Y$, i.e., their distributions
 ## Marginal distributions
 
 $$
-f\_X(X) = \textrm{P}(X = x)=\sum\_y \textrm{P}(X=x, Y=y) = \sum\_yf\_{X, Y}(x,y)
+f\_X(x) = \textrm{P}(X = x)=\sum\_y \textrm{P}(X=x, Y=y) = \sum\_yf\_{X, Y}(x,y)
 $$
 
 --
@@ -400,11 +400,11 @@ We are also often interested in conditional relationships.
 $$
 f\_{Y|X}(y|x) = \textrm{P}(Y = y | X = x) = \frac{\textrm{P}(X=x, Y=y)}{\textrm{P}(X=x)}  = \frac{f\_{X,Y}(x,y)}{f\_X(x)} 
 $$
---
 
-Here, what is the probability of observing two heads, conditional on having observed at least one heads?
 
 --
+For example, 
+
 
 $$
 f_{Y|X}(y|x) = \begin{cases}
@@ -414,7 +414,9 @@ f_{Y|X}(y|x) = \begin{cases}
 0 & \text{otherwise}
 \end{cases}
 $$
+--
 
+Here, what is the probability of observing two heads, conditional on having observed at least one heads?
 
 ---
 
