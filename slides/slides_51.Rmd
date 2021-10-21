@@ -30,7 +30,7 @@ In **regression analysis**, we estimate the relationship between a **dependent v
 
 <br> </br>
 
-Regression **describes** the relationship between $Y_i$ and $\mathbf{X}_i$ in a dataset, but in some circumstances we can use it for  
+Regression **describes** relationships in a dataset, but in some circumstances we can use it for  
 
 - prediction (what will $Y_i$ be, given some $X_i$?)
 - causal inference (what is effect of $D_i$ on $Y_i$?)
@@ -43,7 +43,7 @@ When we say "regression" we often mean **ordinary least squares (OLS)**.
 
 --
 
-Suppose we want to describe $Y_i$ as a function of $D_i$ and $X_i$ given $n$ observations: 
+Suppose we want to describe $Y_i$ as a function of $D_i$ and $X_i$ in some data: 
 
 $$ \hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i $$ 
 
@@ -60,7 +60,7 @@ Define $Y_i - \hat{Y_i} = \hat{r}_i$ as the **residual**.
 
 We seek coefficient estimates that minimize the **sum of squared residuals**, i.e.
 
-$$ \underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min} \sum_i  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right)^2 $$
+$$\underset{\hat{\beta}_0, \hat{\beta}_1, \hat{\beta}_2}{\arg\min} \sum_{i=1}^n  \left(Y_i - (\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i)\right)^2$$
 
 <!-- Don't know why the math doesn't work. I want \sum_{i=1}^n -->
 
@@ -98,9 +98,15 @@ dat %>%
 
 What **intercept** $\hat{\beta}_0$ and **slope** $\hat{\beta}_1$ would minimize the sum of squared residuals? 
 
+What is the minimum sum of squared residuals?
+
+???
+
+At intercept of -1 and slope of 2.5, the SSR is $.5^2 + .5^2 = .5$ 
+
 ---
 
-## Toy example 1 (2)
+## Toy example 1
 
 ```{r}
 # base R
@@ -111,7 +117,7 @@ estimatr::lm_robust(y ~ x, data = dat)
 
 ---
 
-## Toy example 1 (3)
+## Toy example 1
 
 ```{r, out.width="70%"}
 dat %>% 
@@ -126,7 +132,7 @@ dat %>%
 ## Toy example 2
 
 Suppose we have this data: 
-```{r get-data-2, out.width = "60%"}
+```{r get-data-2, out.width = "60%", echo = F}
 set.seed(1245)
 n <- 100
 dat2 <- tibble(x = rnorm(n), 
@@ -144,7 +150,7 @@ What **slope** $\hat{\beta}_0$ and **intercept** $\hat{\beta}_1$ would minimize 
 
 ---
 
-## Toy example 2 (2)
+## Toy example 2
 
 ```{r}
 # base R
@@ -155,7 +161,7 @@ estimatr::lm_robust(y ~ x, data = dat2)
 
 ---
 
-## Toy example 2 (3)
+## Toy example 2
 
 ```{r, out.width="70%"}
 dat2 %>% 
@@ -163,6 +169,8 @@ dat2 %>%
   geom_smooth(method = lm, se = F) + 
   geom_point()
 ```
+
+
 
 ---
 
@@ -177,20 +185,288 @@ Calculus and linear algebra.
 
 ---
 
+## *Why* does OLS minimize the sum of squared residuals?
 
+Correct but superficial answers: 
 
-## Interview question
+- "squared" to make residuals positive
+- "squared" because sum of absolute residuals wouldn't always give a unique answer
+- "squared" to make the math prettier/easier than e.g. absolute residuals
 
-Why is OLS "ordinary least **squares**?"
+--
+
+Deeper answers:
+
+- minimizing the sum of squared residuals gives the **conditional mean** or a linear approximation to it; other approaches (e.g. mean absolute residual) do not
+- suppose we want a predictor that (in the population) minimizes mean squared error (MSE), i.e. $E[(Y - \hat{Y})^2]$; then the corresponding "plug-in estimator" minimizes the sum of squared residuals (see e.g. Aronow & Miller)
+- the predictor that minimizes MSE in the population is the **conditional expectation function (CEF)** $E[Y | X]$; OLS delivers a linear approximation to the CEF 
+
+---
+
+class: bg-full
+background-image: url("assets/MSE_SSR_diagram_3.png")
+background-position: center
+background-size: 75%
+
+## Why sum of squared residuals? 
 
 ---
 
 class: inverse, middle, center
 
-# No predictors
+# Regression with categorical predictors:  Illustration with an experiment
+
 
 ---
 
+## Butler & Broockman (2011) again
+
+```{r}
+bb <- read_csv('../data/legislators_email/Butler_Broockman_AJPS_2011_public_csv.csv')
+
+bb %>% 
+  group_by(treat_deshawn) %>% 
+  summarize(mean(reply_atall))
+
+lm(reply_atall ~ treat_deshawn, data = bb)
+
+```
+How are these related?
+
+---
+
+## From regression output to conditional means 
+
+```{r}
+lm(reply_atall ~ treat_deshawn, data = bb)
+```
+
+--
+
+The **fitted regression equation** can be written 
+
+$$ \hat{Y_i} = .574 - .018 D_i $$ 
+--
+
+So the prediction (conditional mean) depends on the value of $D_i$: 
+
+
+$$
+\hat{Y} = \begin{cases}
+.574 & D_i = 0 \\\
+.574 - .018 & D_i = 1 
+\end{cases}
+$$
+---
+
+## Another way
+
+Instead of estimating 
+
+$$\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 \mathrm{DeShawn}_i$$
+(with emails saying "Jake Mueller" as the omitted group), we can estimate 
+
+$$\hat{Y}_i = \hat{\alpha}_1 \mathrm{NotDeShawn}_i + \hat{\alpha}_2 \mathrm{Deshawn}_i$$
+by adding a `-1` to the formula syntax:
+
+```{r}
+lm(reply_atall ~ factor(treat_deshawn) - 1, data = bb)
+```
+
+---
+
+## Adding a predictor
+
+`leg_republican` indicates whether the email recipient was a Republican.
+
+```{r}
+lm(reply_atall ~ treat_deshawn + leg_republican, data = bb)
+```
+
+What is the predicted probability of a reply for a "Deshawn" email to a Republican?
+
+--
+
+```{r echo = F}
+reg1 <- lm(reply_atall ~ treat_deshawn + leg_republican, data = bb)
+coefs <- coef(reg1) %>% round(3)
+```
+
+The prediction is $`r coefs[1]` + `r coefs[2]` + `r coefs[3]` = `r sum(coefs)`$.
+
+---
+
+## Adding a predictor (2)
+
+```{r}
+lm(reply_atall ~ treat_deshawn + leg_republican, data = bb) %>% 
+  coef()
+```
+
+If we write the prediction equation as  $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 \mathrm{DeShawn}_i + \hat{\beta}_2 \mathrm{LegRep}_i$, then we have
+
+| Email | Recipient | Predicted response rate | 
+|-------|:---------:|:-----------------------:|
+| Jake  |   Dem     |      $\hat{\beta}_0$    |
+| DeShawn  |   Dem     |      $\hat{\beta}_0 + \hat{\beta}_1$   |
+| Jake  |   Rep     |      $\hat{\beta}_0 + \hat{\beta}_2$    |
+| DeShawn  |   Rep     |      $\hat{\beta}_0 + \hat{\beta}_1 + \hat{\beta}_2$    |
+
+--
+
+So what is the assumed DeShawn-vs-Jake difference for Democrats? For Republicans? 
+
+---
+
+## We add an interaction 
+
+<!-- To avoid imposing the assumption that Democrats and Republicans respond the same way to DeShawn-vs-Jake, we add an **interaction**. -->
+
+```{r}
+lm(reply_atall ~ treat_deshawn*leg_republican, data = bb) %>% 
+  coef()
+```
+
+The prediction equation becomes 
+
+$$\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 \mathrm{DeShawn}_i + \hat{\beta}_2 \mathrm{LegRep}_i + \hat{\beta}_3 \mathrm{DeShawn}_i  \times \mathrm{LegRep}_i$$
+so we have
+
+| Email | Recipient | Predicted response rate | 
+|-------|:---------:|:-----------------------:|
+| Jake  |   Dem     |      $\hat{\beta}_0$    |
+| DeShawn  |   Dem     |      $\hat{\beta}_0 + \hat{\beta}_1$   |
+| Jake  |   Rep     |      $\hat{\beta}_0 + \hat{\beta}_2$    |
+| DeShawn  |   Rep     |      $\hat{\beta}_0 + \hat{\beta}_1 + \hat{\beta}_2 + \hat{\beta}_3$    |
+
+---
+
+## Interpreting interactions 
+
+Compare: 
+
+```{r}
+lm(reply_atall ~ treat_deshawn*leg_republican, data = bb) %>% 
+  coef()
+```
+
+```{r}
+bb %>% 
+  group_by(treat_deshawn, leg_republican) %>% 
+  summarize(resp_rate = mean(reply_atall))
+```
+
+
+---
+
+## Summing up
+
+- in a regression using only categorical explanatory variables, the predictions are just sample means for categories
+- to recover the predictions/means, you usually have to add up coefficients: this can be tricky
+
+---
+
+## $R^2$ and overfitting 
+
+Here is a dataset on U.S. presidents: 
+
+```{r}
+pres <- read_csv("./../data/pres_data.csv")
+
+```
+
+| Variable Name | Description | 
+|-------:|:-----------------------:|
+|year | Election year |
+| deminc | 1=incumbent is a Democrat |
+| incvote | Percent of the two-party vote for the incumbent party |
+|q2gdp | Second-quarter change in real GDP in election year |
+| juneapp | Net approval of incumbent president in June of election year |
+
+---
+
+## Incumbent approval rating and incumbent party vote share 
+
+```{r, out.width="70%"}
+vote_app %>% 
+  ggplot(aes(x = juneapp, y = incvote, label = year)) + 
+  geom_point() + 
+  geom_text(nudge_x = 2, nudge_y = .5, size = 2)
+vote_app + 
+  geom_smooth(method = lm, se = F)
+```
+
+---
+
+# Standard `R` regression output
+
+```{r}
+lm(incvote ~ juneapp, data = pres) %>% 
+  summary()
+```
+
+
+---
+
+# Standard `R` regression output
+
+```{r}
+estimatr::lm_robust(incvote ~ juneapp, data = pres) %>% 
+  summary()
+```
+
+---
+
+## $R^2$
+
+$R^2$ measures the proportion of variance in the dependent variable "explained" by the independent variables. 
+
+
+
+# R^2 and overfitting.
+```
+
+
+
+```{r}
+cces <- readRDS("./../data/cces/cumulative_2006-2020.rds")
+cces %>%
+  filter(year %in% c(2014) & vv_turnout_gvm %in% c("Voted", "No Record of Voting") & age < 90) %>%
+  group_by(age, year) %>% 
+  summarize(weighted = weighted.mean(vv_turnout_gvm == "Voted", w = weight),
+            unweighted = mean(vv_turnout_gvm == "Voted")) %>%
+  pivot_longer(cols = c(weighted, unweighted)) %>% 
+  ggplot(aes(x = age, y = value, col = name)) + 
+  geom_point(size = 1) + 
+  geom_line(alpha = .5)
+  
+
+```
+
+
+For problem set?
+
+```{r}
+lm(reply_atall ~ treat_deshawn, data = bb, subset = treat_noprimary == 1) 
+
+bb %>% 
+  mutate(primary = case_when(treat_demprimary == 1 ~ "dem",
+                             treat_repprimary == 1 ~ "rep",
+                             treat_noprimary == 1 ~ "none"))  -> bb2
+
+lm(reply_atall ~ treat_deshawn*primary, data = bb2) %>% 
+  broom::tidy()
+
+```
+
+
+---
+
+class: inverse, middle, center
+
+# Appendix (for reference): More about why we minimize the sum of squared residuals
+
+---
 
 ## Predicting the value of a random variable
 
@@ -405,13 +681,5 @@ lm(y ~ factor(x) - 1, data = dat)
 lm(y ~ factor(x), data = dat)
 lm(y ~ x, data = dat)
 ```
-
----
-
-class: inverse, middle, center
-
-# Two categorical predictors
-
----
 
 
