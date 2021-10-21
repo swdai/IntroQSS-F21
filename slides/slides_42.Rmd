@@ -225,7 +225,7 @@ $$
 ```{r, echo = FALSE, out.width = "72%", fig.align='center'}
 knitr::include_graphics('assets/eee.jpg')
 ```
-
+(image cred: @simongrund89)
 
 ---
 
@@ -626,12 +626,34 @@ Democrats are *more* likely to respond to an email if the sender was identified 
 
 ## Limitations of experiments
 
+--
+
+- What *population* are you substantively interested in? What group are you actually able to manipulate treatments for? Can you generalize from one to another?
+
+--
+- Which *treatments* can you realistically/ethically manipulate? Are these relevant to the counterfactuals in the world that you're actually interested in?
+
+--
+- What *outcomes* can you measure in your study group? Are these outcomes relevant to the real world behavior or events that you care about?
+
+--
+- Does your study design match your estimand of interest?
+
+--
+- Does your study have *internal validity*? Does your study have *external validity*?
+
 ---
 
 ## Is causal inference a lost cause outside of experiments?
 
 --
-
 - When we aren't able to manipulate treatment, we depend on other *identifying assumptions.*
 
+--
+- Natural experiments (lots of work from Angrist, Card, Krueger)
 
+--
+- Exposure to treatment is *as-if random*, controlling for other measured variables. 
+
+--
+- Identification strategies + estimating procedures: Instrumental variables, difference-in-differences, regression discontinuity
