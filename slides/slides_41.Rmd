@@ -166,6 +166,8 @@ dat %>%
 
 Sometimes people write potential outcomes e.g. $Y_1$ and $Y_0$. The Bueno de Mesquita and Fowler book does that.
 
+Other terms: explanatory variable, response.
+
 ---
 
 ## Potential outcomes 
