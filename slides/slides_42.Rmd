@@ -371,7 +371,7 @@ Let $Y_i = Y_i(1) \times D_i + Y_i(0) \times (1 - D_i)$
 What this means: distribution of potential outcomes under treatment and control is exactly the same. 
 
 $$
-\textrm{E}[Y_i(0)] = \textrm{E}[Y_i | D_i = 0]
+\textrm{E}[Y_i(0)] = \int Y_i(0) * = \textrm{E}[Y_i | D_i = 0] = \int Y_i * P(Y_i | D_i = 0)
 $$
 and
 
