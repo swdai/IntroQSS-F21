@@ -1,7 +1,7 @@
 ---
 title: "Problem set 4"
-author: "Your name here"
-date: "Due 10/22/2021 at 5pm"
+author: "Siwei Dai"
+date: \today
 output: pdf_document
 ---
 
@@ -189,7 +189,7 @@ ATE <- mean(dat$Y1) - mean(dat$Y0)
 comparison <- diff_in_means - ATE
 comparison
 
-# Again, the probability 
+# Again, the probability of treatment is correlated with the potential outcome.
 ```
 
 3i) Create a new treatment variable `D_random` that is assigned at random, as if this were a randomized experiment. 
