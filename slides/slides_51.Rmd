@@ -1,6 +1,6 @@
 ---
 title: "PLSC30500, Fall 2021"
-subtitle: "5.1 Regression"
+subtitle: "5.1 Regression: introduction"
 # author: "Andy Eggers & Molly Offer-Westort"
 output: 
   xaringan::moon_reader:
@@ -18,9 +18,10 @@ knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, fig.alig
 ```
 
 
+
 class: inverse, middle, center
 
-# Regression: what it is and how to do it
+# Regression basics: what it is, why we do it
 
 ---
 
@@ -93,8 +94,10 @@ dat %>%
 ```
 ]
 
+Regression equation: $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_i$
+
 <br> </br>
-<br> </br>
+
 
 What **intercept** $\hat{\beta}_0$ and **slope** $\hat{\beta}_1$ would minimize the sum of squared residuals? 
 
@@ -140,13 +143,13 @@ dat2 <- tibble(x = rnorm(n),
 
 dat2 %>% 
   ggplot(aes(x = x, y = y)) + 
-  geom_point(size = 2)  
+  geom_point(size = 2) +
+  coord_fixed()
 ```
 
 <br> </br>
-<br> </br>
 
-What **slope** $\hat{\beta}_0$ and **intercept** $\hat{\beta}_1$ would minimize the sum of squared residuals? 
+What **intercept** $\hat{\beta}_0$ and **slope** $\hat{\beta}_1$ would minimize the sum of squared residuals? 
 
 ---
 
@@ -167,7 +170,8 @@ estimatr::lm_robust(y ~ x, data = dat2)
 dat2 %>% 
   ggplot(aes(x = x, y = y)) + 
   geom_smooth(method = lm, se = F) + 
-  geom_point()
+  geom_point() + 
+  coord_fixed()
 ```
 
 
@@ -214,8 +218,7 @@ background-size: 75%
 
 class: inverse, middle, center
 
-# Regression with categorical predictors:  Illustration with an experiment
-
+# Regression with categorial variables: a (clumsy) way to recover group means
 
 ---
 
@@ -259,6 +262,31 @@ $$
 $$
 ---
 
+## Regressing on factor variables 
+
+```{r}
+bb2 <- bb %>% 
+  mutate(treatment = ifelse(treat_deshawn == 1, "deshawn", "jake"))
+lm(reply_atall ~ treatment, data = bb2)
+```
+
+--
+
+Key concept: **omitted category**. When we regress on a factor or character variable, `R` designates an omitted category and reports a coefficient for all other categories.
+
+---
+
+## Omitted category: another example
+
+```{r}
+bb %>% 
+  count(leg_party)
+lm(reply_atall ~ leg_party, data = bb)
+```
+
+
+---
+
 ## Another way
 
 Instead of estimating 
@@ -271,6 +299,14 @@ by adding a `-1` to the formula syntax:
 
 ```{r}
 lm(reply_atall ~ factor(treat_deshawn) - 1, data = bb)
+```
+
+---
+
+## Another example
+
+```{r}
+lm(reply_atall ~ leg_party - 1, data = bb)
 ```
 
 ---
@@ -314,7 +350,7 @@ If we write the prediction equation as  $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}
 
 --
 
-So what is the assumed DeShawn-vs-Jake difference for Democrats? For Republicans? 
+So what is the predicted DeShawn-vs-Jake difference for Democrats? For Republicans? 
 
 ---
 
@@ -352,7 +388,7 @@ lm(reply_atall ~ treat_deshawn*leg_republican, data = bb) %>%
 
 ```{r}
 bb %>% 
-  group_by(treat_deshawn, leg_republican) %>% 
+  group_by(leg_republican, treat_deshawn) %>% 
   summarize(resp_rate = mean(reply_atall))
 ```
 
@@ -366,34 +402,76 @@ bb %>%
 
 ---
 
-## $R^2$ and overfitting 
+class: inverse, middle, center
 
-Here is a dataset on U.S. presidents: 
+# Regression with continuous predictors: non-linear predictions (and over-fitting) with linear regression
+
+---
+
+
+## US presidential election data
+
+Here is a dataset on U.S. presidential elections from 1948 to 2016: 
 
 ```{r}
-pres <- read_csv("./../data/pres_data.csv")
-
+pres <- read_csv("./../data/pres_data.csv") %>% 
+  filter(year < 2020)
 ```
 
 | Variable Name | Description | 
 |-------:|:-----------------------:|
-|year | Election year |
-| deminc | 1=incumbent is a Democrat |
-| incvote | Percent of the two-party vote for the incumbent party |
-|q2gdp | Second-quarter change in real GDP in election year |
-| juneapp | Net approval of incumbent president in June of election year |
+|`year` | Election year |
+| `deminc` | 1=incumbent is a Democrat |
+| `incvote` | Percent of the two-party vote for the incumbent party |
+|`q2gdp` | Second-quarter change in real GDP in election year |
+| `juneapp` | Net approval of incumbent president in June of election year |
 
 ---
 
 ## Incumbent approval rating and incumbent party vote share 
 
-```{r, out.width="70%"}
-vote_app %>% 
+```{r, out.width="70%", echo = F}
+vote_app <- pres %>% 
   ggplot(aes(x = juneapp, y = incvote, label = year)) + 
   geom_point() + 
-  geom_text(nudge_x = 2, nudge_y = .5, size = 2)
+  geom_text(nudge_x = 2, nudge_y = .5, size = 2) 
+vote_app
+```
+
+---
+
+## Incumbent approval rating and incumbent party vote share 
+
+.pull-left[
+```{r, echo = F}
 vote_app + 
   geom_smooth(method = lm, se = F)
+```
+]
+
+.pull-right[
+```{r}
+lm(incvote ~ juneapp, 
+   data = pres)
+```
+]
+
+How do we explain/interpret the coefficient on `juneapp`? 
+
+--
+
+Be explicit about units & meaning of variables; avoid causal language unless justified (e.g. by randomization). 
+
+- .red[**Bad:**] "The effect of `juneapp` on `incvote` is .165"
+- .light-green[**Good:**] "A one-percentage point increase in presidential approval is associated with a .16 percentage point increase in votes for the incumbent party" **or** "The predicted vote for the incumbent party goes up by .16 when the approval rating goes up by one percentage point"
+
+
+---
+
+# Standard `R` regression output
+
+```{r}
+lm(incvote ~ juneapp, data = pres) # minimal
 ```
 
 ---
@@ -402,62 +480,244 @@ vote_app +
 
 ```{r}
 lm(incvote ~ juneapp, data = pres) %>% 
-  summary()
+  summary()  # more extensive
 ```
 
 
 ---
 
-# Standard `R` regression output
+# Standard `R` regression output (`estimatr`)
+
+```{r}
+estimatr::lm_robust(incvote ~ juneapp, data = pres) # minimal
+```
+
+---
+
+# Standard `R` regression output (`estimatr`)
 
 ```{r}
 estimatr::lm_robust(incvote ~ juneapp, data = pres) %>% 
-  summary()
+  summary() # more extensive
 ```
 
 ---
 
 ## $R^2$
 
-$R^2$ measures the proportion of variance in the dependent variable "explained" by the independent variables. 
+$R^2$ measures the proportion of variance in the dependent variable "explained" by the independent variables.
+
+--
+
+**In-sample** measure of **goodness-of-fit** (vs **out-of-sample** measures like *cross-validation*).
+
+--
+
+If $\hat{y}_i$ is the prediction (fitted value) for unit $i$, then 
+
+$$R^2 = \frac{\mathrm{var}(\hat{y}_i)}{\mathrm{var}(y_i)}$$
+
+#### Alternative formulation
 
 
+$$\mathrm{Sum\ of\ squared\ residuals}: \qquad \mathrm{SS}_{\mathrm{res}} = \sum_i (y_i - \hat{y}_i)^2$$
 
-# R^2 and overfitting.
-```
+$$\mathrm{Total\ sum\ of\ squares}: \qquad \mathrm{SS}_{\mathrm{tot}} = \sum_i (y_i - \overline{y})^2$$
 
+$$R^2 = 1 - \frac{\mathrm{SS}_{\mathrm{res}}}{\mathrm{SS}_{\mathrm{tot}}}$$
+---
 
-
-```{r}
-cces <- readRDS("./../data/cces/cumulative_2006-2020.rds")
-cces %>%
-  filter(year %in% c(2014) & vv_turnout_gvm %in% c("Voted", "No Record of Voting") & age < 90) %>%
-  group_by(age, year) %>% 
-  summarize(weighted = weighted.mean(vv_turnout_gvm == "Voted", w = weight),
-            unweighted = mean(vv_turnout_gvm == "Voted")) %>%
-  pivot_longer(cols = c(weighted, unweighted)) %>% 
-  ggplot(aes(x = age, y = value, col = name)) + 
-  geom_point(size = 1) + 
-  geom_line(alpha = .5)
-  
-
-```
-
-
-For problem set?
+## $R^2$ by hand
 
 ```{r}
-lm(reply_atall ~ treat_deshawn, data = bb, subset = treat_noprimary == 1) 
-
-bb %>% 
-  mutate(primary = case_when(treat_demprimary == 1 ~ "dem",
-                             treat_repprimary == 1 ~ "rep",
-                             treat_noprimary == 1 ~ "none"))  -> bb2
-
-lm(reply_atall ~ treat_deshawn*primary, data = bb2) %>% 
-  broom::tidy()
-
+mod <- lm(incvote ~ juneapp, data = pres)
+names(mod)
+names(summary(mod))
+summary(mod)$r.squared
 ```
+
+--
+
+```{r}
+var(mod$fitted.values)/var(pres$incvote)
+```
+
+---
+
+## $R^2$ by hand (tidier)
+
+```{r}
+augmented <- lm(incvote ~ juneapp, data = pres) %>% 
+  broom::augment() %>% 
+  select(incvote, .fitted) 
+
+augmented %>% head()
+
+augmented %>% 
+  summarize(var_fitted = var(.fitted),
+            var_y = var(incvote)) %>% 
+  mutate(r2 = var_fitted/var_y)
+```
+
+---
+
+## $R^2$: what is it good for?
+
+Usually reported but not discussed.
+
+Can be useful for comparing across models of the same outcome.
+
+--
+
+Not a good way of assessing whether someone's research is successful, because 
+
+- if causal inference is our goal, low $R^2$ could mean treatment effect small relative to other factors
+- if causal explanation is our goal, correlation is not causation 
+- if prediction is our goal, good **in-sample** fit necessary but not sufficient for good *out-of-sample* fit
+
+--
+
+A key challenge is *over-fitting*.
+
+---
+
+## Modeling non-linearity
+
+What would be a good predictive model for this (fake) dataset?
+
+```{r, out.width = "70%", echo = T}
+dat <- tibble(x = rnorm(1000, sd = 1.25),
+       y = .25*(x^3 + 2*x^2 - 4*x - 6) + rnorm(1000, sd = 2)) 
+p <- dat %>% 
+  ggplot(aes(x, y)) + 
+  geom_point(size = 1, alpha = .5)
+p
+```
+
+---
+
+## Modeling non-linearity
+
+```{r, out.width = "80%", out.height="50%"}
+p + 
+  geom_smooth(method = lm, se = F) + 
+  labs(title = "Linear fit",
+       subtitle = str_c("R^2 = ", 
+        summary(lm(y ~ x,data = dat))$r.squared %>% round(2)))
+```
+
+---
+
+## Modeling non-linearity
+
+```{r, out.width = "80%", out.height="50%"}
+p + 
+  geom_smooth(method = lm, formula = y ~ x + I(x^2), se = F) + #<< 
+  labs(title = "Quadratic fit",
+       subtitle = str_c("R^2 = ", 
+        summary(lm(y ~ x + I(x^2), data = dat))$r.squared %>% round(2)))
+```
+---
+
+## Modeling non-linearity
+
+
+```{r, out.width = "80%", out.height="50%"}
+p + 
+  geom_smooth(method = lm, formula = y ~ x + I(x^2) + I(x^3), se = F) + #<<  
+  labs(title = "3rd order polynomial fit",
+       subtitle = str_c("R^2 = ", 
+          summary(lm(y ~ x + I(x^2) + I(x^3), data = dat))$r.squared %>% round(2)))
+```
+
+---
+
+## Modeling non-linearity w. `poly`
+
+
+```{r, out.width = "80%", out.height="50%"}
+p + 
+  geom_smooth(method = lm, formula = y ~ poly(x, 3), se = F) +  #<<
+  labs(title = "3rd order polynomial fit",
+       subtitle = str_c("R^2 = ", summary(lm(y ~ poly(x, 3), data = dat))$r.squared %>% round(2)))
+```
+
+---
+
+## Modeling non-linearity w. `poly`
+
+```{r, out.width = "80%", out.height="50%"}
+p + 
+  geom_smooth(method = lm, formula = y ~ poly(x, 7), se = F) + 
+  labs(title = "7-th order polynomial fit",
+       subtitle = str_c("R^2 = ", summary(lm(y ~ poly(x, 7), data = dat))$r.squared %>% round(2)))
+```
+
+---
+
+## Beware over-fitting! 
+
+With 18 data points, a 7th- or 15th-degree polynomial can (over)fit very well! 
+
+```{r, echo = F, out.width = "80%", out.height="50%"}
+pres %>% 
+  ggplot(aes(x = juneapp, y = incvote)) +
+  geom_point() + 
+  geom_smooth(method = lm, se = F) + 
+  labs(title = "Linear fit", 
+       subtitle = str_c("R^2 = ", summary(lm(incvote ~ juneapp, data = pres))$r.squared %>% round(2))) + 
+  coord_cartesian(ylim = range(pres$incvote) + c(-10, 10))
+```
+
+---
+
+## Beware over-fitting! 
+
+With 18 data points, a 7th- or 15th-degree polynomial can (over)fit very well! 
+
+```{r, echo= F, out.width = "80%", out.height="50%"}
+pres %>% 
+  ggplot(aes(x = juneapp, y = incvote)) +
+  geom_point() + 
+  geom_smooth(method = lm, se = F, formula = y ~ poly(x, 7)) + 
+  labs(title = "7th order polynomial fit", 
+       subtitle = str_c("R^2 = ", summary(lm(incvote ~ poly(juneapp, 7), data = pres))$r.squared %>% round(2))) + 
+  coord_cartesian(ylim = range(pres$incvote) + c(-10, 10))
+```
+
+---
+
+## Beware overfitting!
+
+With 18 data points, a 7th- or 15th-degree polynomial can (over)fit very well! 
+
+```{r, echo = F, out.width = "80%", out.height="50%"}
+pres %>% 
+  ggplot(aes(x = juneapp, y = incvote)) +
+  geom_point() + 
+  geom_smooth(method = lm, se = F, formula = y ~ poly(x, 15)) + 
+  labs(title = "15th order polynomial fit", 
+       subtitle = str_c("R^2 = ", summary(lm(incvote ~ poly(juneapp, 15), data = pres))$r.squared %>% round(2))) + 
+  coord_cartesian(ylim = range(pres$incvote) + c(-10, 10))
+```
+
+---
+
+
+## Overfitting and out-of-sample prediction
+
+When we overfit, we improve the fit for units in our sample (and maybe others with very similar values of predictors) but worsen our prediction for units not in the sample.
+
+--
+
+The more we overfit, the more our predictions 
+
+--
+
+Remedies: 
+
+- adjusted $R^2$ and other penalties for model complexity
+- **cross-validation** to measure out-of-sample fit
 
 
 ---
