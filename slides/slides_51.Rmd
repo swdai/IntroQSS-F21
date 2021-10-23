@@ -354,7 +354,7 @@ So what is the predicted DeShawn-vs-Jake difference for Democrats? For Republica
 
 ---
 
-## We add an interaction 
+## Adding an interaction 
 
 <!-- To avoid imposing the assumption that Democrats and Republicans respond the same way to DeShawn-vs-Jake, we add an **interaction**. -->
 
@@ -606,6 +606,10 @@ p +
         summary(lm(y ~ x,data = dat))$r.squared %>% round(2)))
 ```
 
+Regression equation: $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_i$
+
+"First-degree polynomial" (linear)
+
 ---
 
 ## Modeling non-linearity
@@ -617,6 +621,10 @@ p +
        subtitle = str_c("R^2 = ", 
         summary(lm(y ~ x + I(x^2), data = dat))$r.squared %>% round(2)))
 ```
+
+Regression equation: $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_i + \hat{\beta}_2 X_i^2$
+
+"Second-degree polynomial" (quadratic)
 ---
 
 ## Modeling non-linearity
@@ -625,10 +633,12 @@ p +
 ```{r, out.width = "80%", out.height="50%"}
 p + 
   geom_smooth(method = lm, formula = y ~ x + I(x^2) + I(x^3), se = F) + #<<  
-  labs(title = "3rd order polynomial fit",
+  labs(title = "3rd degree polynomial fit",
        subtitle = str_c("R^2 = ", 
           summary(lm(y ~ x + I(x^2) + I(x^3), data = dat))$r.squared %>% round(2)))
 ```
+
+Regression equation: $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_i + \hat{\beta}_2 X_i^2 + \hat{\beta}_3 X_i^3$
 
 ---
 
@@ -637,10 +647,11 @@ p +
 
 ```{r, out.width = "80%", out.height="50%"}
 p + 
-  geom_smooth(method = lm, formula = y ~ poly(x, 3), se = F) +  #<<
-  labs(title = "3rd order polynomial fit",
+  geom_smooth(method = lm, formula = y ~ poly(x, degree = 3), se = F) +  #<<
+  labs(title = "3rd degree polynomial fit",
        subtitle = str_c("R^2 = ", summary(lm(y ~ poly(x, 3), data = dat))$r.squared %>% round(2)))
 ```
+
 
 ---
 
@@ -649,7 +660,7 @@ p +
 ```{r, out.width = "80%", out.height="50%"}
 p + 
   geom_smooth(method = lm, formula = y ~ poly(x, 7), se = F) + 
-  labs(title = "7-th order polynomial fit",
+  labs(title = "7-th degree polynomial fit",
        subtitle = str_c("R^2 = ", summary(lm(y ~ poly(x, 7), data = dat))$r.squared %>% round(2)))
 ```
 
@@ -680,7 +691,7 @@ pres %>%
   ggplot(aes(x = juneapp, y = incvote)) +
   geom_point() + 
   geom_smooth(method = lm, se = F, formula = y ~ poly(x, 7)) + 
-  labs(title = "7th order polynomial fit", 
+  labs(title = "7th degree polynomial fit", 
        subtitle = str_c("R^2 = ", summary(lm(incvote ~ poly(juneapp, 7), data = pres))$r.squared %>% round(2))) + 
   coord_cartesian(ylim = range(pres$incvote) + c(-10, 10))
 ```
@@ -696,7 +707,7 @@ pres %>%
   ggplot(aes(x = juneapp, y = incvote)) +
   geom_point() + 
   geom_smooth(method = lm, se = F, formula = y ~ poly(x, 15)) + 
-  labs(title = "15th order polynomial fit", 
+  labs(title = "15th degree polynomial fit", 
        subtitle = str_c("R^2 = ", summary(lm(incvote ~ poly(juneapp, 15), data = pres))$r.squared %>% round(2))) + 
   coord_cartesian(ylim = range(pres$incvote) + c(-10, 10))
 ```
