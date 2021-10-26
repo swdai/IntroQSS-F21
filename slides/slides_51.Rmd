@@ -21,6 +21,52 @@ knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, fig.alig
 
 class: inverse, middle, center
 
+# Quick follow-up on problem set
+
+---
+
+```{r}
+set.seed(30500)
+n <- 1000
+dat <- tibble(Y0 = runif(n = n, min = 0, max = 1)) %>% 
+  mutate(Y1 = Y0,
+         D = rbinom(n, 1, Y1),
+         D_random = rbinom(n, 1, .5))
+dat
+```
+
+---
+
+## Decomposition of difference in means 
+
+The difference in means can be decomposed into 
+
+$$\text{Diff-in-means} = \text{ATT} + \text{Selection bias}$$ 
+
+where 
+
+$$\text{ATT} = E[Y_i(1) | D_i = 1 ] - E[Y_i(0) | D_i = 1 ]$$ 
+
+and 
+
+$$\text{Selection bias} = E[Y_i(0) | D_i = 1 ] - E[Y_i(0) | D_i = 0 ]$$
+
+(Show on board.)
+
+--
+
+Given random assignment, $(Y_i(1), Y_i(0)) \perp\!\!\!\!\perp D_i$, which implies $Y_i(0) \perp\!\!\!\!\perp D_i$, which means 
+
+$$E[Y_i(0) | D_i = 1 ] = E[Y_i(0) | D_i = 0 ] = E[Y_i(0)]$$
+
+which means no selection bias.
+
+
+---
+
+
+class: inverse, middle, center
+
 # Regression basics: what it is, why we do it
 
 ---
@@ -440,7 +486,7 @@ vote_app
 
 ---
 
-## Incumbent approval rating and incumbent party vote share 
+## Coefficient interpretation 
 
 .pull-left[
 ```{r, echo = F}
@@ -463,7 +509,7 @@ How do we explain/interpret the coefficient on `juneapp`?
 Be explicit about units & meaning of variables; avoid causal language unless justified (e.g. by randomization). 
 
 - .red[**Bad:**] "The effect of `juneapp` on `incvote` is .165"
-- .light-green[**Good:**] "A one-percentage point increase in presidential approval is associated with a .16 percentage point increase in votes for the incumbent party" **or** "The predicted vote for the incumbent party goes up by .16 when the approval rating goes up by one percentage point"
+- .light-green[**Good:**] "A one percentage point increase in presidential approval is associated with a .16 percentage point increase in votes for the incumbent party" **or** "The predicted vote for the incumbent party goes up by .16 percentage points when the approval rating goes up by one percentage point"
 
 
 ---
