@@ -1,0 +1,347 @@
+---
+title: "PLSC30500, Fall 2021"
+subtitle: "5.2 Controlling for confounders (via regression and other tools)"
+# author: "Andy Eggers & Molly Offer-Westort"
+output: 
+  xaringan::moon_reader:
+    self_contained: true
+    css: [default, uchicago_pol_meth.css]
+    nature:
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, fig.align = "center", out.width = "900px", fig.width = 4.5, fig.asp = .7)
+```
+
+
+
+
+## Conditional average treatment effect (review)
+
+Recall Broockman & Butler experiment from lecture 4.2.
+
+We considered effect of email from "DeShawn" vs. "Jake" on probability of response *conditional on the legislator's party*, e.g.
+
+$$E[Y_i(1) - Y_i(0) | \mathrm{party} = \mathrm{Dem}]$$
+--
+
+Randomization means treatment $D_i$ is independent of potential outcomes $Y_i(0), Y_i(1)$. 
+
+--
+
+It follows that the *conditional difference in means* is an unbiased estimator of this and other *conditional average treatment effects (CATE)*: 
+
+\begin{align*}
+E[Y_i(1) - Y_i(0) | X_i = x] &= \underbrace{E[Y_i(1) | X_i = x ]}_{\text{Avg. }Y_i(1)\text{ for units with }X_i = x} - \underbrace{E[Y_i(0) | X_i = x]}_{\text{Avg. }Y_i(0)\text{ for units with }X_i = x} \\
+&= E[Y_i(1) | D_i = 1, X_i = x ] - E[Y_i(0) | D_i = 0, X_i = x] \\
+&= \underbrace{E[Y_i | D_i = 1, X_i = x ]}_{\text{Avg. }Y_i\text{ for units with }D_1 = 1, X_i = x} - \underbrace{E[Y_i | D_i = 0, X_i = x]}_{\text{Avg. }Y_i\text{ for units with }D_1 = 0, X_i = x} \\
+\end{align*}
+
+???
+
+To go from 1 to 2: $D_i$ independent of $Y_i(0),Y_i(1)$
+To go from 2 to 3: potential outcomes model, i.e. $Y_i = D_i Y_i(1) + (1 - D_i)Y_i(0)$
+
+---
+
+## Conditional ignorability
+
+In some cases, independence of potential outcomes and treatment
+
+$$\left(Y_i(1), Y_i(0)\right) \perp\!\!\!\!\perp  D_i$$ 
+may not hold *in general*, but it may hold *conditional on some* $X_i$: 
+
+$$\left(Y_i(1), Y_i(0)\right) \perp\!\!\!\!\perp  D_i \mid X_i.$$ 
+Then $D_i$ is *strongly ignorable* conditional on $X_i$.
+
+--
+
+**Example**: Suppose in Broockman & Butler the randomization went like this:
+
+\begin{align*}
+\text{Pr}[\text{DeShawn email} | \text{Dem legislator}] &= .4 \\
+\text{Pr}[\text{DeShawn email} | \text{Rep legislator}] &= .6 \\
+\end{align*}
+
+--
+
+Then treatment is related to party (which is probably related to potential outcomes), but unrelated to potential outcomes *conditional on* party. 
+
+???
+
+It is called *ignorability* because you can ignore the way that treatment was assigned.
+
+$\left(Y_i(1), Y_i(0)\right) \perp\!\!\!\!\perp  D_i \mid X_i$ is the conditional independence assumption. Technically you also need positivity: $0 < \text{Pr}[D_i = 1 | X_i] < 1$. 
+
+**Strong** ignorability relates to the pair $Y_i(0), Y_i(1)$. **Weak** ignorability in the binary treatment case says $Y_i(1) \perp\!\!\!\!\perp  D_i \mid X_i$ and $Y_i(0) \perp\!\!\!\!\perp  D_i \mid X_i$, so it permits a relationship between the treatment effect and $D_i$ conditional on $X_i$. But note that the key results would work with weak ignorability.  
+
+---
+
+## Another example of conditional ignorability 
+
+Recall our example of the effect of studying on final grades:
+
+- AB types: $Y(1) = 95$, $Y(0) = 85$
+- BC types: $Y(1) = 85$, $Y(0) = 75$
+
+--
+
+Suppose most AB types study and most BC types don't. 
+
+--
+
+Then overall difference-in-means will be biased (which way?).
+
+--
+
+But treatment is strongly ignorable conditional on type (because potential outcomes identical within types).
+
+---
+
+## Conditional ignorability and the CATE
+
+If treatment is strongly ignorable conditional on $X_i$, then treatment is *as-if random* within levels of $X_i$.
+
+--
+
+$\implies$ the *conditional* difference in means is an unbiased estimator of the conditional average treatment effect, $\mathrm{CATE}$.
+
+--
+
+(See above: just like estimating CATE for Democratic legislators in Broockman and Butler.) 
+
+---
+
+## From conditional ignorability to the ATE
+
+Wait: if you have an unbiased estimator for the conditional ATE at each value of $X_i$, don't you have an unbiased estimator for the ATE? 
+
+--
+
+For example: 
+
+- to estimate the ATE of the "DeShawn" email on response rates, take the difference in means separately for Dem and Rep legislators, and then combine them
+- to estimate the ATE of studying on academic performance, take the difference in means separately for AB types and BC types, and then combine them
+
+--
+
+This is what we mean by "controlling for $X$" or "conditioning on $X$" to get the ATE.
+
+---
+
+## From conditional ignorability to the ATE (more formally)
+
+By the *Law of Iterated Expectations (LIE)*,
+
+\begin{align*}
+\text{ATE} &\equiv E[\tau_i] \\
+&= \sum_x E[\tau_i | X_i = x] \text{Pr}[X_i = x]
+\end{align*}
+
+--
+
+
+Other examples of LIE:
+
+- to compute average age in our class, can compute average age for men and average age for women, then combine by share of men/women 
+- to compute world average GDP/capita, compute for each country separately, then combine by population shares 
+
+--
+
+So if strong ignorability holds, an unbiased estimator for ATE is the weighted average of differences in means.
+
+---
+
+## ATE, ATT, ATC again! 
+
+As noted, by the *Law of Iterated Expectations*,
+
+\begin{align*}
+\text{ATE} &\equiv E[\tau_i] \\
+&= \sum_x E[\tau_i | X_i = x] \text{Pr}[X_i = x]
+\end{align*}
+
+
+--
+
+What weights $\text{Pr}[X_i = x]$ to use? 
+
+If we use the frequency of $X_i = x$ in
+
+- the population/sample $\implies$ ATE
+- the treatment group $\implies$ ATT
+- the control group $\implies$ ATC
+
+
+---
+
+
+
+Pick it up here. 
+
+
+## The effect of studying on grades (again)
+
+Modified version of our studying example from lecture 4.1: 
+
+- for *experienced* students, i.e. $X = 1$: $Y(1) = 95$, $Y(0) = 90$ 
+- for *inexperienced* students, i.e. $X = 0$: $Y(1) = 95$, $Y(0) = 75$
+
+--
+
+If the two types are equally common in the population, what is the ATE? 
+
+--
+
+\begin{align*}
+\mathrm{ATE} &= E[\tau_i] = E[Y(1) - Y(0)] \\
+&= \frac{1}{2} \underbrace{(95 - 90)}_{\tau_i \, \mathrm{where} \, X_i = 1} + \frac{1}{2} \underbrace{(95 - 75)}_{\tau_i \, \mathrm{where} \, X_i = 0} \\
+&= 12.5
+\end{align*}
+
+
+---
+
+## The problem: FPOCI and confounding 
+
+We discussed the difficulty of measuring effect of studying when there is **confounding**, i.e. treatment related to potential outcomes. 
+
+--
+
+For example, suppose our sample looks like this:
+
+|  | $D=0$ (not studying) | $D = 1$ (studying) | 
+|-------:|:-------:|:-------------:|
+| $X = 0$ **(inexperienced)** |   80   |    20   |
+| $X= 1$ **(experienced)** |   20   |    80   |
+
+And recall: 
+
+- for *experienced* students, $X = 1$: $Y(1) = 95$, $Y(0) = 90$ 
+- for *inexperienced* students, $X = 0$: $Y(1) = 95$, $Y(0) = 75$
+
+What is the difference in means? 
+
+---
+
+## Answer
+
+Recall the joint distribution of $X$ and $D$:
+
+|  | $D=0$ (not studying) | $D = 1$ (studying) | 
+|-------:|:-------:|:-------------:|
+| $X = 0$ **(inexperienced)** |   80   |    20   |
+| $X= 1$ **(experienced)** |   20   |    80   |
+
+And the potential outcomes: 
+
+- for *experienced* students ($X = 1$), $Y(1) = 95$, $Y(0) = 90$ 
+- for *inexperienced* students ($X = 0$), $Y(1) = 95$, $Y(0) = 75$
+
+```{r}
+Y0_bar <- (80*75 + 20*90)/100 # mean outcome where D = 0
+Y1_bar <- (20*95 + 80*95)/100  # mean outcome where D = 1
+Y1_bar - Y0_bar # difference in means: cf ATE = 12.5
+```
+
+The difference-in-means is higher than the ATE because the experienced students are more likely to study.
+
+---
+
+## Measuring the effect by conditioning on type
+
+Suppose you know the type $X_i \in \{0,1\}$, e.g. from a pre-test. (But you don't know the potential outcomes.)
+
+Can you think of a better estimator for the ATE than difference-in-means? 
+
+--
+
+What about: calculate the difference-in-means for each type, and combine them?
+
+--
+
+This is one way to "condition on $X$" or "control for $X$". 
+
+---
+
+## Conditioning on $X$ in this example
+
+Recall we have:
+
+|  | $D=0$ (not studying) | $D = 1$ (studying) | 
+|-------:|:-------:|:-------------:|
+| $X = 0$ **(inexperienced)** |   80   |    20   |
+| $X= 1$ **(experienced)** |   20   |    80   |
+
+
+And the potential outcomes: 
+
+- for $X = 1$: $Y(1) = 95$, $Y(0) = 90$ 
+- for $X = 0$: $Y(1) = 95$, $Y(0) = 75$
+
+--
+
+What is the difference in means where $X = 1$? 
+What is the difference in means where $X = 0$?
+What is the average of those? 
+(Compare to ATE of 12.5.)
+
+---
+
+## Answer 
+
+Diff-in-means for $X = 1$: $95 - 90 = 5$
+Diff-in-means for $X = 0$: $95 - 75 = 20$
+Average of those: $12.5$
+
+---
+
+## Why does conditioning on $X$ give us the right answer? 
+
+
+
+---
+
+## Regression version
+
+```{r}
+# make dataset
+dat <- tibble(X = c(rep(0, 100), rep(1, 100)), # 100 0s, 100 1s
+       D = c(rep(0, 80), rep(1, 20), rep(0, 20), rep(1, 80)),
+       Y = 75 + D*20 + 15*X - 15*D*X) # make sense?
+
+lm(Y ~ D, data = dat)
+lm(Y ~ D + X, data = dat)
+```
+
+
+
+
+
+
+Recall that we have
+
+|  | **Studying** | **Not studying** | 
+|-------:|:-------:|:-------------:|
+| **AB types** ($X=1$)  |   80   |    20   |
+| **BC types**  ($X=0$) |   20   |    80   |
+
+and 
+
+- for AB types, $Y(1) = 95$, $Y(0) = 85$ 
+- for BC types, $Y(1) = 85$, $Y(0) = 75$
+
+---
+
+So what do we get if we calculate the difference-in-means for each type, and combine them?
+
+
+---
+
+
+
+
+
