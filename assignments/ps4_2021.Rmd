@@ -19,16 +19,17 @@ Consider a study that seeks to measure the effect of daily exercise on subjectiv
 
 1a) For a given student, what (in words) are the potential outcomes in this study?  
 
-The state of subjective mental health an individual student has.
-
+The hypothetical state of subjective mental health the student has during finals week in December 2021 if she exercised daily, and the hypothetical state of subjective mental health the student has during finals week in December 2021 if she didn't exercise daily
 
 1b) With reference to the Fundamental Problem of Causal Inference, explain why it is difficult if not impossible to measure the effect of this treatment on this outcome for any individual student.  
 
-For any individual student, she can either exercise daily or not exercise daily, hence we can only observe one state of subjective mental health. To measure the effect of the treatment on an individual student, we need to observe both the mental health state given she exercised daily and the mental health state given she had not exercised daily, which, as argued, cannot be observed at the same time.  
+For any individual student, she can either exercise daily or not exercise daily, and we can only observe one state of subjective mental health conditional on whether she exercised or not. To measure the effect of the treatment on an individual student, we need to observe both the mental health state given she exercised daily and the mental health state given she had not exercised daily, which, as argued, cannot be observed at the same time.  
+
+Even if we want to compare the the mental health state after she exercised daily in year 1 and the mental health state after she didn't exercise daily in year 2, we would have to assume that there are not any confounding factors that would have influenced her subjective mental health. This assumption may hardly stand in reality.
 
 1c) In observational studies, treatment may be related to the potential outcomes. Give one plausible account of how and why treatment may be related to the potential outcomes in this example.  
 
-Those who are willing to exercise daily may have a better ability in adjusting to a better state of mental health than those who are not willing to exercise daily.  
+Those who are willing to exercise daily may be better at adjusting to a better mood and a better state of mental health than those who are not willing to exercise daily; in other words, the treatment (whether to exercise daily or not) is related with students' ability to adjust their mental health state, which also affects the potential outcome of subjective mental health we observe. 
 
 
 ## Question 2
@@ -50,7 +51,6 @@ plot2a <- ggplot(data = dat, aes(x = ITE)) +
     stat_ecdf() +
     labs(y = 'Empirical CDF', 
          title = 'ECDF of ITEs')
-
 dat
 plot2a
 ```
@@ -85,7 +85,10 @@ diff_in_means <- mean_treatment - mean_control
 comparison <- diff_in_means - ATE
 comparison
 
-# It is a bad estimator because he probability of receiving treatment is related with the potential outcome Y(1)
+# The comparison shows this estimate is 0.3609576 from the ATE. 
+# It is a bad estimator because he probability of receiving treatment is related 
+# with the potential outcome Y(1). 
+
 
 ```
 
@@ -107,6 +110,8 @@ mean_control <- dat %>%
 diff_in_means <- mean_treatment - mean_control
 comparison <- diff_in_means - ATE
 comparison
+
+# This comparison shows that the estimate is -0.01801274 from the ATE.
 ```
 
 
@@ -138,16 +143,22 @@ plot3b <- dat %>%
     ggplot(aes(x = Y0, y = Y1)) +
     geom_point() +
     labs(x = 'Y0', 
-         y = 'Y1')
+         y = 'Y1', 
+         title = 'Scatterplot of Y1 against Y0')
 plot3b
 ```
 
 3c) If this were a study of students, and `Y` were a measure of academic achievement (with `D` a study skills training session), how would you interpret a point at (2,2) on the previous plot? How about a point at (-1, 0)?  
 
-(2, 2) would mean that training session has no causal effect on the student's academic achievement; (-1, 0) means the training session has a positive causal effect of 1 unit on the student's academic achievement  
+(2, 2) would mean that training session has no causal effect on the student's academic achievement; (-1, 0) means the training session caused a positive causal effect of 1 unit on the student's academic achievement  
 
 
 3d) Suppose we choose as our estimand the average treatment effect (ATE). What is the ATE for this population?  
+
+```{r}
+ATE <- mean(dat$ITE)
+ATE
+```
 
 ATE is the average causal effect of the training session on students' academic achievement
 
@@ -159,7 +170,8 @@ dat <- dat %>%
 plot3e <- dat %>% 
     ggplot(aes(x = Y0, y = pr_treatment)) +
     geom_point() +
-    geom_smooth()
+    geom_line() +
+    labs(title = 'Probability of receiving treatment')
 plot3e
 ```
 
@@ -189,7 +201,8 @@ ATE <- mean(dat$Y1) - mean(dat$Y0)
 comparison <- diff_in_means - ATE
 comparison
 
-# Again, the probability of treatment is correlated with the potential outcome.
+# The comparison means the estimate is -0.8530235 away from the ATE.
+# Because the treatment is not randomly assigned and the probability of treatment is correlated with the potential outcome.
 ```
 
 3i) Create a new treatment variable `D_random` that is assigned at random, as if this were a randomized experiment. 
@@ -211,6 +224,8 @@ diff_in_means <- mean_treatment - mean_control
 ATE <- mean(dat$Y1) - mean(dat$Y0)
 comparison <- diff_in_means - ATE
 comparison
+
+# The estimate is 0.05765998 from the ATE.
 ```
 
 
