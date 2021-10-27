@@ -101,6 +101,12 @@ Why might these three quantities differ?
 
 ---
 
+Example adapted from: 
+
+Chattopadhyay, R., & Duflo, E. (2004). Women as policy makers: Evidence from a randomized policy experiment in India. *Econometrica*, 72(5), 1409-1443.
+
+---
+
 (Augmented) Gerber Green example:
 
 --
@@ -199,7 +205,7 @@ To produce an estimate of the ATE, we might compare people who received treatmen
 ---
 ## Estimator
 
-An *estimator* is a function of the data we observe; it is an informed guess about the value of the estimand. 
+An *estimator* is a function of the data we observe; it is a statistic that gives us an informed guess about the value of the estimand. 
 --
 Below, the estimator is the function $g(\cdot)$. 
 
@@ -209,6 +215,10 @@ g(X_1, \dots, X_n)
 $$
 --
 We can also think of it as a recipe. Given some data, $X_1, \dots, X_n$, follow the instructions $g(\cdot)$ to produce an estimate. 
+
+--
+
+*Note:* we'll discuss *statistics* more generally in the future, but statistics broadly encompass any function of the data. We reserve the term estimator for functions that we use to approximate an estimand.  
 
 ---
 
