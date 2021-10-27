@@ -16,6 +16,7 @@ output:
 ```{r setup, include=FALSE}
 library(tidyverse)
 set.seed(60637)
+options(width = 60)
 ```
 
 ```{css, echo=FALSE}
@@ -151,49 +152,93 @@ We can check our calculations of the expectation and spread in R.
 
 --
 
-First, we'll want to simulate the random process. We'll run the simulation a large number of times, so we'll get an accurate calculation. 
+First, we'll want to simulate the random process. 
 
 ```{r}
-n <- 10000
+n <- 1000
 X <- c(0, 1, 2)
 probs <- c(1/16, 3/8, 9/16)
-x.observed <- replicate(sample(X, prob = probs, replace = TRUE, size = 1), n = n)
+x_observed <- sample(X, prob = probs, replace = TRUE, size = n)
 
-head(x.observed)
+head(x_observed)
 ```
 
 --
 
 
 ```{r}
-mean(x.observed)
+mean(x_observed)
 ```
 
 --
 
 ```{r}
-var(x.observed)
-sd(x.observed)
+var(x_observed)
+sd(x_observed)
 ```
 
 ---
 
 The process that we just did -- sampling and estimation based on observed data -- is a very common process in empirical research. 
 
+--
+
+But we may notice that the mean, variance, and standard deviation are not exactly what we calculated mathematically. 
 
 ---
 
-# Sampling
-
-Very often, we only observe a limited number of observations, which are drawn from a large population. 
+Let's try it again. 
 
 --
 
-We can summarize the data we observe, but we would might like to *make inferences* about the larger population--i.e., to summarize what we know about that population based on the data we observe. 
+
+```{r}
+x_observed <- sample(X, prob = probs, replace = TRUE, size = n)
+
+mean(x_observed)
+var(x_observed)
+sd(x_observed)
+```
 
 ---
 
-In our two coin flip example, suppose we don't know whether the coin is fair or not. We can observe the results of a large number of coin flips, and make an educated guess. 
+The values that we get are close, but not identical. 
+
+--
+
+This is because what we are observing in practice is a *sample* from the data. 
+
+
+---
+
+# Sampling and statistics
+
+Very often, we only observe a limited number of observations, which are drawn from a larger population. 
+
+--
+
+We can summarize the data we observe with *statistics*. Statistics are functions of the data we observe.
+__
+
+$$
+T_n = h(X_1, \dots, X_n)
+$$
+
+--
+
+This should look a lot like our definiton of *estimators*. Estimators are a class of statistics that we use to approximate specific estimands.
+
+--
+
+Because our sampling process is a random process, these statistics themselves are random variables, with their own distributions. 
+
+--
+
+We can describe our sample, but we might also like to *make inferences* about the larger population--i.e., to summarize what we know about that population based on the data we observe. 
+
+---
+
+In our two coin flip example, suppose we don't know whether the coin is fair or not. We can observe the results of a large number of coin flips, and make an educated guess about the underlying population value. 
 
 --
 
@@ -201,9 +246,9 @@ Formally, that educated guess is called *estimation*.
 
 ---
 
-## Random samples
+## i.i.d. Data
 
-We say our data is a *random sample* if our observations are *independent and identically distributed*. 
+The standard treatment of estimation in statistics is built around the assumption that observations are *independent and identically distributed*. 
 
 --
 
@@ -217,6 +262,16 @@ $$
 
 ---
 
+In our coin flip example, each time we flip the coin:
+- what we see on this flip has no relation to previous or future flips
+- the distribution of heads on every flip is identical. 
+
+--
+
+Our coin flip random process produces i.i.d. random variables. 
+
+---
+
 
 
 ## Sample mean
@@ -225,14 +280,18 @@ Let's repeat our random sampling from the double coin flip, but we'll consider a
 
 ```{r}
 n <- 100
-x.observed <- replicate(sample(X, prob = probs, replace = TRUE, size = 1), n = n)
+x_observed <- sample(X, prob = probs, replace = TRUE, size = n)
 
-head(x.observed)
+head(x_observed)
 ```
 
 --
 
-Our *sample mean* is the mean we observe in our data. 
+Our *sample mean* is the mean we observe in our data.
+--
+This is one of the most commonly used sample statistics. It's called a plug-in estimator, because we just "plug in" the sample analog of the population quantity that we're interested in. 
+
+--
 
 $$\bar{X}_n = \frac{X_{1} + \dots + X_n}{n} = \frac{1}{n} \sum_{i = 1}^n X_i$$
 
@@ -243,61 +302,155 @@ $$\bar{X}_n = \frac{X_{1} + \dots + X_n}{n} = \frac{1}{n} \sum_{i = 1}^n X_i$$
 --
 
 ```{r}
-mean(x.observed)
+mean(x_observed)
 ```
 
 
 ---
 
-class: small-output
 
 We differentiate the *sample mean* from the *population mean* because the sample mean will vary with every new sample we draw. 
 
 --
 
-We'll use a loop to see what would happen if we took a sample of size $n = 100$ from the population distribution many times. 
+We'll use a `prrr::map` to see what would happen if we took a sample of size $n = 100$ from the population distribution many times. 
 
 ```{r}
 
-n.reps <- 100
+n_iter<- 1000
 
-x.mat <- matrix(ncol = n.reps, nrow = n)
+x_list <- map(1:n_iter, ~ sample(X, prob = probs, replace = TRUE, 
+                                 size = n))
 
-for(i in 1:n.reps){
-  x.mat[,i] <- replicate(sample(X, prob = probs, replace = TRUE, size = 1), n = n)  
-}
+head(x_list, 2)
 ```
 
+---
+```{r, message=FALSE}
+
+sample_means <- map(x_list, mean)
+head(sample_means)
+```
+
+---
+
+```{r, message=FALSE}
+
+df_sm <- tibble(sample_means = unlist(sample_means))
+df_sm
+```
+
+---
+
 ```{r fig.width = 6, fig.height=4, fig.align='center'}
-ggplot(tibble(sample.means = colMeans(x.mat)), aes(x = sample.means)) +
+ggplot(df_sm, aes(x = sample_means)) +
   geom_histogram(bins = 25, position = 'identity', color = 'white') +
   geom_vline(xintercept = Ex, color = 'grey', lty = 'dashed')
 
 ```
 
 
----
+--
 
-We see the sample means are roughly distributed around the mean of the underlying population. 
+We see the sample means are roughly distributed around the mean of the underlying population, `r Ex`. 
 
+--
 
 The expected value of the sample mean is the population mean. 
 
-*See Aronow & Miller for proof*. 
+
+---
+
+We can check that this is the case. 
+
+
+$$
+\begin{aligned}
+\bar{X}\_n & = \frac{X\_{1} + \dots + X\_n}{n} = \frac{1}{n} \sum\_{i = 1}^n X\_i
+\end{aligned}
+$$
+
+--
+
+
+By linearity of expectations $\dots$
+
+$$
+\begin{aligned}
+\textrm{E}[\bar{X}\_n] & = \frac{1}{n} \sum_{i = 1}^n \textrm{E}[X_i]\\
+\end{aligned}
+$$
+
+--
+
+$\dots$ because the $X_i$ are i.i.d. $\dots$
+
+$$
+\begin{aligned}
+& = \frac{1}{n} \sum_{i = 1}^n \textrm{E}[X]
+\end{aligned}
+$$
+
+--
+
+$$
+\begin{aligned}
+& = \frac{1}{n} n \textrm{E}[X]\\
+\end{aligned}
+$$
+
+--
+
+$$
+\begin{aligned}
+& = \textrm{E}[X]
+\end{aligned}
+$$
+
+
+--
+
+*Refer to Aronow & Miller p.97 for more extended version of proof*. 
 
 ---
 ## De moivre la place theorem
 
 ---
+class: small-output 
 
 ## Sample variance
 
-The unbiased sample variance is 
+We can estimate the mean of the population using the sample mean. What about the sample variance? 
+
+--
+
+We'll do the same process with our simulations.
+
+--
+
+```{r fig.width = 6, fig.height=4, fig.align='center'}
+sample_var <- map(x_list, var)
+df_sv <- tibble(sample_var = unlist(sample_var))
+
+ggplot(df_sv, aes(x = sample_var)) +
+  geom_histogram(bins = 25, position = 'identity', color = 'white') +
+  geom_vline(xintercept = sdx^2, color = 'grey', lty = 'dashed')
+```
+
+
+--
+
+We see the sample variances are roughly distributed around the variance of the underlying population, `r sdx^2`. 
+
+---
+
+
+The formula for the unbiased sample variance is: 
 
 $$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
 --
 
-This looks a little bit different from the population variance formula, 
+This looks a little bit different from a straightforward sample analog to the population variance formula, 
 
 $$
 \textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X)^2]
@@ -310,11 +463,173 @@ Why do we divide by $n-1$, instead of $n$?
 
 $$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
 
-The sample mean, $\bar{X}_n$, has an expected value of $\textrm{E}[X]$. However, because it is made up of the $1, \dots, n$ $X_i$ that we actually observe, the expected difference between $(X_i - \bar{X}_n)$ is a little bit smaller than the expected difference between $(X_i - \textrm{E}[X])$. 
+The sample mean, $\bar{X}_n$, has an expected value of $\textrm{E}[X]$.
+
+--
+
+However, because it is made up of the $1, \dots, n$ $X_i$ that we actually observe, the expected difference between $(X_i - \bar{X}_n)$ is a little bit smaller than the expected difference between $(X_i - \textrm{E}[X])$. 
+
 
 --
 
 To account for this, we divide by $n-1$, instead of $n$. 
+
+---
+class: tiny
+
+## 
+
+We can check that the expected value of the unbiased sample variance estimator is the population variance. 
+--
+The estimator:
+
+--
+
+$$
+\begin{aligned}
+S^2\_n = \frac{1}{n-1}\sum\_{i = 1}^n (X\_i - \bar{X}\_n)^2
+\end{aligned}
+$$
+
+
+--
+Take the expectation:
+
+$$
+\begin{aligned}
+\textrm{E}[S^2\_n] & = \textrm{E}\left[\frac{1}{n-1}\sum\_{i = 1}^n (X\_i - \bar{X}\_n)^2\right]
+\end{aligned}
+$$
+
+
+--
+By linearity of expectations:
+
+$$
+\begin{aligned}
+ & = \frac{1}{n-1}\sum\_{i = 1}^n \textrm{E}\left[(X\_i - \bar{X}\_n)^2\right]
+\end{aligned}
+$$
+
+
+--
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- & = \frac{1}{n-1}\sum\_{i= 1}^n \textrm{E}\left[X\_i^2 -2 X\_i\bar{X}\_n + \bar{X}\_n^2\right] -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- -- -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -2\textrm{E}[ X\_i\frac{1}{n}\sum\_{j = 1}^n X\_j] + \textrm{E}\left[ \left(\frac{1}{n}\sum\_{j = 1}^n X_j \right) ^2\right]\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- --- -->
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \textrm{E}\left[\sum\_{j \neq i} X\_i X\_j\right]\right) + \textrm{E}\left[ \left(\frac{1}{n}\sum\_{j = 1}^n X_j \right) ^2\right]\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- -- -->
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \sum\_{j \neq i} \textrm{E}\left[ X\_i X\_j\right]\right) + \frac{1}{n^2} \textrm{E}\left[\sum\_{j = 1}^nX\_j^2 + \sum\_{j = 1}^n \sum\_{k \neq j}^nX\_j X\_k  \right]\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- -- -->
+
+Expand expressions, and use linearity of expectations again. 
+
+$$
+\begin{aligned}
+ & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \sum\_{j \neq i} \textrm{E}\left[ X\_i X\_j\right]\right) + \\\\
+ \frac{1}{n^2} \left( \sum\_{j = 1}^n\textrm{E}[X\_j^2] + \sum\_{j = 1}^n \sum\_{k \neq j}^n \textrm{E}[ X\_j X\_k]  \right)\right)
+\end{aligned}
+$$
+
+---
+
+Because our data is i.i.d.:
+
+$$
+\begin{aligned}
+ & = \frac{n}{n-1} \left( \textrm{E}[X^2] -\frac{2}{n}\left(\textrm{E}[X^2] +  (n-1) \textrm{E}[ X]^2\right) + \frac{1}{n^2} \left(n\textrm{E}[X^2] + n(n-1) \textrm{E}[ X]^2 \right) \right)
+\end{aligned}
+$$
+
+<!-- -- -->
+
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{n}{n-1} \left( \frac{n - 2 + 1}{n} \textrm{E}[X^2] + \frac{-2(n-1) + (n-1)}{n} \textrm{E}[ X]^2 \right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+--
+
+Organizing terms:
+
+$$
+\begin{aligned}
+ & = \frac{n}{n-1} \left( \frac{n - 1}{n} \textrm{E}[X^2] - \frac{n-1 }{n} \textrm{E}[ X]^2 \right)
+\end{aligned}
+$$
+
+--
+
+And simplifying: 
+
+$$
+\begin{aligned}
+ & = \textrm{E}[X^2] - \textrm{E}[ X]^2 
+\end{aligned}
+$$
+
+---
+
+We can check to see how R calculates in the `var()` function. 
+
+--
+
+```{r}
+head(x_observed)
+```
+
+--
+
+```{r}
+var(x_observed)
+```
+
+--
+
+```{r}
+
+mean( (x_observed - mean(x_observed) )^2)*n/(n-1)
+
+```
+
+--
+
+R uses the formula for the unbiased sample variance. 
+
+
+
+
+
+
 
 ---
 
@@ -335,18 +650,23 @@ $$
 --
 
 ```{r}
-var(colMeans(x.mat))
+var(unlist(sample_means))
 ```
 
+--
+
+It's not exactly what we calculated mathematically. 
 
 ---
 
-R has built in functions to calculate the sample mean and variance, but we can create functions of our own to check this. 
+In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate sample means. From the variation in these sample means, we again *estimate* the variance of the sample mean. 
 
+--
 
-```{r}
+But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take oru `r n_iter` separate samples. 
 
-```
+---
+WLLN
 
 
 

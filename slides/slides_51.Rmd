@@ -1,6 +1,6 @@
 ---
 title: "PLSC30500, Fall 2021"
-subtitle: "5.1 Regression: introduction"
+subtitle: "5.1 & 5.2 Regression: introduction"
 # author: "Andy Eggers & Molly Offer-Westort"
 output: 
   xaringan::moon_reader:
@@ -17,7 +17,25 @@ library(tidyverse)
 knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, fig.align = "center", out.width = "900px", fig.width = 4.5, fig.asp = .7)
 ```
 
+```{css, echo = F}
 
+.small-output .remark-code{
+  font-size: small;
+}
+
+.bitsmall-output .remark-code{
+  font-size: bitsmall;
+}
+
+```
+
+
+---
+exclude: true 
+
+## blech
+
+---
 
 class: inverse, middle, center
 
@@ -400,9 +418,67 @@ So what is the predicted DeShawn-vs-Jake difference for Democrats? For Republica
 
 ---
 
-## Adding an interaction 
+## Comparing predictions to actual means 
 
-<!-- To avoid imposing the assumption that Democrats and Republicans respond the same way to DeShawn-vs-Jake, we add an **interaction**. -->
+```{r, echo = F, out.width = "75%"}
+combinations <- expand_grid(treat_deshawn = c(0,1),
+                            leg_republican = c(0,1))
+mod_rigid <- lm(reply_atall ~ treat_deshawn + leg_republican, data = bb)
+mod_flex <- lm(reply_atall ~ treat_deshawn*leg_republican, data = bb) 
+
+combinations %>% 
+  mutate(`Model predictions` = predict(mod_rigid, newdata = .),
+         `Actual means` = predict(mod_flex, newdata = .),
+         Treatment = fct_rev(ifelse(treat_deshawn == 1, "DeShawn", "Jake")),
+         Party = ifelse(leg_republican == 1, "Republican", "Democrat")) %>%
+  pivot_longer(cols = c(`Model predictions`, `Actual means`)) %>% 
+  ggplot(aes(x = Treatment, y = value, col = Party)) + 
+  geom_point() + 
+  geom_line(aes(group = leg_republican)) + 
+  facet_wrap(vars(name)) + 
+  scale_color_manual(values = c("blue", "red")) + 
+  labs(y = "Proportion replying")
+
+
+```
+
+--
+
+To make predictions match actual means (and allow effect of treatment to vary by party of legislator): add an interaction
+
+---
+
+## Motivating interactions
+
+We start with 
+
+$$Y_i = a_0 + a_1 X_i + a_2 D_i$$
+
+--
+
+Let's let $a_2$ depend (linearly) on the value of $X_i$!
+
+$$a_2 = b_0 + b_1 X_i $$
+--
+
+Substitute in
+$$Y_i = a_0 + a_1 X_i + (b_0 + b_1 X_i) D_i $$
+and rearrange
+$$Y_i = a_0 + a_1 X_i + b_0 D_i + b_1 X_i D_i$$  
+
+--
+
+(Same result if we make $a_1$ depend on $D_i$.)
+
+
+???
+
+This is an idea I got from Richard McElreath's *Statistical Rethinking* book and YouTube lectures.
+
+
+---
+
+## Adding an interaction 
 
 ```{r}
 lm(reply_atall ~ treat_deshawn*leg_republican, data = bb) %>% 
@@ -420,6 +496,18 @@ so we have
 | DeShawn  |   Dem     |      $\hat{\beta}_0 + \hat{\beta}_1$   |
 | Jake  |   Rep     |      $\hat{\beta}_0 + \hat{\beta}_2$    |
 | DeShawn  |   Rep     |      $\hat{\beta}_0 + \hat{\beta}_1 + \hat{\beta}_2 + \hat{\beta}_3$    |
+
+---
+
+## Saturated regression
+
+**Definition**: A *saturated regression model* has a parameter for each unique combination of the covariates.
+
+--
+
+- all variables must be categorical
+- all interactions must be included
+
 
 ---
 
@@ -443,8 +531,8 @@ bb %>%
 
 ## Summing up
 
-- in a regression using only categorical explanatory variables, the predictions are just sample means for categories
-- to recover the predictions/means, you usually have to add up coefficients: this can be tricky
+- in a saturated regression involving only categorical explanatory variables, the predictions are just sample means for categories
+- to get the predictions/means from coefficients, you usually have to do some adding
 
 ---
 
@@ -589,20 +677,22 @@ var(mod$fitted.values)/var(pres$incvote)
 ```
 
 ---
+class: small-output
 
-## $R^2$ by hand (tidier)
+## R^2 by hand: tidier version
 
 ```{r}
-augmented <- lm(incvote ~ juneapp, data = pres) %>% 
-  broom::augment() %>% 
+# tidy version
+augmented <- broom::augment(mod) %>% 
   select(incvote, .fitted) 
-
-augmented %>% head()
+augmented %>% head(3)
 
 augmented %>% 
   summarize(var_fitted = var(.fitted),
             var_y = var(incvote)) %>% 
   mutate(r2 = var_fitted/var_y)
+
+broom::glance(mod)
 ```
 
 ---
@@ -922,81 +1012,5 @@ background-size: 90%
 
 ## Recap via diagram
 
-
-
----
-
-## Illustration
-
-```{r}
-set.seed(30500)
-y <- rbinom(n = 20, size = 1, prob = 2/3)
-y
-mean(y) # sample mean
-lm(y ~ 1) # simplest OLS regression possible: just the intercept
-```
-
----
-
-class: inverse, middle, center
-
-# One categorical predictor
-
----
-
-## Predicting the value of a random variable based on a predictor
-
-Let $Y$ denote the number of heads in a single flip of a coin. If $X = 0$, the coin is fair; if $X = 1$, the coin is biased. 
-
---
-
-The conditional distribution: 
-
-$$
-f_{Y|X}(y|x) = \begin{cases}
-1/2 & x = 0, y = 0 \\\
-1/2 & x = 0, y = 1  \\\
-1/4 & x = 1, y = 0 \\\
-3/4 & x = 1, y = 1 \\\
-0 & \text{otherwise}
-\end{cases}
-$$
---
-
-By same logic, 
-
-- knowing the distribution, the best (in terms of MSE) prediction using $X$ is the **conditional expectation** $E[Y \mid X]$
-- the sample analog is the **sample mean** at each value of $X$
-- minimizing the **sum of squared residuals** (sample analog of MSE) via OLS also gives sample mean at each value of $X$ 
-
----
-
-## Another illustration
-
-```{r}
-n <- 20
-dat <- tibble(x = rbinom(n = n, size = 1, 
-                         prob = 2/3),
-              y = rbinom(n = n, size = 1, 
-                  prob = ifelse(x == 0, 1/2, 2/3)))
-dat %>% head()
-
-# conditional sample means
-dat %>% 
-  group_by(x) %>% 
-  summarize(mean(y))
-
-lm(y ~ factor(x) - 1, data = dat) # "-1" to drop the intercept
-```
-
----
-
-## Different ways to run the same regression
-
-```{r}
-lm(y ~ factor(x) - 1, data = dat)
-lm(y ~ factor(x), data = dat)
-lm(y ~ x, data = dat)
-```
 
 

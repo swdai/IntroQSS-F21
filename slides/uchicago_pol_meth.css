@@ -45,6 +45,7 @@ round(20 * data.frame(
   --size-scriptsize: 18px;
   --size-footnotesize: 18px;
   --size-small: 18px;
+  --size-bitsmall: 20px;
   --size-normalsize: 22px;
   --size-large: 26px;
   --size-Large: 30px;
@@ -284,6 +285,10 @@ Extra classes for size and color
 
 .small {
   font-size: var(--size-small);
+}
+
+.bitsmall {
+  font-size: var(--size-bitsmall);
 }
 
 .normalsize {
