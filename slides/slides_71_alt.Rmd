@@ -492,16 +492,6 @@ Our difference in means estimator is a *statistic*. Statistics are functions of 
 
 Here, our hypothesis was about the *individual treatment effect*. 
 
---
-
-This is why we talk about probability AND statistics. 
-
---
-
-Probability gives us a model of the world. 
-
---
-Statistics give us a way to relate the data that we see to the model. 
 
 
 ---
