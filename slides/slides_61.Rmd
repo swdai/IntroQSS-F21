@@ -1,6 +1,6 @@
 ---
 title: "PLSC30500, Fall 2021"
-subtitle: "6.1 Regression Intuition"
+subtitle: "6.1 Regression for causal inference"
 # author: "Andy Eggers & Molly Offer-Westort"
 output: 
   xaringan::moon_reader:
@@ -8,6 +8,7 @@ output:
     css: [default, uchicago_pol_meth.css]
     nature:
       highlightLines: true
+      countIncrementalSlides: false
 ---
 
 ```{r setup, include=FALSE}
@@ -15,430 +16,385 @@ library(tidyverse)
 knitr::opts_chunk$set(fig.retina = 3, warning = FALSE, message = FALSE, fig.align = "center", out.width = "900px", fig.width = 4.5, fig.asp = .7)
 ```
 
+```{css, echo = F}
 
-class: inverse, middle, center
-
-# Two key facts about regression 
-
-
-
----
-
-name: fact-1-task
-
-
-## Fact 1: slope from covariance and variance
-
-
-Slope coefficient from bivariate regression of $Y$ on $X$: 
-
-$$  \hat{\beta} = \frac{\text{cov}(Y, X)}{\text{var}(X)}$$
---
-
-**Task 1**: demonstrate this using `mtcars` (or any other dataset!)
-
-See [solution](#fact-1-task-solution).
-
-???
-
-Fun fact: any OLS coefficient can be expressed in terms of covariances and variances, not just a bivariate regression slope.
-
-
----
-
-name: fact-2-task
-
-## Fact 2: residuals uncorrelated with regressors
-
-If $X$ is a regressor (i.e. predictor, right-hand-side (RHS) variable) and $\hat{r}$ is the vector of residuals, then 
-$$ \text{cov}(X, \hat{r}) = 0 $$
-
---
-
-**Task 2:** Confirm this with `mtcars`. (See [solution](#fact-2-task-solution))
-
---
-
-<br/><br/> 
-
-<br/><br/> 
-
-**Reminder:** If `my_lm` is your regression object, you can get the residuals with 
-
-- `resid(my_lm)`, 
-- `my_lm$residuals`, or 
-- `my_lm %>% broom::augment()`.
-
-
----
-
-## Fact 2 intuition (1)
-
-```{r ols-not-ols, echo = F}
-mtcars_reg <- lm(mpg ~ wt, data = mtcars)
-bad_intercept <- coef(mtcars_reg)[1]*.875
-bad_slope <- coef(mtcars_reg)[2]*.75
-
-mtcars %>%
-  ggplot(aes(x = wt, y = mpg)) + 
-  geom_point() + 
-  # the OLS line
-  geom_smooth(method = lm, formula = y ~ x,
-              col = "blue", se = F) + 
-  annotate(x = 4.5, y = 11, geom = "text", label = "OLS", 
-           col = "blue", size = 3) +
-  # the not OLS line
-  geom_abline(intercept = bad_intercept,
-         slope = bad_slope, col = "red") + 
-  annotate(x = 4.5, y = 18, geom = "text", label = "Not OLS",
-           col = "red", size = 3)
-```
-
-???
-
-We do two prediction lines: the OLS one and a "bad" one
-
----
-
-
-## Fact 2 intuition (2)
-
-```{r fact-2-intuition-2, echo = F}
-mtcars %>% 
-  mutate(`1. OLS` = coef(mtcars_reg)[1] + coef(mtcars_reg)[2]*wt,
-         `2. Not OLS` = bad_intercept + bad_slope*wt) %>% 
-  pivot_longer(cols = matches("OLS"), values_to = "prediction", names_to = "prediction_type") %>% 
-  mutate(Residuals = mpg - prediction) %>% 
-  ggplot(aes(x = wt, y = Residuals)) + 
-  geom_point() + 
-  geom_smooth(aes(col = prediction_type),
-              method = "lm", formula = y ~ x, se = F,
-              show.legend = F) + 
-  scale_color_manual(values = c("blue", "red")) +
-  facet_wrap(. ~ prediction_type)
+.small-output .remark-code{
+  font-size: small;
+}
 ```
 
 
-???
 
-The residuals from the bad prediction are correlated with `wt`, but not the residuals from the OLS prediction. 
+## Conditional average treatment effect (review)
 
-If the residuals are correlated with a predictor (as in the "Not OLS" prediction line), we can make the prediction better by shifting the line and getting rid of that correlation. When we do that for all predictors we get the OLS solution. 
+Recall Broockman & Butler experiment from lecture 4.2.
 
+We considered *conditional average treatment effects*, e.g. 
 
+$$E[Y_i(1) - Y_i(0) | \mathrm{party} = \mathrm{Dem}]$$
+--
 
----
-
-class: inverse, middle, center
-
-# Using the two facts (1):
-# the Frisch-Waugh-Lovell (FWL) theorem
-
----
-
-# FWL theorem and interpreting regression coefficients
-
-Suppose we regress $Y$ on $D$ ("treatment") and $X$ ("covariate"). What does the coefficient on $D$ mean?
+Randomization means treatment $D_i$ is independent of potential outcomes $Y_i(0), Y_i(1)$. 
 
 --
 
-name: fwl-task
+So the *conditional difference in means* is an unbiased estimator of this and other CATEs: 
 
-The **Frisch-Waugh-Lovell (FWL) Theorem** says that these produce the same number: 
-
-- regress $Y$ on $D$ and $X$, get coefficient on $D$
-- regress $D$ on $X$, get residuals; regress $Y$ on those residuals, get coefficient
-
---
-
-<br> </br>
-
-**Task:** confirm FWL in `mtcars`. 
-<!-- (use `mpg` as $Y$, `wt` as $D$, and `disp` as $X$).-->
-(See [solution](fwl-task-solution))
+\begin{align*}
+E[Y_i(1) - Y_i(0) | X_i = x] &= \underbrace{E[Y_i(1) | X_i = x ]}_{\text{Avg. }Y_i(1)\text{ for units with }X_i = x} - \underbrace{E[Y_i(0) | X_i = x]}_{\text{Avg. }Y_i(0)\text{ for units with }X_i = x} \\
+&= E[Y_i(1) | D_i = 1, X_i = x ] - E[Y_i(0) | D_i = 0, X_i = x] \\
+&= \underbrace{E[Y_i | D_i = 1, X_i = x ]}_{\text{Avg. }Y_i\text{ for units with }D_1 = 1, X_i = x} - \underbrace{E[Y_i | D_i = 0, X_i = x]}_{\text{Avg. }Y_i\text{ for units with }D_1 = 0, X_i = x} \\
+\end{align*}
 
 ???
 
-This also works when you have many covariates $X_1, X_2, \ldots$, not just one
-
-
-
----
-
-#### The math behind the FWL theorem
-
-Consider three fitted regression equations:
-
-$$\begin{eqnarray}
-Y_i &=& \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i  \\
-D_i &=& \hat{\alpha}_0 + \hat{\alpha}_1 X_i  + \hat{\varepsilon}_i \\
-Y_i &=& \hat{\gamma}_0 + \hat{\gamma}_1 \hat{\varepsilon}_i + \hat{u}_i
-\end{eqnarray}$$
-FWL says $\hat{\beta}_1 = \hat{\gamma}_1$.
-
-**Proof**: $\hat{\gamma}_1$ can be written (fact 1) $\frac{\text{cov}(Y_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} =\frac{\text{cov}(\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}$
-
-Now observe that
-
-- $\hat{\beta}_0$ is a constant $\rightarrow$ not correlated w. $\hat{\varepsilon}_i$
-- $X_i$ is uncorrelated with $\hat{\varepsilon}$ (**fact 2**), and
-- $\hat{r}_i$ is uncorrelated with $\hat{\varepsilon}$ b/c $D_i$ is uncorrelated with $\hat{r}_i$ (**fact 2**), and $\hat{\varepsilon}_i$ is part of $D_i$.
-
-So: $\frac{\text{cov}(Y_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}$ 
-$= \frac{\text{cov}(\hat{\beta_1} D_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}$ 
-$=\hat{\beta_1} \frac{\text{cov}(\hat{\alpha}_0 + \hat{\alpha}_1 X_i  + \hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)}$ $= \hat{\beta_1}\frac{\text{cov}(\hat{\varepsilon}_i, \hat{\varepsilon}_i)}{\text{var}(\hat{\varepsilon}_i)} = \hat{\beta_1}$
-
-
+To go from 1 to 2: $D_i$ independent of $Y_i(0),Y_i(1)$
+To go from 2 to 3: potential outcomes model, i.e. $Y_i = D_i Y_i(1) + (1 - D_i)Y_i(0)$
 
 ---
 
-### Using the FWL theorem
+## Conditional ignorability
 
-To interpret $\hat{\beta}_1$ in a regression like 
-$$
-Y_i = \hat{\beta}_0 + \hat{\beta_1} D_i + \hat{\beta_2} X_i,
-$$ 
-think of FWL: $\hat{\beta}_1$ describes the relationship between $Y_i$ and the part of $D_i$ that is not "explained" by $X_i$. 
+In some cases, independence of potential outcomes and treatment
+
+$$\left(Y_i(1), Y_i(0)\right) \perp\!\!\!\!\perp  D_i$$ 
+may not hold *in general*, but it may hold *conditional on some* $X_i$: 
+
+$$\left(Y_i(1), Y_i(0)\right) \perp\!\!\!\!\perp  D_i \mid X_i.$$ 
+Then $D_i$ is *strongly ignorable* conditional on $X_i$.
 
 --
 
-FWL says we can learn about a regression coefficient using a **partial regression plot**.  
+**Example**: Suppose in Broockman & Butler the randomization went like this:
+
+\begin{align*}
+\text{Pr}[\text{DeShawn email} | \text{Dem legislator}] &= .4 \\
+\text{Pr}[\text{DeShawn email} | \text{Rep legislator}] &= .6 \\
+\end{align*}
+
+--
+
+Then treatment is related to party (which is probably related to potential outcomes), but unrelated to potential outcomes *conditional on* party. 
 
 ???
 
-"Explained" is in quotes here because regressing $D$ on $X$ does not explain any part of $D$ in a deep sense; OLS is just describing their relationship in the dataset. 
+It is called *ignorability* because you can ignore the way that treatment was assigned.
+
+$\left(Y_i(1), Y_i(0)\right) \perp\!\!\!\!\perp  D_i \mid X_i$ is the conditional independence assumption. Technically you also need positivity: $0 < \text{Pr}[D_i = 1 | X_i] < 1$. 
+
+**Strong** ignorability relates to the pair $Y_i(0), Y_i(1)$. **Weak** ignorability in the binary treatment case says $Y_i(1) \perp\!\!\!\!\perp  D_i \mid X_i$ and $Y_i(0) \perp\!\!\!\!\perp  D_i \mid X_i$, so it permits a relationship between the treatment effect and $D_i$ conditional on $X_i$. But note that the key results would work with weak ignorability.  
 
 ---
 
-#### Partial regression plot
+## Another example of conditional ignorability 
 
-```{r, out.width = "550px"}
-mtcars %>%
-  mutate(wt_resid = resid(lm(wt ~ disp, data = .))) %>%
-  ggplot(aes(x = wt_resid, y = mpg)) + 
-  geom_point() + 
-  geom_smooth(method = lm, formula = y ~ x, se = F) + 
-  labs(x = "Residualized vehicle weight\n(adjusted for displacement)", 
-       y = "Vehicle MPG")
+Recall our example of the effect of studying on final grades:
+
+- AB types: $Y(1) = 95$, $Y(0) = 85$
+- BC types: $Y(1) = 85$, $Y(0) = 75$
+
+--
+
+Suppose most AB types study and most BC types don't. 
+
+--
+
+Then overall difference-in-means will be biased (which way?).
+
+--
+
+But treatment is strongly ignorable conditional on type (because potential outcomes identical within types).
+
+---
+
+## Conditional ignorability and the CATE
+
+If treatment is strongly ignorable conditional on $X_i$, then treatment is *as-if random* within levels of $X_i$.
+
+--
+
+$\implies$ the conditional difference in means is an unbiased estimator of the conditional average treatment effect, $\mathrm{CATE}$.
+
+--
+
+So 
+
+| Study | Difference in means unbiased for ATE? | Conditional difference in means unbiased for CATE? | 
+|:---:|:---:| :----:|
+|Original Broockman and Butler | Yes | Yes |
+|Modified Broockman and Butler | No | Yes |
+
+---
+
+## From conditional ignorability to the ATE
+
+Wait: if you have an unbiased estimator for the conditional ATE at each value of $X_i$, don't you have an unbiased estimator for the ATE? 
+
+--
+
+For example: 
+
+- to estimate the ATE of the "DeShawn" email on response rates, take the difference in means separately for Dem and Rep legislators, and then combine them
+- to estimate the ATE of studying on academic performance, take the difference in means separately for AB types and BC types, and then combine them
+- to estimate ATE of peacekeeping on civil conflict, take the difference in means for types of countries (e.g. low previous conflict, medium previous conflict) and then combine them
+
+--
+
+This is what we mean by "controlling for $X$" or "conditioning on $X$" to get the ATE.
+
+---
+
+## From conditional ignorability to the ATE (more formally)
+
+By the *Law of Iterated Expectations (LIE)*,
+
+\begin{align*}
+\text{ATE} &\equiv E[\tau_i] \\
+&= \sum_x E[\tau_i | X_i = x] \text{Pr}[X_i = x]
+\end{align*}
+
+--
+
+
+Other examples of LIE:
+
+- to compute average age in our class, can compute average age for men and average age for women, then combine by share of men/women 
+- to compute world average GDP/capita, compute for each country separately, then combine by population shares 
+
+--
+
+So if strong ignorability holds, an unbiased estimator for ATE is the weighted average of differences in means.
+
+---
+
+## The math (if it helps)
+
+\begin{align*}
+\text{ATE} &\equiv E[\tau_i] \\ 
+&= \sum_x E[\tau_i | X_i = x] \mathrm{Pr}[X_i = x]  \\
+&= \sum_x E[Y_i(1) -  Y_i(0)| X_i = x] \mathrm{Pr}[X_i = x] \\
+&= \sum_x \left( E[Y_i(1) | X_i = x] - E[Y_i(0)| X_i = x] \right) \mathrm{Pr}[X_i = x]  \\
+&= \sum_x \left( E[Y_i(1) | D_i = 1, X_i = x] - E[Y_i(0)| D_i = 0, X_i = x] \right) \mathrm{Pr}[X_i = x] \\
+&= \sum_x \left( E[Y_i | D_i = 1, X_i = x] - E[Y_i| D_i = 0, X_i = x] \right) \mathrm{Pr}[X_i = x]  
+\end{align*}
+
+Note:
+
+- 1 is by definition of ATE
+- 2 is by law of iterated expectations
+- 3 is by definition of ITE
+- 4 is by linearity of expectations
+- 5 is by assumption of potential outcomes model (SUTVA)
+- 6 is by strong ignorability
+
+See Theorem 7.1.13 in Aronow and Miller.
+
+---
+
+## Back to regression
+
+Regression provides a convenient way to compute and combine differences in means conditional on covariates $X_1$, $X_2$, etc.
+
+--
+
+For example, the regression equation
+
+$$\hat{Y}_i = \hat{\beta}_0 + \hat{\tau} D_i + \hat{\beta}_1 X_{i1} + \hat{\beta}_2 X_{i2}$$ 
+
+lets us calculate conditional differences in (predicted) means 
+
+$$\hat{E}[Y_i | D_i = 1, X_{i1} = x_1, X_{i2} = x_2] - \hat{E}[Y_i | D_i = 0, X_{i1} = x_1, X_{i2} = x_2] = \hat{\tau}.$$ 
+
+--
+
+If conditional ignorability holds, this is an unbiased estimate of a CATE.
+
+--
+
+The regression equation above assumes CATEs are all the same; if so, this regression gives unbiased estimate of ATE; if not, it gives a weighted average of CATEs.
+
+???
+
+If conditional ignorability holds and you have categorical data with a saturdated model but no interactions with treatment, then I think the coefficient on treatment is a weighted average of the CATEs, where weights are according to variance of treatment in each cell. See Mostly Harmless and Matt Blackwell's notes.
+
+---
+
+## Regression and other predictive methods
+
+We have described regression (OLS) as a way to predict $Y$ as a function of $D_i$, $X_i$, etc.
+
+--
+
+Given conditional ignorability, this can yield unbiased estimates of the ATE. 
+
+--
+
+There are other ways to predict $Y$ as a function $D_i$, $X_i$, etc, including: 
+
+- maximum likelihood estimation (MLE)
+- matching
+- weighting
+- machine learning methods (e.g. random forests, neural nets)
+
+Take more courses to find out more!
+
+---
+
+## Conditional ignorability and DAGs
+
+Recall: "treatment is ignorable conditional on $\mathbf{X}_i$" means 
+
+$(Y_i(0), Y_i(1))  \perp\!\!\!\!\perp D_i | \mathbf{X}_i$
+
+--
+
+The DAG version of this that that the only unblocked path from $D$ to $Y$ is the treatment effect of interest.
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+library(ggdag)
+coords <- tibble::tribble(
+  ~name, ~x,  ~y,
+  "D", 0,   0,
+  "X", -.25,   .25,
+  "Y",  1,   0,
+  "W", .5, -.25
+)
+
+dagify(Y ~ X + D,
+       D ~ X,
+       W ~ D,
+       W ~ Y,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+
 ```
 
----
-
-class: center, inverse, middle
-
-# Using the two facts (2):
-# the Omitted variable bias (OVB) equation
 
 ---
-name: ovb-task
 
-### OVB equation and interpreting regression coefficients 
+## Another DAG
 
-Suppose we have regressed $Y$ on $D$ ("treatment"). How would our coefficient change if we included $X$ in the regression? 
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+coords <- tibble::tribble(
+  ~name, ~x,  ~y,
+  "D", 0,   0,
+  "X1", -.15,   .25,
+  "X2", -.35,   .35,
+  "X3", -.55,   .45,
+  "Y",  1,   0,
+  "W", .5, -.25
+)
+
+dagify(Y ~ X1 + X2 + X3 + D,
+       D ~ X1 + X2 + X3,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+
+```
+
+
+---
+
+## The hard part: satisfying conditional ignorability
+
+In applied settings, can you observe the covariates that make conditional ignorability plausible? 
+
+i.e. such that treatment is as-if random conditional on $\mathbf{X}_i$
+
+i.e. such that the effect of $D_i$ on $Y_i$ is the only unblocked path connecting them?
 
 --
 
-OVB equation says that the difference between the first and second coefficient is the product of  
+For example
 
-- the coefficient on $X$ in the full regression ("impact")
-- the coefficient on $D$ from a regression of $X$ on $D$ ("imbalance")
+- if studying effect of democracy on economic growth, is it enough to control for past growth?
+- if studying effect of attending private university on future earnings, is it enough to control for the exact set of universities to which the student was admitted? (example from Angrist & Pischke, *Mastering 'Metrics*)
 
 --
 
-Confirm that this is true with `mtcars`. <!-- (use `mpg` as $Y$, `wt` as $D$, and `disp` as $X$).-->  (See [solution](#ovb-task-solution).)
+Take causal inference.
 
 ???
 
-This is a fact about regression. It only makes sense to call the difference in the two estimates "bias" if the longer equation is correct, but the fact is true whether or not the longer equation is correct.
-
-The question here is one you should ask when thinking about any empirical finding: how would the results be different if the regression adjusted for an additional factor? 
+This is why people end up doing experiments and looking for natural experiments, RDD, IV, diff-in-diff, etc.
 
 ---
 
+## What should you control for?
 
+From potential outcomes/ignorability standpoint or DAG standpoint, should be clear that you should control for variables that 
 
-#### The math behind the OVB equation 
+- affect the treatment, *and*
+- affect the outcome
+
+--
+
+Don't control for other effects of the treatment ("post-treament variables").
+
+---
+
+## What should you control for? An OVB perspective
+
+In seminars, we're often focused on a regression coefficient.
+
+A common critique is "But you didn't control for $X$". 
+
+--
+
+A useful way to assess how (not) controlling for $X$ might affect a coefficient of interest: the omitted variable bias (OVB) formula. 
+
+---
+
+## The omitted bias formula
 
 Consider three fitted regression equations: 
 
-$$\begin{eqnarray} 
-Y_i &=& \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i \\
-Y_i &=& \hat{\gamma}_0 + \hat{\gamma}_1 D_i + \hat{\varepsilon}_i \\
-X_i &=& \hat{\alpha}_0 + \hat{\alpha}_1 D_i + \hat{u}_i
-\end{eqnarray}$$
+\begin{align*}
+Y_i &= \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i \qquad \text{(long eqn)} \\
+Y_i &= \hat{\gamma}_0 + \hat{\gamma}_1 D_i + \hat{\varepsilon}_i \qquad \quad \text{(short eqn)} \\
+X_i &= \hat{\alpha}_0 + \hat{\alpha}_1 D_i + \hat{u}_i \qquad \text{(auxiliary eqn)}
+\end{align*}
 
-OVB equation says: $\hat{\gamma}_1 = \hat{\beta}_1 + \hat{\beta}_2 \hat{\alpha}_1$. 
+OVB equation says: $\hat{\gamma}_1 = \hat{\beta}_1 + \hat{\beta}_2 \hat{\alpha}_1$.
 
---
-
-**Proof**: Using **fact 1** we have
-$$ \hat{\gamma}_1 = \frac{\text{cov}(Y_i, D_i)}{\text{var}(D_i)} = \frac{\text{cov}(\hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i, D_i)}{\text{var}(D_i)} $$ 
-
-and using fact 2 this becomes  
-
-$$ \hat{\beta}_1 \frac{\text{cov}(D_i, D_i)}{\text{var}(D_i)} + \hat{\beta}_2 \frac{\text{cov}(X_i, D_i)}{\text{var}(D_i)} = \hat{\beta}_1 + \hat{\beta}_2 \frac{\text{cov}(X_i, D_i)}{\text{var}(D_i)}$$
-which (using fact 1) is $\hat{\beta}_1 + \hat{\beta}_2 \times \hat{\alpha}_1$.
-
-???
-
-The $\hat{\beta}_2 \hat{\alpha}_1$ term is impact $\times$ imabalance, and this is "bias" if the long model is correct so that $\beta_1$ is the target. But leaving aside the "bias" interpretation, this fact about regression doesn't depend on the "long" regression being correct (though sometimes it's presented that way) or on onything being causal. 
-
----
-
-### OVB practice 
-
-
-Suppose we regress a measure of civil conflict on an indicator for whether peacekeeping had taken place in the previous 5 years.
+**Shorthand:** "short" coefficient is "long" coefficient plus "impact" (of $X$ on $Y$) times  "imbalance" (in $X$ across $D$). 
 
 --
 
-How is our estimate different from the estimate we would get if we adjusted for previous level of civil conflict? 
+**Proof**: Substitute auxiliary equation into long equation and simplify:
 
-<br> </br>
-<br> </br>
+\begin{align*}
+\hat{Y}_i &= \hat{\beta}_0 + \hat{\beta}_1 D_i  + \hat{\beta}_2 (\hat{\alpha}_0 + \hat{\alpha}_1 D_i + \hat{u}_i) + \hat{r}_i \\
+&= \hat{\beta}_0 + \hat{\beta}_2 \hat{\alpha}_0 + (\hat{\beta}_1 +  \hat{\beta}_2 \hat{\alpha}_1 ) D_i + \hat{\beta}_2 \hat{u}_i + \hat{r}_i
+\end{align*}
 
+---
 
+## Illustration of OVB formula
+
+```{r}
+pres <- read_csv("./../data/pres_data.csv") %>% filter(year < 2020)
+long <- lm(incvote ~ juneapp + q2gdp, data = pres)
+coef(long)
+```
 --
-
-"Impact" here is: coefficient on previous civil conflict in regression of civil conflict on peacekeeping 
-
-"Imbalance" here is: difference in previous civil conflict between places with vs. without peacekeeping. 
-
-???
-
-Impact and imbalance in this example would probably both be positive, so the "bias" is positive, i.e. we get a larger coefficient without adjusting for previous conflict than we would if we did adjust for it. 
-
----
-
-class: center, inverse, middle
-
-## Task solutions
-
----
-
-name: fact-1-task-solution
-
-#### Solution to task 1 (fact 1 demo) 
-
-.pull-left[
-```{r plot-right, fig.show = "hide"}
-mtcars %>% 
-  ggplot(aes(x = wt, 
-             y = mpg)) + 
-  geom_point()
-
-```
-]
-
-.pull-right[
-```{r ref.label = "plot-right", echo = F, fig.width = 3, out.width="450px"}
-```
-]
-
 ```{r}
-lm(mpg ~ wt, data = mtcars) %>% coef()
+short <- lm(incvote ~ juneapp, data = pres)
+coef(short)
 ```
-
+--
 ```{r}
-cov(mtcars$mpg, mtcars$wt)/var(mtcars$wt) 
+auxiliary <- lm(q2gdp ~ juneapp, data = pres)
+coef(auxiliary)
 ```
-
-Back to [task 1](#fact-1-task).
-
-
----
-
-name: fact-2-task-solution
-
-#### Solutions to task 2 (fact 2)
-<!-- ## Confirming fact 2: choose your style  -->
-
+--
 ```{r}
-#### Explicit
-my_lm <- lm(mpg ~ wt, data = mtcars)
-my_resids <- my_lm$residuals
-cov(mtcars$wt, my_resids)
-```
-
-```{r}
-#### One-liner/"code golf"
-cov(mtcars$wt, resid(lm(mpg ~ wt, data = mtcars)))
-```
-
-```{r}
-#### Tidy fanatic
-mtcars %>% 
-  lm(mpg ~ wt, data = .) %>% 
-  broom::augment() %>% 
-  summarize(cov(wt, .resid)) %>% 
-  as.numeric()
-```
-
-(Back to [task 2](#fact-2-task))
-
-???
-
-That's as close to zero as the computer knows how to get.
-
----
-name: fwl-task-solution
-
-#### Confirming FWL 
-
-```{r}
-lm(mpg ~ wt + hp, data = mtcars) %>% coef()
-
-# tidy-ish way
-mtcars %>% 
-  mutate(resid = resid(lm(wt ~ hp, data = .))) %>% 
-  lm(mpg ~ resid, data = .) %>% 
-  coef()
-
-# more straightforward way
-resids <- resid(lm(wt ~ hp, data = mtcars))
-lm(mtcars$mpg ~ resids) %>% coef()
-
-```
-
-(Back to [FWL](fwl-task).)
-
----
-name: ovb-task-solution
-
-#### Confirming OVB equation
-
-
-```{r ovb-task}
-long_lm <- lm(mpg ~ wt + disp, data = mtcars)
-impact <- coef(long_lm)["disp"]
-imbalance <- coef(lm(disp ~ wt, data = mtcars))["wt"]
-short_lm <- lm(mpg ~ wt, data = mtcars)
-
-coef(long_lm)["wt"] - coef(short_lm)["wt"]
--impact*imbalance
-
-```
-
-([Back to OVB task](#ovb-task).)
-
----
-
-class: inverse, middle, center
-
-## Other omitted code 
-
----
-
-name: ols-not-ols-code
-
-```{r ref.label = "ols-not-ols", eval = T, out.width = "350px"}
+coef(long)["juneapp"] + coef(long)["q2gdp"]*coef(auxiliary)["juneapp"] 
 ```
 
 
----
-
-name: fact-2-intuition-2-code
-
-```{r ref.label = "fact-2-intuition-2", eval = T, out.width = "350px"}
-```
 
