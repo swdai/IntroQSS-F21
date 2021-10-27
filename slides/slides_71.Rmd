@@ -217,9 +217,16 @@ Very often, we only observe a limited number of observations, which are drawn fr
 
 --
 
-We can summarize the data we observe with *statistics*. Statistics are functions of the data we observe 
+We can summarize the data we observe with *statistics*. Statistics are functions of the data we observe.
+__
+
+$$
+T_n = h(X_1, \dots, X_n)
+$$
+
 --
-(before, we referred to *estimators*, which are a class of statistics that we use to approximate specific estimands).
+
+This should look a lot like our definiton of *estimators*. Estimators are a class of statistics that we use to approximate specific estimands.
 
 --
 
@@ -280,7 +287,11 @@ head(x_observed)
 
 --
 
-Our *sample mean* is the mean we observe in our data. 
+Our *sample mean* is the mean we observe in our data.
+--
+This is one of the most commonly used sample statistics. It's called a plug-in estimator, because we just "plug in" the sample analog of the population quantity that we're interested in. 
+
+--
 
 $$\bar{X}_n = \frac{X_{1} + \dots + X_n}{n} = \frac{1}{n} \sum_{i = 1}^n X_i$$
 
@@ -353,10 +364,9 @@ The expected value of the sample mean is the population mean.
 We can check that this is the case. 
 
 
-
 $$
 \begin{aligned}
-\bar{X}_n & = \frac{X_{1} + \dots + X_n}{n} = \frac{1}{n} \sum_{i = 1}^n X_i
+\bar{X}\_n & = \frac{X\_{1} + \dots + X\_n}{n} = \frac{1}{n} \sum\_{i = 1}^n X\_i
 \end{aligned}
 $$
 
@@ -367,7 +377,7 @@ By linearity of expectations $\dots$
 
 $$
 \begin{aligned}
-\textrm{E}[\bar{X}_n] & = \frac{1}{n} \sum_{i = 1}^n \textrm{E}[X_i]\\
+\textrm{E}[\bar{X}\_n] & = \frac{1}{n} \sum_{i = 1}^n \textrm{E}[X_i]\\
 \end{aligned}
 $$
 
@@ -406,14 +416,19 @@ $$
 ## De moivre la place theorem
 
 ---
+class: small-output 
 
 ## Sample variance
 
-What about the sample variance? We'll implement the same process with our simulations.
+We can estimate the mean of the population using the sample mean. What about the sample variance? 
 
 --
 
-```{r}
+We'll do the same process with our simulations.
+
+--
+
+```{r fig.width = 6, fig.height=4, fig.align='center'}
 sample_var <- map(x_list, var)
 df_sv <- tibble(sample_var = unlist(sample_var))
 
@@ -427,21 +442,15 @@ ggplot(df_sv, aes(x = sample_var)) +
 
 We see the sample variances are roughly distributed around the variance of the underlying population, `r sdx^2`. 
 
---
-
-The expected value of the sample variance is the population variance 
-
---
+---
 
 
-
-
-The unbiased sample variance is 
+The formula for the unbiased sample variance is: 
 
 $$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
 --
 
-This looks a little bit different from the population variance formula, 
+This looks a little bit different from a straightforward sample analog to the population variance formula, 
 
 $$
 \textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X)^2]
@@ -454,11 +463,173 @@ Why do we divide by $n-1$, instead of $n$?
 
 $$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
 
-The sample mean, $\bar{X}_n$, has an expected value of $\textrm{E}[X]$. However, because it is made up of the $1, \dots, n$ $X_i$ that we actually observe, the expected difference between $(X_i - \bar{X}_n)$ is a little bit smaller than the expected difference between $(X_i - \textrm{E}[X])$. 
+The sample mean, $\bar{X}_n$, has an expected value of $\textrm{E}[X]$.
+
+--
+
+However, because it is made up of the $1, \dots, n$ $X_i$ that we actually observe, the expected difference between $(X_i - \bar{X}_n)$ is a little bit smaller than the expected difference between $(X_i - \textrm{E}[X])$. 
+
 
 --
 
 To account for this, we divide by $n-1$, instead of $n$. 
+
+---
+class: tiny
+
+## 
+
+We can check that the expected value of the unbiased sample variance estimator is the population variance. 
+--
+The estimator:
+
+--
+
+$$
+\begin{aligned}
+S^2\_n = \frac{1}{n-1}\sum\_{i = 1}^n (X\_i - \bar{X}\_n)^2
+\end{aligned}
+$$
+
+
+--
+Take the expectation:
+
+$$
+\begin{aligned}
+\textrm{E}[S^2\_n] & = \textrm{E}\left[\frac{1}{n-1}\sum\_{i = 1}^n (X\_i - \bar{X}\_n)^2\right]
+\end{aligned}
+$$
+
+
+--
+By linearity of expectations:
+
+$$
+\begin{aligned}
+ & = \frac{1}{n-1}\sum\_{i = 1}^n \textrm{E}\left[(X\_i - \bar{X}\_n)^2\right]
+\end{aligned}
+$$
+
+
+--
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- & = \frac{1}{n-1}\sum\_{i= 1}^n \textrm{E}\left[X\_i^2 -2 X\_i\bar{X}\_n + \bar{X}\_n^2\right] -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- -- -->
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -2\textrm{E}[ X\_i\frac{1}{n}\sum\_{j = 1}^n X\_j] + \textrm{E}\left[ \left(\frac{1}{n}\sum\_{j = 1}^n X_j \right) ^2\right]\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- --- -->
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \textrm{E}\left[\sum\_{j \neq i} X\_i X\_j\right]\right) + \textrm{E}\left[ \left(\frac{1}{n}\sum\_{j = 1}^n X_j \right) ^2\right]\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- -- -->
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \sum\_{j \neq i} \textrm{E}\left[ X\_i X\_j\right]\right) + \frac{1}{n^2} \textrm{E}\left[\sum\_{j = 1}^nX\_j^2 + \sum\_{j = 1}^n \sum\_{k \neq j}^nX\_j X\_k  \right]\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+<!-- -- -->
+
+Expand expressions, and use linearity of expectations again. 
+
+$$
+\begin{aligned}
+ & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \sum\_{j \neq i} \textrm{E}\left[ X\_i X\_j\right]\right) + \\\\
+ \frac{1}{n^2} \left( \sum\_{j = 1}^n\textrm{E}[X\_j^2] + \sum\_{j = 1}^n \sum\_{k \neq j}^n \textrm{E}[ X\_j X\_k]  \right)\right)
+\end{aligned}
+$$
+
+---
+
+Because our data is i.i.d.:
+
+$$
+\begin{aligned}
+ & = \frac{n}{n-1} \left( \textrm{E}[X^2] -\frac{2}{n}\left(\textrm{E}[X^2] +  (n-1) \textrm{E}[ X]^2\right) + \frac{1}{n^2} \left(n\textrm{E}[X^2] + n(n-1) \textrm{E}[ X]^2 \right) \right)
+\end{aligned}
+$$
+
+<!-- -- -->
+
+
+
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!--  & = \frac{n}{n-1} \left( \frac{n - 2 + 1}{n} \textrm{E}[X^2] + \frac{-2(n-1) + (n-1)}{n} \textrm{E}[ X]^2 \right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+--
+
+Organizing terms:
+
+$$
+\begin{aligned}
+ & = \frac{n}{n-1} \left( \frac{n - 1}{n} \textrm{E}[X^2] - \frac{n-1 }{n} \textrm{E}[ X]^2 \right)
+\end{aligned}
+$$
+
+--
+
+And simplifying: 
+
+$$
+\begin{aligned}
+ & = \textrm{E}[X^2] - \textrm{E}[ X]^2 
+\end{aligned}
+$$
+
+---
+
+We can check to see how R calculates in the `var()` function. 
+
+--
+
+```{r}
+head(x_observed)
+```
+
+--
+
+```{r}
+var(x_observed)
+```
+
+--
+
+```{r}
+
+mean( (x_observed - mean(x_observed) )^2)*n/(n-1)
+
+```
+
+--
+
+R uses the formula for the unbiased sample variance. 
+
+
+
+
+
+
 
 ---
 
@@ -486,7 +657,7 @@ var(unlist(sample_means))
 
 It's not exactly what we calculated mathematically. 
 
---
+---
 
 In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate sample means. From the variation in these sample means, we again *estimate* the variance of the sample mean. 
 
@@ -495,13 +666,7 @@ In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate 
 But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take oru `r n_iter` separate samples. 
 
 ---
-
-R has built in functions to calculate the sample mean and variance, but we can create functions of our own to check this. 
-
-
-```{r}
-
-```
+WLLN
 
 
 
