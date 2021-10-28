@@ -3,7 +3,7 @@ title: 7.1 Statistical Inference
 subtitle: PLSC30500, Fall 2021
 author: 
   # - co-taught by Molly Offer-Westort & Andy Eggers
-  # - .small-text[(This lecture with references to Aronow & Miller (2019) and Wasserman (2004))]
+  - .small-text[(This lecture with references to Aronow & Miller 2019)]
 output: 
   xaringan::moon_reader:
     self_contained: true
@@ -218,7 +218,8 @@ Very often, we only observe a limited number of observations, which are drawn fr
 --
 
 We can summarize the data we observe with *statistics*. Statistics are functions of the data we observe.
-__
+--
+
 
 $$
 T_n = h(X_1, \dots, X_n)
@@ -235,6 +236,16 @@ Because our sampling process is a random process, these statistics themselves ar
 --
 
 We can describe our sample, but we might also like to *make inferences* about the larger population--i.e., to summarize what we know about that population based on the data we observe. 
+
+--
+This is what we use statistics for, and why we talk about probability AND statistics. 
+
+--
+
+Probability gives us a model of the world. 
+
+--
+Statistics give us a way to relate the data that we see to the model. 
 
 ---
 
@@ -317,7 +328,7 @@ We'll use a `prrr::map` to see what would happen if we took a sample of size $n 
 
 ```{r}
 
-n_iter<- 1000
+n_iter <- 10000
 
 x_list <- map(1:n_iter, ~ sample(X, prob = probs, replace = TRUE, 
                                  size = n))
@@ -344,7 +355,7 @@ df_sm
 
 ```{r fig.width = 6, fig.height=4, fig.align='center'}
 ggplot(df_sm, aes(x = sample_means)) +
-  geom_histogram(bins = 25, position = 'identity', color = 'white') +
+  geom_histogram(bins = 20, position = 'identity', color = 'white') +
   geom_vline(xintercept = Ex, color = 'grey', lty = 'dashed')
 
 ```
@@ -413,9 +424,6 @@ $$
 *Refer to Aronow & Miller p.97 for more extended version of proof*. 
 
 ---
-## De moivre la place theorem
-
----
 class: small-output 
 
 ## Sample variance
@@ -433,7 +441,7 @@ sample_var <- map(x_list, var)
 df_sv <- tibble(sample_var = unlist(sample_var))
 
 ggplot(df_sv, aes(x = sample_var)) +
-  geom_histogram(bins = 25, position = 'identity', color = 'white') +
+  geom_histogram(bins = 20, position = 'identity', color = 'white') +
   geom_vline(xintercept = sdx^2, color = 'grey', lty = 'dashed')
 ```
 
@@ -453,7 +461,7 @@ $$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
 This looks a little bit different from a straightforward sample analog to the population variance formula, 
 
 $$
-\textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X)^2]
+\textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X]^2]
 $$
 --
 
@@ -514,11 +522,14 @@ $$
 
 --
 
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!-- & = \frac{1}{n-1}\sum\_{i= 1}^n \textrm{E}\left[X\_i^2 -2 X\_i\bar{X}\_n + \bar{X}\_n^2\right] -->
-<!-- \end{aligned} -->
-<!-- $$ -->
+
+$$
+\begin{aligned}
+& = \frac{1}{n-1}\sum\_{i= 1}^n \textrm{E}\left[X\_i^2 -2 X\_i\bar{X}\_n + \bar{X}\_n^2\right]
+\end{aligned}
+$$
+
+---
 
 <!-- -- -->
 
@@ -546,7 +557,7 @@ $$
 <!-- \end{aligned} -->
 <!-- $$ -->
 
-<!-- -- -->
+<!-- --- -->
 
 Expand expressions, and use linearity of expectations again. 
 
@@ -557,7 +568,7 @@ $$
 \end{aligned}
 $$
 
----
+--
 
 Because our data is i.i.d.:
 
@@ -663,10 +674,67 @@ In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate 
 
 --
 
-But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take oru `r n_iter` separate samples. 
+But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take our `r n_iter` separate samples. 
 
 ---
-WLLN
+# Weak Law of Large Numbers
 
+
+
+As our sample size $n$ grows, we are increasingly likely to observe a sample mean $\bar X_n$ that is close to the mean of the distribution, $\textrm{E}[X]$
+
+--
+
+Formally, 
+
+If $X_1, \dots, X_n$ are i.i.d. random variables,  then 
+
+$$
+\bar{X}_n \overset{p}{\to} \textrm{E}[X].
+$$
+
+--
+Convergence in probability means that the probability that we measure a value of $\bar X_n$ that is any arbitrary distance away from $\textrm{E}[X]$ is decreasing with our sample size. 
+
+
+
+---
+class: small-output
+
+## 
+
+To see this, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE }
+n <- 500
+x_list <- map(1:8, ~ sample(X, prob = probs, replace = TRUE, 
+                                 size = n))
+
+x_mat <- as_tibble(x_list, .name_repair = 'unique')
+
+new_mat <- x_mat %>% 
+  mutate(across(everything(), ~ cumsum(.x)/seq_along(.x)),
+         n = 1:n) %>% 
+  pivot_longer(cols = starts_with('..'),
+               values_to = "Sample mean")
+
+ggplot(new_mat, aes(x = n, y = `Sample mean`, col = name)) +
+  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
+  geom_line() +
+  theme(legend.position = 'none')
+  
+
+```
+
+---
+Why is the WLLN so helpful to us?
+
+- connect to finite sampling, infinite super populations
+
+
+---
+
+# De moivre la place theorem
 
 
