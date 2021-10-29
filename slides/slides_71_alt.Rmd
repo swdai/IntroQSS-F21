@@ -10,7 +10,7 @@ output:
     css: [default, uchicago_pol_meth.css]
     nature:
       highlightLines: true
-      countIncrementalSlides: false
+      countIncrementalSlides: no
 ---
 exclude: true
 # Estimation
@@ -636,7 +636,7 @@ gg_bins <- null_dist %>%
          col = abs(bin_min) >= abs(dm_hat)) 
 
 
-ggplot(gg_bins, aes(x = bin_min, y = n)) +
+ggplot(gg_bins, aes(x = bin_mid, y = n)) +
   geom_col() +
   geom_vline(xintercept = 0, color = 'red')
 ```

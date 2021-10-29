@@ -681,7 +681,7 @@ But *this estimate is itself a random variable*, with, again, its own sampling d
 
 
 
-As our sample size $n$ grows, we are increasingly likely to observe a sample mean $\bar X_n$ that is close to the mean of the distribution, $\textrm{E}[X]$
+As our sample size $n$ grows, we are increasingly likely to observe a sample mean $\bar X_n$ that is close to the mean of the distribution, $\textrm{E}[X]$.
 
 --
 
@@ -694,7 +694,7 @@ $$
 $$
 
 --
-Convergence in probability means that the probability that we measure a value of $\bar X_n$ that is any arbitrary distance away from $\textrm{E}[X]$ is decreasing with our sample size. 
+Convergence in probability here means that the probability that we measure a value of $\bar X_n$ that is any arbitrary distance away from $\textrm{E}[X]$ is decreasing with our sample size. 
 
 
 
@@ -703,10 +703,10 @@ class: small-output
 
 ## 
 
-To see this, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
 
 
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE }
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE,}
 n <- 500
 x_list <- map(1:8, ~ sample(X, prob = probs, replace = TRUE, 
                                  size = n))
@@ -719,22 +719,386 @@ new_mat <- x_mat %>%
   pivot_longer(cols = starts_with('..'),
                values_to = "Sample mean")
 
-ggplot(new_mat, aes(x = n, y = `Sample mean`, col = name)) +
+```
+
+---
+
+## 
+
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
+
+ggplot(new_mat %>% filter(n < 26), aes(x = n, y = `Sample mean`, col = name)) +
   geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
   geom_line() +
-  theme(legend.position = 'none')
-  
+  theme(legend.position = 'none') +
+  coord_cartesian(xlim = c(0, 500))
 
 ```
 
 ---
+## 
+
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
+
+ggplot(new_mat %>% filter(n < 51), aes(x = n, y = `Sample mean`, col = name)) +
+  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
+  geom_line() +
+  theme(legend.position = 'none') +
+  coord_cartesian(xlim = c(0, 500))
+
+```
+
+---
+## 
+
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
+
+ggplot(new_mat %>% filter(n < 101), aes(x = n, y = `Sample mean`, col = name)) +
+  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
+  geom_line() +
+  theme(legend.position = 'none') +
+  coord_cartesian(xlim = c(0, 500))
+
+```
+
+---
+## 
+
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
+
+ggplot(new_mat %>% filter(n < 201), aes(x = n, y = `Sample mean`, col = name)) +
+  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
+  geom_line() +
+  theme(legend.position = 'none') +
+  coord_cartesian(xlim = c(0, 500))
+
+```
+
+---
+## 
+
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
+
+ggplot(new_mat %>% filter(n < 351), aes(x = n, y = `Sample mean`, col = name)) +
+  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
+  geom_line() +
+  theme(legend.position = 'none') +
+  coord_cartesian(xlim = c(0, 500))
+
+```
+
+---
+
+## 
+
+To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
+
+ggplot(new_mat %>% filter(n < 501), aes(x = n, y = `Sample mean`, col = name)) +
+  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
+  geom_line() +
+  theme(legend.position = 'none') +
+  coord_cartesian(xlim = c(0, 500))
+
+```
+
+---
+
 Why is the WLLN so helpful to us?
 
-- connect to finite sampling, infinite super populations
+--
+
+Given a sufficient sample from a population, we can estimate features of a random variable to arbitary precision
+
+<!-- --- -->
+<!-- ## Chebyshev? -->
+
+
+---
+# Central Limit Theorem
+
+We can approximate probability statements about the sample mean, $\bar{X}_n$ using the Normal distribution. 
+
+--
+
+Formally, 
+
+If $X_1, \dots, X_n$ are i.i.d. random variables with mean $\textrm{E}[X]$ and variance $\textrm{Var}[X]$,  then 
+
+$$
+Z_n \equiv  \frac{\bar{X}_n - \textrm{E}[X]}{\sqrt{\textrm{Var}[\bar{X}_n]}}  \overset{d}{\rightarrow} \mathcal{N}(0,1)
+$$
+where $\mathcal{N}(0,1)$ indicates the Standard Normal Distribution with mean 0 and variance 1. 
+
+
+---
+class: tiny
+
+## Normal distribution
+
+The Normal distribution is frequently used in probability and statistics, because it is a useful approximation to many natural phenomena. 
+
+$$
+f(x) = \frac{1}{\sqrt{\sigma 2 \pi}}\textrm{exp}\left( -\frac{(x-\mu)^2}{2\sigma^2}\right) 
+$$
+
+It is defined by two parameters, $\mu$, the center of the distribution, and $\sigma$, which defines the distribution's standard deviation, or spread. The distribution is often notated $\mathcal{N}(\mu, \sigma^2)$.
 
 
 ---
 
-# De moivre la place theorem
+It has a bell curve shape, with more density around the middle, and less density at more extreme values. 
+
+
+```{r, fig.width = 6, fig.height=4, fig.align = 'center', echo=FALSE}
+result_n <- rnorm(n = 10000)
+plotdata <- tibble(
+  x = result_n,
+  Fx = pnorm(result_n),
+  fx = dnorm(result_n)
+)
+
+ggplot(plotdata, aes(x = x, y = fx)) +
+  geom_line() +
+  coord_cartesian(xlim = c(-2.5, 2.5),
+                  ylim = c(0,0.5)) +
+  geom_vline(xintercept = 0, lty = 'dashed', color = 'skyblue') +
+  geom_segment(aes(x = 0, xend = -1, y = 0.2, yend = 0.2), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_segment(aes(x = 0, xend = 1, y = 0.2, yend = 0.2), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_point(aes(x = 0, y = 0.2), color = 'skyblue') + 
+  annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'skyblue') + 
+  annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'skyblue') + 
+  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'skyblue') +
+  ggtitle('PDF of Standard Normal Distribution')
+```
+
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+n <- 1000
+x_list <- map(1:10000, ~ sample(X, prob = probs, replace = TRUE, 
+                                 size = n))
+
+x_mat <- as_tibble(x_list, .name_repair = 'unique')
+
+new_mat <- x_mat %>% 
+  mutate(across(everything(), ~ (cumsum(.x)/seq_along(.x)-Ex)/(sqrt(0.375/row_number()) )) ,
+         n = 1:n)# %>% 
+  # pivot_longer(cols = starts_with('..'),
+  #              values_to = "Sample mean")
+
+
+x10 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:10]) )  
+x50 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:50]) )  
+x100 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:100]) )
+x200 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:200]) )
+x500 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:500]) )
+x1000 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:1000]) )
+x5000 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:5000]) )
+x10000 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:10000]) )
+
+ggplot(x10, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('10 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x50, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('50 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x100, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('100 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x200, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('200 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x500, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('500 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x1000, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('1000 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x5000, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('5000 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+ggplot(x10000, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02) + 
+  ggtitle('10000 samples') +
+  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
+
+```
+
+---
+
+We can rescale the y axis to get relative frequency of sample means, and overlay the normal PDF. 
+
+
+```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
+
+
+ggplot(x10000, aes(x = `Standardized sample mean`)) +
+  geom_histogram(binwidth = .02, aes(y = ..count../1500)) + 
+  ggtitle('10000 samples') +
+  ylab('Relative frequency') +
+  coord_cartesian(xlim = c(-2.5, 2.5)) +
+  stat_function(fun=dnorm,
+                         color="red",
+                         args=list(mean=0,
+                                  sd=1))
+
+```
+
+---
+# Beyond i.i.d.
+
+- In practice, beyond simple processes like coin flips and dice, it's hard to defend the claim that our data is *literally* i.i.d.
+
+--
+
+- The i.i.d. assumption is an approximation that gives us leverage to make statistical claims. Basically, we'd like to think that our data is close-enough to i.i.d. 
+
+---
+# Finite population random sampling
+
+Suppose we are sampling from some finite population of units; say, students in a classroom, and we will measure ages. Suppose there are 5 students, with ages 7, 7, 7, 8, 8, and 9. We'll consider a random variable $X$, which is just one draw from the class. 
+
+--
+
+We can identify the target mean and variance from our small population. 
+
+--
+
+- $X = \{7,8,9\}$
+- $\textrm{E}[X] = 7 \frac 2 3$
+- $\textrm{E}[X] = \textrm{E}[X^2]- \textrm{E}[X]^2 = \frac 5 9$
+
+--
+
+We can randomly sample from the class *with replacement*, i.e., after each draw, we can resample from all students in the class again: each draw is independent and identically distributed.
+
+--
+
+If we randomly sample *without replacement*, draws are not independent--if I draw the student who is age 9 on my first draw, I can't get another age 9 draw again, and I'll run out after 5 draws. 
+
+
+---
+
+In practice most of our sampling in the social sciences is finite population random sampling *without* replacement. 
+
+--
+
+But if the sample is sufficiently large, removing a few units doesn't affect the distribution for remaining draws in a meaningful way. 
+
+--
+
+Suppose I am sampling from *all* third graders in the US. We can define the mean and variance for this population; suppose there are 1.2 million third graders age 7, 1 million third graders 8, and 1.4 million third graders age 9. The mean in this population is 8.056 and variance is 0.809. 
+
+--
+
+After I sample a few third graders, the mean and variance for the remaining students is still approximately the same. 
+
+--
+
+When we're dealing with sampling from finite populations, we often make the assumption that we're sampling from a hypothetical, infinite *superpopulation* that is so large that there is no effect of sampling without replacement. 
+
+<!-- --- -->
+
+<!-- # De moivre la place theorem -->
 
 
