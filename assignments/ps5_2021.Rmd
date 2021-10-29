@@ -1,8 +1,11 @@
 ---
 title: "Problem set 5"
-author: "Your name here"
-date: "Due 10/29/2021 at 5pm"
-output: pdf_document
+author: "Siwei Dai"
+date: \today
+output: 
+    pdf_document:
+        latex_engine: xelatex
+
 ---
 
 ```{r setup, include=FALSE}
@@ -48,18 +51,38 @@ The variables in the dataset are as follows:
 
 ```{r}
 # your code here
+df <- ggl %>% 
+    group_by(yob) %>% 
+    summarize(turnout_yob = mean(p2002))
+
+plot1 <- df %>% 
+    ggplot(aes(x = yob, y = turnout_yob)) +
+    geom_point() +
+    labs(x = 'Year of birth',
+         y = 'Proportion of voting',
+         title = 'Proportion of voting for year of birth')
+plot1
 ```
 
 2) Run a regression with voting in the 2002 primary as the dependent variable and year of birth as the independent variable. Provide the `R` output showing the intercept and slope coefficients. Explain what the slope coefficient means.
 
 ```{r}
 # your code here
+model2 <- lm(formula = p2002 ~ yob, data = ggl) %>% 
+    summary()
+model2
 ```
+**The coefficient means the model predicts that the group mean of p2002 decreases -4.787e-03 for every year increase in birth year; in other words, every year increase in birth year is associated with -4.787e-03 decrease in the proportion of people born that year and voted in 2002 primary election.**
 
 3) Use `geom_smooth()` to show the regression line from the same regression.
 
 ```{r}
 # your code here
+plot3 <- ggl %>% 
+    ggplot(aes(x = yob, y = p2002)) +
+    geom_point() +
+    geom_smooth(method = 'lm', formula = y ~ x)
+plot3
 ```
 
 
@@ -67,42 +90,83 @@ The variables in the dataset are as follows:
 
 ```{r}
 # your code here
+model4 <- lm(formula = p2002 ~ poly(yob, degree = 4), data = ggl) %>% 
+    summary() 
+
+plot4 <- ggl %>% 
+    ggplot(aes(x = yob, y = p2002)) +
+    geom_point() +
+    geom_smooth(method = 'lm', 
+                formula = y ~ poly(x, degree = 4), 
+                se = F)
+
+model4$coefficients
+plot4
 ```
+The coefficient on first order term is -40.5747753; coefficient for the second-order term is -17.2646320; coefficient for the third-order term is -19.2764290; the coefficient for the 4th order term is -14.9285501.
 
 5) Regress an `p2002` on `sex`. Interpret the coefficients. What proportion of women in the sample voted in the 2002 primary? 
 
 ```{r}
 # your code here
+model5 <- lm(formula = p2002 ~ sex, data = ggl) %>% 
+    summary()
+model5
+# The intercept means the group mean of women voting in 2002 primary is 0.381804;
+# The coefficient on 'sexmale' means compared to women, men were 0.016045 more likely 
+# to have voted in 2002 primary
+
+df5 <- ggl %>% 
+    summarize(prop_female = mean(p2002[sex == 'female']))
+df5
+# 38.18039 % of women voted in the 2002 primary election	
 ```
 
 6) Regress `voted` on `sex`, `p2004`, and their interaction. Interpret the coefficient on `p2004`. Among men who voted in the 2004 primary, what is the proportion who voted in the 2006 primary? Show how to get that number from the regression coefficients.  
 
 ```{r}
 # your code here
+model6 <- lm(formula = voted ~ sex*p2004, data = ggl) %>% 
+    summary()
+model6
 ```
+**The proportion of men who voted in 2004 voted in 2006 is the sum of all coefficient estimates, `r 0.250083 + 0.007661 + 0.149380 + 0.009946`** The proportion of men who voted in 2004 voted in 2006 is the group mean of 'voted' if 'sexmale == 1' and 'p2004 == 1'.
 
 7) Regress `p2004` on `treatment`. Show the `R` output. What does the coefficient on `treatmentCivicDuty` mean?   
 
 ```{r}
 # your code here
+model7 <- lm(formula = p2004 ~ treatment, data = ggl)
+model7
 ```
+
+**The coefficient on `treatmentCivicDuty` means compared to the control group who didn't get mailing, the proportion of those received the CivicDuty mail voted in 2004 primary election is lower by 0.0008935**
 
 8) Now regress `p2004` on `treatment` without an intercept (hint: add `-1` to the regression formula). Show the `R` output. Now what does the coefficient on `treatmentCivicDuty` mean?   
 
 ```{r}
 # your code here
+model8 <- lm(formula = p2004 ~ treatment -1, data = ggl)
+model8
 ```
-
+**The coefficient means that the group mean of p2004 for those who received CivicDuty mailing is 0.3994; in other words, the proportion of those who received CivicDuty mailing voted in 2004 primary election is 0.3994**
 
 9) Regress `voted` on `treatment`. What does the coefficient on `treatmentCivicDuty` mean?
 
 ```{r}
 # your code here
+model9 <- lm(formula = voted ~ treatment, data = ggl)
+model9
 ```
+**The coefficient means compared to the control group who didn't receive any mailing, the proportion of those who received CivicDuty mailing voted in 2006 election is higher by 0.01790; in other words, the effect of receiving CivicDuty mailing on voting in 2006 election is 0.01790.**
 
 10) Add a fourth-degree polynomial of `yob` to the regression. You should find that none of the coefficients from the previous regression change much. Explain why this is not surprising. 
 
 ```{r}
 # your code here
+model10 <- lm(voted ~ treatment + poly(yob, degree = 4), data = ggl)
+model10
+
 ```
+**If the year of birth has no correlation with what treatment a particular individual receives, as in this case where the treatment assignment is random, it wouldn't interfere with the estimate on treatment effect**
 
