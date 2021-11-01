@@ -396,5 +396,174 @@ coef(auxiliary)
 coef(long)["juneapp"] + coef(long)["q2gdp"]*coef(auxiliary)["juneapp"] 
 ```
 
+---
+class: inverse, middle, center
+
+## Regression with a single categorical confounder 
+
+---
+
+Setup: we assume three categories $X_i \in \{1,2,3\}$; the probability of treatment, the treatment effect, and the potential outcomes all depend on $X_i$.
+
+First we compute the estimand ATE and the population regression estimate. Each can be seen as the weighted average of the CATEs. For the ATE the weights are the group weights. For the regression estimate the weights are the variance of treatment times the group weights. 
+
+```{r}
+taus <- c(1,2,3)
+pDs <- c(1/2, 1/8, 7/8)
+pXs <- c(1/4, 1/4, 1/2)
+(ATE <- sum(pXs*taus))
+(reg_estimate <- sum(pXs*pDs*(1-pDs)*taus)/sum(pXs*pDs*(1-pDs)))
+```
+
+---
+
+Now we want to get the estimates for samples.
+
+We make a function for drawing a dataset from parameters:
+
+```{r}
+draw_data <- function(n, pDs, pXs, taus){
+  tibble(X = sample(x = c(1,2,3), size = n, replace = T, prob = pXs),
+       D = rbinom(n, 1, pDs[X]),
+       Y0 = X + rnorm(n),
+       Y1 = Y0 + taus[X] + rnorm(n),
+       Y_obs = ifelse(D == 1, Y1, Y0))
+}
+# an example dataset for illustration
+set.seed(30500)
+n <- 1000
+(dat <- draw_data(n = n, pDs = pDs, pXs = pXs, taus = taus))
+```
+
+
+---
+
+We start by computing the difference-in-means by $X$:
+
+```{r}
+diff_in_means_from_dat <- function(dat){
+  dat %>% 
+  group_by(X, D) %>% 
+  summarize(mean(Y_obs), .groups = "drop") %>% 
+  pivot_wider(names_from = D, 
+              names_prefix = "D=", 
+              values_from = `mean(Y_obs)`) %>% 
+  mutate(`diff-in-means` = `D=1` - `D=0`)
+}
+(dims <- diff_in_means_from_dat(dat))
+```
+
+---
+
+An unbiased estimator of the ATE weights these by prevalance of $X$ in the sample: 
+
+```{r}
+freqs_from_dat <- function(dat){
+  dat %>% 
+    count(X) %>% 
+    mutate(freq = n/sum(n))
+}
+
+ate_from_dims_from_dat <- function(dat){
+  dims <- diff_in_means_from_dat(dat)
+  freqs <- freqs_from_dat(dat)
+  freqs %>% 
+    left_join(dims, by = "X") %>% 
+    summarize(est = sum(freq*`diff-in-means`)) %>%
+    as.numeric()
+}
+ate_from_dims_from_dat(dat)
+
+```
+
+---
+
+The regression estimate weights the CATEs by frequency $\times$ variance of treatment:
+
+
+```{r}
+reg_est_from_variances_etc <- function(dat){
+  dims <- diff_in_means_from_dat(dat)
+  freqs <- freqs_from_dat(dat)
+  dat %>% 
+    group_by(X) %>% 
+    summarize(varD = mean(D)*(1 - mean(D))) %>% 
+    left_join(freqs) %>% 
+    left_join(dims) %>% 
+    summarize(reg_est = sum(freq*varD*`diff-in-means`)/sum(freq*varD)) %>% 
+    as.numeric()
+}
+
+reg_est_from_variances_etc(dat)
+reg_est_from_lm <- function(dat){
+  lm(Y_obs ~ D + factor(X), data = dat)$coefficients["D"]  
+}
+reg_est_from_lm(dat)
+```
+
+---
+
+Now we do multiple samples.
+
+```{r}
+J <- 500
+sims <- tibble(j = 1:J,
+       n = n,
+       pXs = list(pXs),
+       taus = list(taus),
+       pDs = list(pDs)) %>% 
+  select(-j) %>% 
+  mutate(dat = pmap(., draw_data))
+
+sims %>% 
+  mutate(reg_ests = map_dbl(dat, reg_est_from_lm),
+         ate_ests = map_dbl(dat, ate_from_dims_from_dat)) -> ests
+```
+
+---
+
+class: small-output
+
+And we look at the results: 
+
+```{r, out.width = "80%", out.height = "50%"}
+ests %>% 
+  select(reg_ests, ate_ests) %>% 
+  pivot_longer(cols = everything()) %>% 
+  ggplot(aes(x = value, fill = name)) + 
+  geom_density(alpha = .5) + 
+  geom_vline(xintercept = reg_estimate, col = "blue") + 
+  geom_vline(xintercept = ATE, col = "red") + 
+  scale_fill_manual(values = c("red", "blue"), 
+                    labels = c("Matching", "Regression")) + 
+  annotate("text", x = c(reg_estimate, ATE) + c(-.05, .05), y = c(3,3.5), label = c("Analytical\nregression\nestimate", "ATE"), hjust = c(1,0)) + 
+  labs(fill = "", x = "Estimate", y = "")
+  
+```
+
+
+---
+
+Now, we can recover the weighted-CATE-estimates estimate of the ATE by running the regression with interactions between treatment and $X$, getting fitted values for both potential outcomes, and computing the differences in the average potential outcomes: 
+
+```{r}
+reg_estimator_w_intx <- function(dat){
+  mod <- lm(Y_obs ~ D*factor(X), data = dat)
+  mean(predict(mod, newdata = dat %>% mutate(D = 1))) - mean(predict(mod, newdata = dat %>% mutate(D = 0))) 
+}
+
+reg_estimator_w_intx(dat)
+ate_from_dims_from_dat(dat)
+```
+
+---
+
+So what have we shown? 
+
+- an unbiased estimator of the ATE, given strong ignorability, computes the difference in means at each level of $X$ and combines them by the prevalence of $X$ 
+- the regression of $Y$ on $D$ with categorical dummies ("fixed effects") is not unbiased for the ATE: it yields an estimate equal to the differences-in-means weighted by prevalence of $X$ $\times$ the conditional variance of $D$
+- you can use regression to recover the unbiased estimator of the ATE by including interactions between $D$ and $X$, imputing both potential outcomes from the regression model, and taking the difference in average potential outcomes.
+
+People don't do the latter because it's a little annoying and requires the bootstrap for standard errors. More cynically, because they don't understand this, don't have a specific estimand in mind, and don't care about the point estimate of the ATE (just its direction and significance), perhaps because the concepts/measurements/units are all unclear.
 
 
