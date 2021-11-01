@@ -380,7 +380,7 @@ Vanderweele and Robins (2007): "A DAG is composed of variables (nodes) and arrow
 
 ## Some DAG basics
 
-.pull-left[**Definition**: A **path** between two nodes is a set of connected edges going from one node to the other (regardless of direction of arrows.]
+.pull-left[**Definition**: A **path** between two nodes is a set of connected edges going from one node to the other (regardless of direction of arrows).]
 
 .pull-right[
 ```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
