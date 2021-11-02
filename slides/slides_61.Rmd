@@ -53,7 +53,7 @@ To go from 2 to 3: potential outcomes model, i.e. $Y_i = D_i Y_i(1) + (1 - D_i)Y
 
 ---
 
-## Conditional ignorability
+## "Conditional ignorability" or "strong ignorability"
 
 In some cases, independence of potential outcomes and treatment
 
@@ -128,7 +128,7 @@ So
 
 ## From conditional ignorability to the ATE
 
-Wait: if you have an unbiased estimator for the conditional ATE at each value of $X_i$, don't you have an unbiased estimator for the ATE? 
+Wait: if you have an unbiased estimator for the CATE at each value of $X_i$, don't you have an unbiased estimator for the ATE? 
 
 --
 
@@ -140,7 +140,7 @@ For example:
 
 --
 
-This is what we mean by "controlling for $X$" or "conditioning on $X$" to get the ATE.
+This is what we mean by "controlling for $X$" or "conditioning on $X$" to estimate the ATE.
 
 ---
 
@@ -153,10 +153,11 @@ By the *Law of Iterated Expectations (LIE)*,
 &= \sum_x E[\tau_i | X_i = x] \text{Pr}[X_i = x]
 \end{align*}
 
+Proof: see Aronow & Miller p. 72.
 --
 
 
-Other examples of LIE:
+Examples of LIE:
 
 - to compute average age in our class, can compute average age for men and average age for women, then combine by share of men/women 
 - to compute world average GDP/capita, compute for each country separately, then combine by population shares 
@@ -215,7 +216,7 @@ The regression equation above assumes CATEs are all the same; if so, this regres
 
 ???
 
-If conditional ignorability holds and you have categorical data with a saturdated model but no interactions with treatment, then I think the coefficient on treatment is a weighted average of the CATEs, where weights are according to variance of treatment in each cell. See Mostly Harmless and Matt Blackwell's notes.
+If conditional ignorability holds and you have categorical data with a saturated model but no interactions with treatment, then the coefficient on treatment is a weighted average of the CATEs, where weights are the share of data in that cell times the variance of treatment in that cell. This is not quite the ATE. See appendix of these slides.
 
 ---
 
@@ -225,11 +226,11 @@ We have described regression (OLS) as a way to predict $Y$ as a function of $D_i
 
 --
 
-Given conditional ignorability, this can yield unbiased estimates of the ATE. 
+If conditional ignorability holds, these predictions give us unbiased estimates of $E[Y_i(1) | X_i = x]$ and $E[Y_i(0) | X_i = x]$ and thus CATEs and the ATE.
 
 --
 
-There are other ways to predict $Y$ as a function $D_i$, $X_i$, etc, including: 
+There are other ways to predict $Y$ as a function of $D_i$, $X_i$, etc, including: 
 
 - maximum likelihood estimation (MLE)
 - matching
@@ -248,7 +249,7 @@ $(Y_i(0), Y_i(1))  \perp\!\!\!\!\perp D_i | \mathbf{X}_i$
 
 --
 
-The DAG version of this that that the only unblocked path from $D$ to $Y$ is the treatment effect of interest.
+The DAG version of this that after conditioning on $\mathbf{X}_i$ the only unblocked path from $D$ to $Y$ is the treatment effect of interest.
 
 ```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
 library(ggdag)
@@ -316,7 +317,7 @@ For example
 
 --
 
-Take causal inference.
+Applied causal inference is largely about finding or creating situations where conditional ignorability is plausible. 
 
 ???
 
@@ -324,18 +325,18 @@ This is why people end up doing experiments and looking for natural experiments,
 
 ---
 
-## What should you control for?
+<!-- ## What should you control for? -->
 
-From potential outcomes/ignorability standpoint or DAG standpoint, should be clear that you should control for variables that 
+<!-- From potential outcomes/ignorability standpoint or DAG standpoint, should be clear that you should control for variables that  -->
 
-- affect the treatment, *and*
-- affect the outcome
+<!-- - affect the treatment, *and* -->
+<!-- - affect the outcome -->
 
---
+<!-- -- -->
 
-Don't control for other effects of the treatment ("post-treament variables").
+<!-- Generally, don't control for other effects of the treatment ("post-treatment variables"). -->
 
----
+<!-- --- -->
 
 ## What should you control for? An OVB perspective
 
@@ -396,5 +397,474 @@ coef(auxiliary)
 coef(long)["juneapp"] + coef(long)["q2gdp"]*coef(auxiliary)["juneapp"] 
 ```
 
+---
+
+## DAG basics: review 
+
+.pull-left[**Definition**: A **path** between two nodes is a set of connected edges going from one node to the other (regardless of direction of arrows).]
+
+.pull-right[
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+library(ggdag)
+coords <- tibble::tribble(
+  ~name, ~x,  ~y,
+  "D", 0,   0,
+  "X", -.25,   .25,
+  "Y",  1,   0,
+  "W", .5, -.25
+)
+
+dagify(Y ~ X + D,
+       D ~ X,
+       W ~ D,
+       W ~ Y,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+
+```
+]
+
+--
+
+**Definition**: A node is a *collider* for a given path if it has two arrows from the path going in and none going out
+
+--
+
+**Definition**: A path is *blocked* if
+
+- we **condition** (e.g. using regression) on a non-collider node on the path, or
+- there is a collider on the path and we **do not** condition on it (or its descendants)
+
+--
+
+**Key finding**: Given a  DAG, the association between two nodes will reflect all *unblocked* paths that connect them. (See Pearl 2000 or Imbens 2020 for more.)
+
+???
+
+If the DAG is $A \leftarrow C \rightarrow B$, then $A$ and $B$ are not associated unless we condition on $C$. Here is the logic: suppose $A$ is height and $B$ is shooting ability, and $C$ is being a professional basketball player. It could be that in the population height and shooting ability is not related, but **conditional** on whether or not you are in the NBA they are negatively related. (That means, compute the association among NBA players and among non-NBA players and average those associations.) Among pro basketball players it may be negatively related (because you need to be tall or good at shooting to be in the NBA), in which case among non-basketball players it would also be negatively related (because the tallest and/or best shooting people are excluded).
+
+Similarly, conditional on whether or not you date them, it could be that the hottest people are the meanest (even if hotness and meanness not related in the population).
 
 
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+coords <- tibble::tribble(
+  ~name, ~x,  ~y,
+  "D", 0,   0,
+  "X", -.25,   .35,
+  "X1", -.15,   .25,
+  "X2", -.35,   .35,
+  "X3", -.55,   .45,
+  "Y",  1,   0,
+  "Y2", 1, .4,
+  "W", .5, -.25,
+  "M", .5, .25
+)
+```
+
+```{r}
+dagify(Y ~ X + D,
+       D ~ X,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void() + 
+  expand_limits(y = c(-.15, .45))
+```
+
+???
+
+Classic confounding case. Control for $X$.
+
+---
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+
+dagify(Y ~ X + D,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+```
+
+???
+
+RCT. No need to control for $X$, but doesn't hurt -- could improve precision of estimates.
+
+
+---
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+
+dagify(Y ~ D,
+       Y2 ~ D, 
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+```
+
+???
+
+RCT with two outcomes that share no common causes. No need to control for $Y2$, but doesn't hurt.
+
+
+---
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+
+dagify(Y ~ D,
+       Y2 ~ D,
+       Y ~ X,
+       Y2 ~ X,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+```
+
+???
+
+RCT with two outcomes that share a common cause. No need to control for $Y2$, and in fact it causes bias -- collider bias.
+
+---
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+
+dagify(Y ~ D + M,
+       M ~ D,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+```
+
+???
+
+Mediation with no confounders. By controlling for $M$, we can measure the **direct effect** of $D$ on $Y$.
+
+
+---
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+
+dagify(Y ~ D + M,
+       M ~ X,
+       D ~ X,
+       M ~ D,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+```
+
+???
+
+Mediation with a confounder shared by $D$ and $M$. We block that path by controlling for $M$. So again we can measure the **direct effect** of $D$ on $Y$.
+
+---
+
+## What should you control for: a DAG perspective 
+
+```{r, fig.height=3, fig.width = 4, fig.align = "center", echo = F, message = F, out.width = "80%"}
+
+dagify(Y ~ D + M,
+       M ~ X,
+       Y ~ X,
+       M ~ D,
+       coords = coords)%>% 
+  tidy_dagitty() %>% 
+  ggdag() + 
+  theme_void()
+```
+
+???
+
+Mediation with confounding between $M$ and $Y$. If we just regress $Y$ on $D$ we can get total effect of $D$ on $Y$. If we control for $M$ but not $X$ we open a backdoor path. If we control $M$ and $X$ we can get the direct effect.
+
+---
+
+## Key takeaways 
+
+In observational data in social science, lots of potential confounders.
+
+--
+
+That's why we include control variables in regressions, but we rarely think we can control for every confounder.
+
+--
+
+What can you do? 
+
+- do descriptive/predictive work
+- focus on design: do experiments, natural experiments, RDD, IV, etc (Causal Inference); choose questions/settings with better control variables
+- show how results depend on control variables, speculate about role of omitted variables (OVB formula, sensitivity analysis)
+
+---
+
+## Interpreting regression coefficients: FWL theorem
+
+Consider three fitted regression equations: 
+
+\begin{align*}
+Y_i &= \hat{\beta}_0 + \hat{\beta}_1 D_i + \hat{\beta}_2 X_i + \hat{r}_i \qquad \quad & \text{(long eqn)} \\
+D_i &= \hat{\gamma}_0 + \hat{\gamma}_1 X_i + \hat{\varepsilon}_i \qquad \quad \quad \quad \quad & \text{(treatment eqn)} \\ 
+Y_i &= \hat{\alpha}_0 + \hat{\alpha}_1 \hat{\varepsilon}_i + \hat{u}_i \qquad \qquad & \text{(residual eqn)} \\
+\end{align*}
+
+--
+
+Frisch-Waugh-Lovell (FWL) Theorem says: $\hat{\alpha}_1 = \hat{\beta}_1$.
+
+--
+
+The coefficient on $D$ in the "long equation" is the same as the coefficient on *residualized* $D$ in the "residual equation".
+
+---
+
+## FWL illustration
+
+```{r}
+long <- lm(incvote ~ juneapp + q2gdp, data = pres)
+coef(long)
+```
+--
+```{r}
+augmented <- lm(juneapp ~ q2gdp, data = pres) %>% 
+  broom::augment(data = pres)
+# equivalent in this case:
+# augmented <- tibble(pres, 
+  # .resid = resid(lm(juneapp ~ q2gdp, data = pres)))
+residual_eqn <- lm(incvote ~ .resid, data = augmented)
+coef(residual_eqn)
+```
+
+---
+
+## Using the Frisch-Waugh-Lovell theorem
+
+1. You can always think of a regression coefficient on $D$ as a measure of the association between $Y$ and the part of $D$ that is left after taking out the parts "explained" by $X_1$, $X_2$, etc
+
+--
+
+1. You can show a regression coefficient using a *partial regression plot* 
+
+---
+
+## Toward the partial regression plot 
+
+```{r, out.width = "75%"}
+pres %>% 
+  ggplot(aes(x = juneapp, y = incvote, label = year)) + 
+  geom_point() + 
+  ggrepel::geom_text_repel(size = 2) + 
+  geom_smooth(method = lm, se = F)
+```
+
+---
+
+## Toward the partial regression plot (2) 
+
+```{r, out.width = "75%"}
+pres %>% 
+  ggplot(aes(x = q2gdp, y = juneapp, label = year)) + 
+  geom_point() + 
+  ggrepel::geom_text_repel(size = 2) + 
+  geom_smooth(method = lm, se = F)
+```
+
+---
+
+## Partial regression plot 
+
+```{r, out.width = "75%"}
+augmented %>% 
+  ggplot(aes(x = .resid, y = incvote, label = year)) +
+  geom_point() + 
+  ggrepel::geom_text_repel(size = 2) + 
+  geom_smooth(method = lm, se = F) + 
+  labs(x = "Residuals from regressing June approval on\nQ2 GDP growth")
+```
+
+
+
+---
+class: inverse, middle, center
+
+## Appendix: showing that a regression coefficient can be a biased estimator of the ATE 
+
+---
+
+**Question**: Given strong ignorability, is the regression coefficient on treatment an unbiased estimator of the ATE?
+
+--
+
+**Answer**: Although regression can be used to get an unbiased estimator, the coefficient itself is a biased estimator if 
+
+- the size of the treatment effect varies with the confounder, and
+- treatment probability varies with the confounder 
+
+--
+
+The regression coefficient is a weighted average of CATEs. The weight where $X_i = x$ for the unbiased estimator is 
+
+$$\text{Pr}(X_i = x)$$  
+The weight for the regression coefficient is 
+
+$$\text{Pr}(X_i = x) E[D_i | X_i = x] (1 - E[D_i | X_i = x])$$
+
+We will illustrate but not prove this. 
+
+---
+
+**Setup:** we assume three categories $X_i \in \{1,2,3\}$; the probability of treatment, the treatment effect, and the potential outcomes all depend on $X_i$.
+
+First we compute the ATE and the population regression estimate. Each can be seen as the weighted average of the CATEs. For the ATE the weights are the group weights. For the regression estimate the weights are the variance of treatment times the group weights. 
+
+```{r}
+taus <- c(1,2,3)  # treatment effects for each X
+pDs <- c(1/2, 1/8, 7/8)  # probability of treatment for each X
+pXs <- c(1/4, 1/4, 1/2)  # frequency of each X
+(ATE <- sum(pXs*taus))   # Law of Iterated Expectations
+(reg_estimate <- sum(pXs*pDs*(1-pDs)*taus)/sum(pXs*pDs*(1-pDs)))
+```
+
+---
+
+Now we show in repeated sampling that regression matches this analytical estimate on average.
+
+We make a function for drawing a dataset from parameters:
+
+```{r}
+draw_data <- function(n, pDs, pXs, taus){
+  tibble(X = sample(x = c(1,2,3), size = n, 
+                    replace = T, prob = pXs),
+       D = rbinom(n, 1, pDs[X]),
+       Y0 = X + rnorm(n),
+       Y1 = Y0 + taus[X] + rnorm(n),
+       Y_obs = ifelse(D == 1, Y1, Y0))
+}
+# an example dataset for illustration
+set.seed(30500)
+n <- 1000
+(dat <- draw_data(n = n, pDs = pDs, pXs = pXs, taus = taus))
+```
+
+---
+
+The regression estimate uses `lm()`: 
+
+```{r}
+reg_est_from_lm <- function(dat){
+  lm(Y_obs ~ D + factor(X), data = dat)$coefficients["D"]  
+}
+reg_est_from_lm(dat)
+```
+
+---
+
+For comparison, we can get an unbiased estimator by computing differences in means at each level of $X$ and combining using the frequency of $X$: 
+
+```{r}
+weighted_diff_in_means <- function(dat){
+  diff_in_means <- dat %>% 
+    group_by(X, D) %>%
+    summarize(mean(Y_obs), .groups = "drop") %>% 
+    pivot_wider(names_from = D, 
+              names_prefix = "D=", 
+              values_from = `mean(Y_obs)`) %>%
+    mutate(`diff-in-means` = `D=1` - `D=0`)
+  
+  freqs <- dat %>% 
+    count(X) %>% 
+    mutate(freq = n/sum(n))
+  
+  freqs %>% 
+    left_join(diff_in_means, by = "X") %>% 
+    summarize(est = sum(freq*`diff-in-means`)) %>%
+    as.numeric()
+}
+
+(dims <- weighted_diff_in_means(dat))
+```
+
+---
+
+Now we do multiple samples.
+
+```{r}
+J <- 500
+# a trick to make a tibble of parameters
+sims <- tibble(j = 1:J,
+       n = n,
+       pXs = list(pXs),
+       taus = list(taus),
+       pDs = list(pDs)) %>% 
+  select(-j) %>% 
+  mutate(dat = pmap(., draw_data))
+
+ests <- sims %>% 
+  mutate(reg_ests = map_dbl(dat, reg_est_from_lm),
+         wdim_ests = map_dbl(dat, weighted_diff_in_means))
+```
+
+---
+
+class: small-output
+
+We confirm that the regression estimates are biased relative to the ATE but centered on the analytical (variance-weighted-CATEs) estimate: 
+
+```{r, out.width = "70%"}
+ests %>% 
+  select(reg_ests, wdim_ests) %>% 
+  pivot_longer(cols = everything()) %>% 
+  ggplot(aes(x = value, fill = name)) + 
+  geom_density(alpha = .5) + 
+  geom_vline(xintercept = reg_estimate, col = "blue") + 
+  geom_vline(xintercept = ATE, col = "red") + 
+  scale_fill_manual(values = c("blue", "red"), 
+                    labels = c("Regression", "Frequency-weighted\ndiff-in-means")) + 
+  annotate("text", x = c(reg_estimate, ATE) + c(-.05, .05), y = c(3.6,3.6), label = c("Analytical\nregression\nestimate", "Analytical\nATE"), hjust = c(1,0), size = 3) + 
+  labs(fill = "", x = "Estimate", y = "") + expand_limits(y = c(0, 4), x = c(1.5, 2.7))
+  
+```
+
+
+---
+
+While the OLS coefficient estimate is biased, OLS itself is not really the problem. The issue is that there is unmodeled treatment heterogeneity. We can get an unbiased estimator by running the regression with interactions between treatment and $X$, getting fitted values for both potential outcomes, and computing the differences in the average potential outcomes: 
+
+```{r}
+reg_estimator_w_intx <- function(dat){
+  mod <- lm(Y_obs ~ D*factor(X), data = dat)
+  mean(predict(mod, newdata = dat %>% mutate(D = 1))) - 
+    mean(predict(mod, newdata = dat %>% mutate(D = 0))) 
+}
+
+reg_estimator_w_intx(dat)
+weighted_diff_in_means(dat)
+```
+
+---
+
+So what have we shown? 
+
+- an unbiased estimator of the ATE, given strong ignorability, computes the difference in means at each level of $X$ and combines them by the prevalence of $X$ 
+- the regression of $Y$ on $D$ with categorical dummies ("fixed effects") is not unbiased for the ATE: it yields an estimate equal to the differences-in-means weighted by prevalence of $X$ $\times$ the conditional variance of $D$
+- you can use regression to recover the unbiased estimator of the ATE by including interactions between $D$ and $X$, imputing both potential outcomes from the regression model, and taking the difference in average potential outcomes.
+
+People don't do the latter because it's a little annoying and requires the bootstrap for standard errors. More cynically, because they don't understand this, don't have a specific estimand in mind, and don't care about the point estimate of the ATE (just its direction and significance), which in turn may be because the concepts/measurements/units are not meaningful.

@@ -840,7 +840,7 @@ class: small-output
 ## Presidential Daily Briefing
 
 ```{r carson, message = FALSE}
-file <- "https://raw.githubusercontent.com/UChicago-pol-methods/IntroQSS-F21/main/data/carsonPDB.csv"
+file <- "../data/carsonPDB.csv"
 df_pdb <- read_csv(file)
 
 df_pdb
@@ -1116,7 +1116,7 @@ $$
 f(x) = \frac{1}{\sqrt{\sigma 2 \pi}}\textrm{exp}\left( -\frac{(x-\mu)^2}{2\sigma^2}\right) 
 $$
 
-It is defined by two parameters, $\mu$, the center of the distribution, and $\sigma$, which defines the distribution's standard deviation, or spread. 
+It is defined by two parameters, $\mu$, the center of the distribution, and $\sigma$, which defines the distribution's standard deviation, or spread. The distribution is often notated $\mathcal{N}(\mu, \sigma^2)$.
 
 It has a bell curve shape, with more density around the middle, and less density at more extreme values. 
 

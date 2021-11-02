@@ -574,6 +574,19 @@ vote_app
 
 ---
 
+
+## Incumbent approval rating and incumbent party vote share 
+
+```{r, out.width="70%", echo = F}
+vote_app <- pres %>% 
+  ggplot(aes(x = juneapp, y = incvote, label = year)) + 
+  geom_point() + 
+  ggrepel::geom_text_repel(size = 2) 
+vote_app
+```
+
+---
+
 ## Coefficient interpretation 
 
 .pull-left[
