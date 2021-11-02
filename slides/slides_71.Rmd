@@ -3,7 +3,7 @@ title: 7.1 Statistical Inference
 subtitle: PLSC30500, Fall 2021
 author: 
   # - co-taught by Molly Offer-Westort & Andy Eggers
-  - .small-text[(This lecture with references to Aronow & Miller 2019)]
+  # - .small-text[(This lecture with references to Aronow & Miller 2019)]
 output: 
   xaringan::moon_reader:
     self_contained: true
@@ -298,7 +298,7 @@ head(x_observed)
 
 --
 
-Our *sample mean* is the mean we observe in our data.
+Our *sample mean* is the mean we observe in our data. 
 --
 This is one of the most commonly used sample statistics. It's called a plug-in estimator, because we just "plug in" the sample analog of the population quantity that we're interested in. 
 
@@ -325,6 +325,8 @@ We differentiate the *sample mean* from the *population mean* because the sample
 --
 
 We'll use a `prrr::map` to see what would happen if we took a sample of size $n = 100$ from the population distribution many times. 
+
+--
 
 ```{r}
 
@@ -825,7 +827,11 @@ Why is the WLLN so helpful to us?
 
 --
 
-Given a sufficient sample from a population, we can estimate features of a random variable to arbitary precision
+Given a sufficient sample from a population, we can estimate features of a random variable to arbitrary precision
+
+--
+
+This is why we can use sample analogs of population features, like the sample mean, as plug-in estimators to estimate the population quantities.  
 
 <!-- --- -->
 <!-- ## Chebyshev? -->

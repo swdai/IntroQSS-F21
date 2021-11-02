@@ -1,0 +1,34 @@
+---
+title: 7.2 Statistical Inference Continued: Hypothesis testing
+subtitle: PLSC30500, Fall 2021
+author: 
+  # - co-taught by Molly Offer-Westort & Andy Eggers
+  # - .small-text[(This lecture with references to Aronow & Miller 2019)]
+output: 
+  xaringan::moon_reader:
+    self_contained: true
+    css: [default, uchicago_pol_meth.css]
+    nature:
+      highlightLines: true
+      countIncrementalSlides: no
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+set.seed(60637)
+options(width = 60)
+```
+
+```{css, echo=FALSE}
+.small-output .remark-code{
+  font-size: x-small;
+}
+
+# .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
+#     display: none;
+# }
+```
+
+# Hypothesis testing
+
+
