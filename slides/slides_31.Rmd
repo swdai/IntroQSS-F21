@@ -166,7 +166,7 @@ class: highlight-last-item
 
 --
 
- - Here, the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
+ - Here, the event that we get a head on the first flip, $\textrm{P}[A] = 1/2$. 
 
 
 ???
@@ -235,7 +235,7 @@ table(result_n)
 - Two events are *independent* if
 
 $$
-\textrm{P}(AB) = \textrm{P}(A)\textrm{P}(B)
+\textrm{P}[AB] = \textrm{P}[A]\textrm{P}[B]
 $$
 
 --
@@ -262,8 +262,8 @@ The coin flips are unrelated, so the events should be independent. We can check 
 
 $$
 \begin{align}
-\textrm{P}(A) &= \textrm{P}(\{HT\}) + \textrm{P}(\{HH\}) = 0.25 + 0.25 = 0.5\\\
-\textrm{P}(B) &= \textrm{P}(\{TH\}) + \textrm{P}(\{HH\}) = 0.25 + 0.25 = 0.5
+\textrm{P}[A] &= \textrm{P}[\{HT\}] + \textrm{P}[\{HH\}] = 0.25 + 0.25 = 0.5\\\
+\textrm{P}[B] &= \textrm{P}[\{TH\}] + \textrm{P}[\{HH\}] = 0.25 + 0.25 = 0.5
 \end{align}
 $$
 
@@ -273,8 +273,8 @@ Then, we can calculate the product of the probabilities, and the probability of 
 
 $$
 \begin{align}
-\textrm{P}(A)\textrm{P}(B) &= 0.5 \times 0.5 = 0.25\\\
-\textrm{P}(A B) &= \textrm{P}(\{HH\}) = 0.25\
+\textrm{P}[A]\textrm{P}[B] &= 0.5 \times 0.5 = 0.25\\\
+\textrm{P}[AB] &= \textrm{P}[\{HH\}] = 0.25\
 \end{align}
 $$
 
@@ -283,7 +283,7 @@ $$
 We see that they are the same, so we have independence.
 
 $$
-\textrm{P}(A)\textrm{P}(B) = \textrm{P}(A B)
+\textrm{P}[A]\textrm{P}[B] = \textrm{P}[AB]
 $$
 
 
@@ -367,10 +367,10 @@ PA*PB
 
 # Conditional probability
 
-If $\textrm{P}(B)>0$, the *conditional probability* of an event $A$ occurring, given event $B$ has occurred is:
+If $\textrm{P}[B]>0$, the *conditional probability* of an event $A$ occurring, given event $B$ has occurred is:
 
 $$
-\textrm{P}(A|B) = \frac{\textrm{P}(A B)}{\textrm{P}(B)}
+\textrm{P}[A|B] = \frac{\textrm{P}[AB]}{\textrm{P}[B]}
 $$
 --
 This can also be read as, out of all of the times event $B$ occurs, how many times does event $A$ also occur?
@@ -386,15 +386,15 @@ For our coin flip example, we'll stick with:
 
 $$
 \begin{align}
-\textrm{P}(A |B)& = \frac{\textrm{P}(A B)}{\textrm{P}(B)}\\\
-& = \frac{\textrm{P}(\{ HH \})}{\textrm{P}(\{ HH \})}\\\
+\textrm{P}[A|B]& = \frac{\textrm{P}[AB]}{\textrm{P}[B]}\\\
+& = \frac{\textrm{P}[\{ HH \}]}{\textrm{P}[\{ HH \}]}\\\
 & = 1
 \end{align}
 $$
 
 --
 
-What is $\textrm{P}(B |A)$?
+What is $\textrm{P}[B|A]$?
 
 ---
 class: small-output, size-small
@@ -404,7 +404,7 @@ class: small-output, size-small
 A useful theorem to return to is *Bayes Rule*
 
 $$
-\textrm{P}(A|B) = \frac{\textrm{P}(B|A)\textrm{P}(A)}{\textrm{P}(B)}
+\textrm{P}[A|B] = \frac{\textrm{P}[B|A]\textrm{P}[A]}{\textrm{P}[B]}
 $$
 
 --
@@ -461,17 +461,17 @@ Event $B$:  a positive test
 
 
 
-- Doctors know that the probability of having COVID is 3% in this population : $\textrm{P}(A)$ 
+- Doctors know that the probability of having COVID is 3% in this population : $\textrm{P}[A]$ 
 ```{r PA3}
 PA <- 0.03
 ```
 --
-- The overall rate of positive tests is 5% : $\textrm{P}(B)$ 
+- The overall rate of positive tests is 5% : $\textrm{P}[B]$ 
 ```{r PB3}
 PB <- 0.05
 ```
 --
-- If you have COVID, your test will turn up positive 95% of the time : $\textrm{P}(B|A)$ 
+- If you have COVID, your test will turn up positive 95% of the time : $\textrm{P}[B|A]$ 
 ```{r PBifA}
 PB_if_A <- 0.95
 ```
@@ -481,7 +481,7 @@ PB_if_A <- 0.95
 
 $$
 \begin{align*}
-\textrm{P}(A|B) & = \frac{\textrm{P}(B|A)\textrm{P}(A)}{\textrm{P}(B)}
+\textrm{P}[A|B] & = \frac{\textrm{P}[B|A]\textrm{P}[A]}{\textrm{P}[B]}
 \end{align*}
 $$
 
@@ -496,7 +496,7 @@ $$
 ## Prosecutor's fallacy
 
 $$
-\textrm{P}(A|B)\overset{?}= \textrm{P}(B|A)
+\textrm{P}[A|B]\overset{?}= \textrm{P}[B|A]
 $$
 --
 
@@ -584,8 +584,8 @@ knitr::include_graphics('assets/johnson-et-al-PNAS.png')
 
 $$
 \begin{align}
-\textrm{P}(\text{shot} | \text{White officer, minority civilian}) -\\\
-\textrm{P}(\text{shot} | \text{Minority officer, minority civilian})
+\textrm{P}[\text{shot} | \text{White officer, minority civilian}] -\\\
+\textrm{P}[\text{shot} | \text{Minority officer, minority civilian}]
 \end{align}
 $$
 

@@ -1,9 +1,9 @@
 ---
-title: 7.1 Statistical Inference
+title: 7.1 Randomization Inference
 subtitle: PLSC30500, Fall 2021
 author: 
-  # - co-taught by Molly Offer-Westort & Andy Eggers
-  - .small-text[(This lecture with references to Aronow & Miller 2019)]
+  - co-taught by Molly Offer-Westort & Andy Eggers
+  # - .small-text[(This lecture with references to Gerber & Green 2012)]
 output: 
   xaringan::moon_reader:
     self_contained: true
@@ -12,6 +12,11 @@ output:
       highlightLines: true
       countIncrementalSlides: no
 ---
+exclude: true
+# Estimation
+
+---
+
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -21,203 +26,405 @@ options(width = 60)
 
 ```{css, echo=FALSE}
 .small-output .remark-code{
-  font-size: x-small;
+  font-size: small;
 }
+
+.white { color: white; }
+.red { color: red; }
+.blue { color: blue; }
 
 # .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
 #     display: none;
 # }
 ```
 
-# Introduction to estimation
+## Randomization inference
+
+Gerber & Green example adapted from: 
+
+Chattopadhyay, R., & Duflo, E. (2004). Women as policy makers: Evidence from a randomized policy experiment in India. *Econometrica*, 72(5), 1409-1443.
+
+---
 
 
-Returning to our example where we flip a coin twice, let $X$ be the number of heads we observe. Our coin is *not* fair, and the probability of getting a heads is 0.8. 
+
+(Augmented) Gerber Green example:
+
+- Population: 7 villages
+- Treatment: $D= 1$ if female-headed council, $D=0$ if male
+- Outcome: Budget allocation to sanitation
+
+
+What we see:
+
+
+|           | $Y_i(0)$ | $Y_i(1)$ | $D_i$ | $Y_i$ |
+|-----------|----------|----------|-------|----------|
+| Village 1 | .red[?]        | 15       | 1     | 15       |
+| Village 2 | 15       | .red[?]        | 0     | 15       |
+| Village 3 | 20       | .red[?]        | 0     | 20       |
+| Village 4 | 20       | .red[?]        | 0     | 20       |
+| Village 5 | 10       | .red[?]        | 0     | 10       |
+| Village 6 | 15       | .red[?]        | 0     | 15       |
+| Village 7 | .red[?]        | 30       | 1     | 30       |
+| .white[**Average**]| .white[**15**] |   .white[**22.14**]  |  |  |
+
+
+
+---
+
+
+
+We used the difference in means estimator previously to get an estimate of the average treatment effect over this population of 7 villages, $\textrm{E}[\tau_i]$. 
 
 --
 
-The random variable's probability distribution is then:
+|           | $Y_i(0)$ | $Y_i(1)$ | $D_i$ | $Y_i$ |
+|-----------|----------|----------|-------|----------|
+| Village 1 | .red[?]        | 15       | 1     | 15       |
+| Village 2 | 15       | .red[?]        | 0     | 15       |
+| Village 3 | 20       | .red[?]        | 0     | 20       |
+| Village 4 | 20       | .red[?]        | 0     | 20       |
+| Village 5 | 10       | .red[?]        | 0     | 10       |
+| Village 6 | 15       | .red[?]        | 0     | 15       |
+| Village 7 | .red[?]        | 30       | 1     | 30       |
+| **Average**| **15** |   **22.14**  |  |  |
 
 $$
-f(x) = \begin{cases}
-1/16 & x = 0 \\\
-3/8 & x = 1 \\\
-9/16 & x = 2 \\\
-0 & \text{otherwise}
-\end{cases}
+\hat\tau_{DM} = \frac{\sum_i^n Y_i D_i}{\sum_i^n D_i} - \frac{\sum_i^n Y_i (1-D_i)}{\sum_i^n (1-D_i)}
+$$
+--
+
+$$
+= 22.14-15 = 7.14
 $$
 
 ---
 
-Let's take a look at the mean. 
+- But what can we say about our uncertainty about this estimate? The number of observations in each group is pretty small. 
 
-```{r, fig.width = 5, fig.height=5, fig.align = 'center', echo=FALSE}
-plotdata <- tibble(
-  x = c(0, 1, 2),
-  xend = c(1, 2, 3),
-  fx = c(1/16, 3/8, 9/16),
-  Fx = cumsum(fx)
+--
+
+- Is the estimate meaningfully different from zero?
+
+--
+
+- How likely would we be to see an effect this size just by chance?
+
+
+---
+
+One way to think about this is to assume the ITE for all individuals is exactly zero. Then, no matter how we randomized treatment assignment, we would see the same $Y_i$s. 
+
+--
+
+We can then say how often we would see a treatment effect of this size just by chance, under the assumption that individual treatment effects were actually zero. 
+
+---
+
+Assuming all treatment effects are exactly zero is called the **sharp null hypothesis of no effect**. 
+
+--
+
+We might write it this way:
+
+$$
+H_0: \tau_i = 0, \text{ for all } i \text{ in our pop.}
+$$
+
+
+---
+Then we can fill in this table $\dots$
+
+|           | $Y_i(0)$ | $Y_i(1)$ | $D_i$ | $Y_i$ | $\tau_i^0$ |
+|-----------|----------|----------|-------|-------|------------|
+| Village 1 | .red[?]  | 15       | 1     | 15    | .red[?]    |
+| Village 2 | 15       | .red[?]  | 0     | 15    | .red[?]    |
+| Village 3 | 20       | .red[?]  | 0     | 20    | .red[?]    |
+| Village 4 | 20       | .red[?]  | 0     | 20    | .red[?]    |
+| Village 5 | 10       | .red[?]  | 0     | 10    | .red[?]    |
+| Village 6 | 15       | .red[?]  | 0     | 15    | .red[?]    |
+| Village 7 | .red[?]  | 30       | 1     | 30    | .red[?]    |
+
+
+
+---
+$\dots$ as this:
+
+|             | $Y_i(0)$ | $Y_i(1)$  | $D_i$ | $Y_i$ | $\tau_i^0$ |
+|-------------|----------|-----------|-------|-------|------------|
+| Village 1   | .red[15] | 15        | 1     | 15    | .red[0]    |
+| Village 2   | 15       | .red[15]  | 0     | 15    | .red[0]    |
+| Village 3   | 20       | .red[20]  | 0     | 20    | .red[0]    |
+| Village 4   | 20       | .red[20]  | 0     | 20    | .red[0]    |
+| Village 5   | 10       | .red[10]  | 0     | 10    | .red[0]    |
+| Village 6   | 15       | .red[15]  | 0     | 15    | .red[0]    |
+| Village 7   | .red[30] | 30        | 1     | 30    | .red[0]    |
+
+
+
+---
+We can re-run the randomization, and the potential outcomes and observed $Y_i$ will not change, but the treatment effect estimate will. 
+
+|             | $Y_i(0)$ | $Y_i(1)$  | $D_i$    | $Y_i$ | $\tau_i^0$ |
+|-------------|----------|-----------|----------|-------|------------|
+| Village 1   | .red[15] | 15        | .blue[0] | 15    | .red[0]    |
+| Village 2   | 15       | .red[15]  | .blue[1] | 15    | .red[0]    |
+| Village 3   | 20       | .red[20]  | .blue[0] | 20    | .red[0]    |
+| Village 4   | 20       | .red[20]  | .blue[0] | 20    | .red[0]    |
+| Village 5   | 10       | .red[10]  | .blue[0] | 10    | .red[0]    |
+| Village 6   | 15       | .red[15]  | .blue[1] | 15    | .red[0]    |
+| Village 7   | .red[30] | 30        | .blue[0] | 30    | .red[0]    |
+--
+
+
+$\frac{\sum_i^n Y_i D_i}{\sum_i^n D_i} = \color{blue}{15}$
+
+$\frac{\sum_i^n Y_i (1-D_i)}{\sum_i^n (1-D_i)} = \color{blue}{18.33}$
+
+$$
+\hat{\tau}_{DM} = \color{blue}{-3.33}
+$$
+
+---
+We can re-run the randomization, and the potential outcomes and observed $Y_i$ will not change, but the treatment effect estimate will. 
+
+|             | $Y_i(0)$ | $Y_i(1)$  | $D_i$    | $Y_i$ | $\tau_i^0$ |
+|-------------|----------|-----------|----------|-------|------------|
+| Village 1   | .red[15] | 15        | .blue[0] | 15    | .red[0]    |
+| Village 2   | 15       | .red[15]  | .blue[0] | 15    | .red[0]    |
+| Village 3   | 20       | .red[20]  | .blue[1] | 20    | .red[0]    |
+| Village 4   | 20       | .red[20]  | .blue[0] | 20    | .red[0]    |
+| Village 5   | 10       | .red[10]  | .blue[0] | 10    | .red[0]    |
+| Village 6   | 15       | .red[15]  | .blue[0] | 15    | .red[0]    |
+| Village 7   | .red[30] | 30        | .blue[1] | 30    | .red[0]    |
+
+
+
+$\frac{\sum_i^n Y_i D_i}{\sum_i^n D_i} = \color{blue}{25}$
+
+$\frac{\sum_i^n Y_i (1-D_i)}{\sum_i^n (1-D_i)} = \color{blue}{15}$
+
+$$
+\hat{\tau}_{DM} = \color{blue}{10}
+$$
+
+---
+We can re-run the randomization, and the potential outcomes and observed $Y_i$ will not change, but the treatment effect estimate will. 
+
+|             | $Y_i(0)$ | $Y_i(1)$  | $D_i$    | $Y_i$ | $\tau_i^0$ |
+|-------------|----------|-----------|----------|-------|------------|
+| Village 1   | .red[15] | 15        | .blue[0] | 15    | .red[0]    |
+| Village 2   | 15       | .red[15]  | .blue[0] | 15    | .red[0]    |
+| Village 3   | 20       | .red[20]  | .blue[1] | 20    | .red[0]    |
+| Village 4   | 20       | .red[20]  | .blue[1] | 20    | .red[0]    |
+| Village 5   | 10       | .red[10]  | .blue[0] | 10    | .red[0]    |
+| Village 6   | 15       | .red[15]  | .blue[0] | 15    | .red[0]    |
+| Village 7   | .red[30] | 30        | .blue[0] | 30    | .red[0]    |
+
+
+
+$\frac{\sum_i^n Y_i D_i}{\sum_i^n D_i} = \color{blue}{20}$
+
+$\frac{\sum_i^n Y_i (1-D_i)}{\sum_i^n (1-D_i)} = \color{blue}{17}$
+
+$$
+\hat{\tau}_{DM} = \color{blue}{3}
+$$
+
+---
+Because we know how treatment was assigned, we know all the possible ways treatment could be assigned across the villages, and the exact probability. 
+
+--
+
+There are seven villages, and we'll say that exactly two will get treatment. Each village is assigned treatment with equal probability. 
+
+---
+
+We can use the package `ri` to find the *exact* distribution of $\hat\tau_{DM}$ under the sharp null.
+
+--
+
+Our real data:
+
+```{r}
+library(ri)
+
+df <- tibble(
+  # our initial treatment vector
+  D = c(1, 0, 0, 0, 0, 0, 1),
+  # our initial response vector
+  Y = c(15, 15, 20, 20, 10, 15, 30),
+  # treatment assignment probability
+  probs = rep(2/7, 7)
 )
 
-# Expected value
-Ex <- sum(plotdata$x*plotdata$fx)
-
-ggplot(plotdata, aes(x = x, y = fx)) +
-  geom_point() +
-  coord_cartesian(xlim = c(-0.8, 2.8),
-                  ylim = c(0,1)) +
-  geom_segment(aes(x = x, y = c(0,0,0), xend = x, yend = fx)) +  
-  geom_vline(xintercept = 1.5, lty = 'dashed', color = 'skyblue') +
-  annotate(geom="text", x=1.5, y=0.75, label="E[X]") +
-  ggtitle('PMF of X as number of heads in 2 UNfair coin flips')
+df
 ```
 
---
-
-$$
-\begin{align}
-\textrm{E}[X] & = \sum_x x fx \\\\
-& = 0 \times \frac{1}{16} + 1 \times \frac{3}{8} + 2 \times \frac{9}{16}\\\
-& = \frac{24}{16}\\\
-& = 1.5
-\end{align}
-$$
 
 ---
 
-And the spread.  
-
-```{r, fig.width = 5, fig.height=5, fig.align = 'center', echo=FALSE}
-
-ggplot(plotdata, aes(x = x, y = fx)) +
-  geom_point() +
-  coord_cartesian(xlim = c(-0.8, 2.8),
-                  ylim = c(0,1)) +
-  geom_segment(aes(x = x, y = c(0,0,0), xend = x, yend = fx)) +  
-  geom_vline(xintercept = Ex, lty = 'dashed', color = 'skyblue') +
-  annotate(geom="text", x=Ex, y=0.75, label="E[X]", color = 'grey') +
-  geom_segment(aes(x = Ex, xend = Ex+sign(x-Ex)*(x-Ex)^2, y = fx, yend = fx), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_point(aes(x = Ex, y = fx), color = 'skyblue') +
-  annotate(geom="text", x=1.8, y=0.63, label="Squared distance\nfrom mean") +
-  annotate(geom="text", x=(plotdata$x+Ex)/2, y=(plotdata$fx-0.05), label=(plotdata$x-Ex)^2, color = 'skyblue') +
-  ggtitle('PMF of X as number of heads in 2 UNfair coin flips')
-```
-
-Variance = average squared distance from the mean
-$$
-\begin{align}
-\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X)^2]\\\\
-& = 2.25 \times \frac{1}{16} + 0.25 \times \frac{3}{8} + 0.25 \times \frac{9}{16} \\\\
-& = 0.375
-\end{align}
-$$
-
-
----
-And the spread.  
-
-```{r, fig.width = 5, fig.height=5, fig.align = 'center', echo=FALSE}
-
-sdx <- sqrt(sum((plotdata$x-Ex)^2 *plotdata$fx))
-
-ggplot(plotdata, aes(x = x, y = fx)) +
-  geom_point() +
-  coord_cartesian(xlim = c(-0.8, 2.8),
-                  ylim = c(0,1)) +
-  geom_segment(aes(x = x, y = c(0,0,0), xend = x, yend = fx)) +  
-  geom_vline(xintercept = Ex, lty = 'dashed', color = 'skyblue') +
-  annotate(geom="text", x=Ex, y=0.75, label="E[X]", color = 'grey') +
-  geom_segment(aes(x = Ex, xend = Ex-sdx, y = 0.5, yend = 0.5), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_point(aes(x = Ex, y = fx), color = 'skyblue') +
-  geom_segment(aes(x = Ex, xend = Ex+sdx, y = 0.5, yend = 0.5), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_point(aes(x = Ex, y = fx), color = 'skyblue') +
-  annotate(geom="text", x=1.8, y=0.63, label="Square root of average\nsquared distance\nfrom mean") +
-  annotate(geom="text", x=(Ex+c(-1.05,1.05)*round(sdx, 3)/2), y=0.45, 
-           label=round(sdx, 3), color = 'skyblue') +
-  ggtitle('PMF of X as number of heads in 2 UNfair coin flips')
-```
-
-SD = square root of variance
-$$
-= \sqrt{0.375} = 0.612
-$$
-
----
-
-
-We can check our calculations of the expectation and spread in R. 
-
---
-
-First, we'll want to simulate the random process. 
+And our average treatment effect estimate under the real data:
 
 ```{r}
-n <- 1000
-X <- c(0, 1, 2)
-probs <- c(1/16, 3/8, 9/16)
-x_observed <- sample(X, prob = probs, replace = TRUE, size = n)
+Y1 <- filter(df, D == 1) %>% pull(Y)
+Y0 <- filter(df, D == 0) %>% pull(Y)
 
-head(x_observed)
+(dm_hat <- mean(Y1) - mean(Y0))
 ```
 
---
 
+---
+
+Adding in the hypothetical data
 
 ```{r}
-mean(x_observed)
+
+df <- df %>% 
+  bind_cols(
+    # Y(0) under the sharp null of no effect
+    Y0 = df$Y,
+    # Y(1) under the sharp null of no effect
+    Y1 = df$Y)
+
+df
+```
+
+
+---
+
+Consider all the ways treatment could be assigned:
+
+```{r}
+(perms <- genperms(df$D))
+```
+
+---
+Then generate the sampling distribution of the ATE under the sharp null of no effect. 
+
+```{r}
+
+Ys_null <- list(
+  Y0 = df$Y0,
+  Y1 = df$Y1
+)
+
+dm <- gendist(Ys_null,
+                   perms, 
+                   prob=df$probs)
+dm
+
+null_dist <- tibble(dm)
+
+```
+
+
+---
+
+The mean under our null distribution is exactly zero. Why?
+
+```{r}
+mean(null_dist$dm)
+```
+
+
+---
+
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+gg_bins <- null_dist %>% 
+  group_by(dm) %>% 
+  count() %>% 
+  mutate(col = abs(dm) >= dm_hat)
+
+ggplot(gg_bins, aes(x = dm, y = n)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red')
+
 ```
 
 --
 
 ```{r}
-var(x_observed)
-sd(x_observed)
+prop.table(table(null_dist))
+```
+
+--
+
+```{r}
+(pval <- mean(abs(null_dist) >= dm_hat))
 ```
 
 ---
-
-The process that we just did -- sampling and estimation based on observed data -- is a very common process in empirical research. 
-
---
-
-But we may notice that the mean, variance, and standard deviation are not exactly what we calculated mathematically. 
-
----
-
-Let's try it again. 
-
---
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+ggplot(gg_bins, aes(x = dm, y = n, fill = col)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') + 
+  scale_fill_manual(values=c("grey35", "#619CFF")) +
+  theme(legend.position = 'none')
+```
 
 
 ```{r}
-x_observed <- sample(X, prob = probs, replace = TRUE, size = n)
-
-mean(x_observed)
-var(x_observed)
-sd(x_observed)
+(pval <- mean(abs(null_dist) >= dm_hat))
 ```
 
+--
+
+Under the null distribution, if we were to re-randomize the experiment many times, we would see a value *at least as extreme as our estimate* `r round(pval*100,2)`% of the time. 
+--
+
+That doesn't seem **that** unlikely--more than one in three times, we would see an estimate as large as we got, just by chance. 
+
 ---
 
-The values that we get are close, but not identical. 
+`ri` produces the same exact p-value. 
+
+```{r}
+
+dispdist(distout = dm, 
+         ate = dm_hat, 
+         display.plot = FALSE)$two.tailed.p.value.abs
+```
+
+
+---
+
+## Hypotheses
+
+
+We framed our null hypothesis as below:
+
+$$
+H_0: \tau_i = 0, \text{ for all } i \text{ in our pop.}
+$$
 
 --
 
-This is because what we are observing in practice is a *sample* from the data. 
+Implicitly, the alternative is that for some individual(s), the treatment effect is non-zero. 
 
-
----
-
-# Sampling and statistics
-
-Very often, we only observe a limited number of observations, which are drawn from a larger population. 
+$$
+H_A: \tau_i \neq 0, \text{ for some } i \text{ in our pop.}
+$$
 
 --
 
-We can summarize the data we observe with *statistics*. Statistics are functions of the data we observe.
+In our case, we did not find strong evidence to reject the null hypothesis, i.e., our data is consistent with what we would see if the null hypothesis were true.
+
+--
+
+Note that we do NOT say that we reject or accept the alternative hypothesis. 
+
+--
+
+We can only say that our results were not consistent with or were consistent with what we would have seen under the null--i.e., we have evidence to reject or fail to reject the null. 
+
+
+---
+## Test statistics
+
+Our difference in means estimator is a *statistic*. Statistics are functions of the data we observe.
 --
 
 
@@ -231,874 +438,336 @@ This should look a lot like our definiton of *estimators*. Estimators are a clas
 
 --
 
-Because our sampling process is a random process, these statistics themselves are random variables, with their own distributions. 
+*Test statistics* are the specific statistics we use to test a hypothesis. 
 
 --
 
-We can describe our sample, but we might also like to *make inferences* about the larger population--i.e., to summarize what we know about that population based on the data we observe. 
+Here, our hypothesis was about the *individual treatment effect*. 
 
---
-This is what we use statistics for, and why we talk about probability AND statistics. 
 
---
-
-Probability gives us a model of the world. 
-
---
-Statistics give us a way to relate the data that we see to the model. 
 
 ---
 
-In our two coin flip example, suppose we don't know whether the coin is fair or not. We can observe the results of a large number of coin flips, and make an educated guess about the underlying population value. 
+## Sampling Distributions
+
+Our difference in means estimator is a function of the data we observe. 
 
 --
 
-Formally, that educated guess is called *estimation*. 
+Because there is randomness in the data, here, due to random assignment of treatment, the estimator is also a random variable. 
+
+--
+
+Just like other random variables have distributions to describe them, estimators also have distributions. 
+
+--
+
+We don't know the *true* distribution of the difference in means estimator, for the same reason that we don't know individual treatment effects.
+
+--
+.red[(FPoCI!)]
+
+--
+
+But we DO know what the distribution would be under the null. 
+
 
 ---
 
-## i.i.d. Data
-
-The standard treatment of estimation in statistics is built around the assumption that observations are *independent and identically distributed*. 
+How do we determine what the null is?
 
 --
 
-Formally, if we have $n$ draws, $X_1, \dots, X_n$, these draws are i.i.d. if they are independent from each other, and all have the same CDF. 
-
-$$
-X_1, \dots, X_n \sim F_X
-$$
-
-*Notational aside: $~$ is read as "distributed," and means that the random variable $X$ has the distribution function $F$.*
-
----
-
-In our coin flip example, each time we flip the coin:
-- what we see on this flip has no relation to previous or future flips
-- the distribution of heads on every flip is identical. 
+We formalize our hypotheses in terms of the effect we are trying to find in the data. Is there a treatment effect? Is there a difference between these two groups?
 
 --
 
-Our coin flip random process produces i.i.d. random variables. 
-
----
-
-
-
-## Sample mean
-
-Let's repeat our random sampling from the double coin flip, but we'll consider a smaller sample, of size $n = 100.$
-
-```{r}
-n <- 100
-x_observed <- sample(X, prob = probs, replace = TRUE, size = n)
-
-head(x_observed)
-```
-
---
-
-Our *sample mean* is the mean we observe in our data.
---
-This is one of the most commonly used sample statistics. It's called a plug-in estimator, because we just "plug in" the sample analog of the population quantity that we're interested in. 
-
---
-
-$$\bar{X}_n = \frac{X_{1} + \dots + X_n}{n} = \frac{1}{n} \sum_{i = 1}^n X_i$$
-
-
-
-
-
---
-
-```{r}
-mean(x_observed)
-```
+The null is the case when there is no effect, or no difference. 
 
 
 ---
 
 
-We differentiate the *sample mean* from the *population mean* because the sample mean will vary with every new sample we draw. 
+# Analyzing an experiment
+
+
+Considering some real data, we'll look at
+
+Butler, D. M., & Broockman, D. E. (2011). *Do politicians racially discriminate against constituents? A field experiment on state legislators.* AJPS. 
 
 --
 
-We'll use a `prrr::map` to see what would happen if we took a sample of size $n = 100$ from the population distribution many times. 
-
-```{r}
-
-n_iter <- 10000
-
-x_list <- map(1:n_iter, ~ sample(X, prob = probs, replace = TRUE, 
-                                 size = n))
-
-head(x_list, 2)
-```
-
----
-```{r, message=FALSE}
-
-sample_means <- map(x_list, mean)
-head(sample_means)
-```
+Data is available at the Yale ISPS data archive: [isps.yale.edu/research/data](isps.yale.edu/research/data)
 
 ---
 
 ```{r, message=FALSE}
 
-df_sm <- tibble(sample_means = unlist(sample_means))
-df_sm
-```
-
----
-
-```{r fig.width = 6, fig.height=4, fig.align='center'}
-ggplot(df_sm, aes(x = sample_means)) +
-  geom_histogram(bins = 20, position = 'identity', color = 'white') +
-  geom_vline(xintercept = Ex, color = 'grey', lty = 'dashed')
+file <- '../data/legislators_email/Butler_Broockman_AJPS_2011_public_csv.csv'
+df <- read_csv(file)
 
 ```
 
 
---
-
-We see the sample means are roughly distributed around the mean of the underlying population, `r Ex`. 
-
---
-
-The expected value of the sample mean is the population mean. 
-
-
----
-
-We can check that this is the case. 
-
-
-$$
-\begin{aligned}
-\bar{X}\_n & = \frac{X\_{1} + \dots + X\_n}{n} = \frac{1}{n} \sum\_{i = 1}^n X\_i
-\end{aligned}
-$$
-
---
-
-
-By linearity of expectations $\dots$
-
-$$
-\begin{aligned}
-\textrm{E}[\bar{X}\_n] & = \frac{1}{n} \sum_{i = 1}^n \textrm{E}[X_i]\\
-\end{aligned}
-$$
-
---
-
-$\dots$ because the $X_i$ are i.i.d. $\dots$
-
-$$
-\begin{aligned}
-& = \frac{1}{n} \sum_{i = 1}^n \textrm{E}[X]
-\end{aligned}
-$$
-
---
-
-$$
-\begin{aligned}
-& = \frac{1}{n} n \textrm{E}[X]\\
-\end{aligned}
-$$
-
---
-
-$$
-\begin{aligned}
-& = \textrm{E}[X]
-\end{aligned}
-$$
-
-
---
-
-*Refer to Aronow & Miller p.97 for more extended version of proof*. 
-
----
-class: small-output 
-
-## Sample variance
-
-We can estimate the mean of the population using the sample mean. What about the sample variance? 
-
---
-
-We'll do the same process with our simulations.
-
---
-
-```{r fig.width = 6, fig.height=4, fig.align='center'}
-sample_var <- map(x_list, var)
-df_sv <- tibble(sample_var = unlist(sample_var))
-
-ggplot(df_sv, aes(x = sample_var)) +
-  geom_histogram(bins = 20, position = 'identity', color = 'white') +
-  geom_vline(xintercept = sdx^2, color = 'grey', lty = 'dashed')
+```{r, echo = FALSE}
+df
 ```
 
-
---
-
-We see the sample variances are roughly distributed around the variance of the underlying population, `r sdx^2`. 
-
 ---
 
-
-The formula for the unbiased sample variance is: 
-
-$$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
---
-
-This looks a little bit different from a straightforward sample analog to the population variance formula, 
-
-$$
-\textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X]^2]
-$$
---
-
-Why do we divide by $n-1$, instead of $n$?
-
----
-
-$$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
-
-The sample mean, $\bar{X}_n$, has an expected value of $\textrm{E}[X]$.
-
---
-
-However, because it is made up of the $1, \dots, n$ $X_i$ that we actually observe, the expected difference between $(X_i - \bar{X}_n)$ is a little bit smaller than the expected difference between $(X_i - \textrm{E}[X])$. 
-
-
---
-
-To account for this, we divide by $n-1$, instead of $n$. 
-
----
-class: tiny
-
-## 
-
-We can check that the expected value of the unbiased sample variance estimator is the population variance. 
---
-The estimator:
-
---
-
-$$
-\begin{aligned}
-S^2\_n = \frac{1}{n-1}\sum\_{i = 1}^n (X\_i - \bar{X}\_n)^2
-\end{aligned}
-$$
-
-
---
-Take the expectation:
-
-$$
-\begin{aligned}
-\textrm{E}[S^2\_n] & = \textrm{E}\left[\frac{1}{n-1}\sum\_{i = 1}^n (X\_i - \bar{X}\_n)^2\right]
-\end{aligned}
-$$
-
-
---
-By linearity of expectations:
-
-$$
-\begin{aligned}
- & = \frac{1}{n-1}\sum\_{i = 1}^n \textrm{E}\left[(X\_i - \bar{X}\_n)^2\right]
-\end{aligned}
-$$
-
-
---
-
-
-$$
-\begin{aligned}
-& = \frac{1}{n-1}\sum\_{i= 1}^n \textrm{E}\left[X\_i^2 -2 X\_i\bar{X}\_n + \bar{X}\_n^2\right]
-\end{aligned}
-$$
-
----
-
-<!-- -- -->
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -2\textrm{E}[ X\_i\frac{1}{n}\sum\_{j = 1}^n X\_j] + \textrm{E}\left[ \left(\frac{1}{n}\sum\_{j = 1}^n X_j \right) ^2\right]\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- --- -->
-
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \textrm{E}\left[\sum\_{j \neq i} X\_i X\_j\right]\right) + \textrm{E}\left[ \left(\frac{1}{n}\sum\_{j = 1}^n X_j \right) ^2\right]\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- -- -->
-
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!--  & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \sum\_{j \neq i} \textrm{E}\left[ X\_i X\_j\right]\right) + \frac{1}{n^2} \textrm{E}\left[\sum\_{j = 1}^nX\_j^2 + \sum\_{j = 1}^n \sum\_{k \neq j}^nX\_j X\_k  \right]\right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
-<!-- --- -->
-
-Expand expressions, and use linearity of expectations again. 
-
-$$
-\begin{aligned}
- & = \frac{1}{n-1}\sum\_{i= 1}^n \left( \textrm{E}[X\_i^2] -\frac{2}{n}\left(\textrm{E}[X\_i^2] +  \sum\_{j \neq i} \textrm{E}\left[ X\_i X\_j\right]\right) + \\\\
- \frac{1}{n^2} \left( \sum\_{j = 1}^n\textrm{E}[X\_j^2] + \sum\_{j = 1}^n \sum\_{k \neq j}^n \textrm{E}[ X\_j X\_k]  \right)\right)
-\end{aligned}
-$$
-
---
-
-Because our data is i.i.d.:
-
-$$
-\begin{aligned}
- & = \frac{n}{n-1} \left( \textrm{E}[X^2] -\frac{2}{n}\left(\textrm{E}[X^2] +  (n-1) \textrm{E}[ X]^2\right) + \frac{1}{n^2} \left(n\textrm{E}[X^2] + n(n-1) \textrm{E}[ X]^2 \right) \right)
-\end{aligned}
-$$
-
-<!-- -- -->
-
-
-
-<!-- $$ -->
-<!-- \begin{aligned} -->
-<!--  & = \frac{n}{n-1} \left( \frac{n - 2 + 1}{n} \textrm{E}[X^2] + \frac{-2(n-1) + (n-1)}{n} \textrm{E}[ X]^2 \right) -->
-<!-- \end{aligned} -->
-<!-- $$ -->
-
---
-
-Organizing terms:
-
-$$
-\begin{aligned}
- & = \frac{n}{n-1} \left( \frac{n - 1}{n} \textrm{E}[X^2] - \frac{n-1 }{n} \textrm{E}[ X]^2 \right)
-\end{aligned}
-$$
-
---
-
-And simplifying: 
-
-$$
-\begin{aligned}
- & = \textrm{E}[X^2] - \textrm{E}[ X]^2 
-\end{aligned}
-$$
-
----
-
-We can check to see how R calculates in the `var()` function. 
-
---
+Recall that treatment is 1 if the sender was DeShawn Jackson, and 0 if Jake Mueller. 
 
 ```{r}
-head(x_observed)
+table(df$treat_deshawn)
+```
+
+--
+
+The primary outcome is whether legislators replied at all. 
+
+```{r}
+table(df$reply_atall)
+```
+
+---
+
+We're going to manipulate our data so it takes the format $Y$ ~ $D$. 
+
+
+```{r}
+df <- df %>% 
+  mutate(D = treat_deshawn,
+         Y = reply_atall)
+```
+
+--
+
+To get the difference-in-means estimate of the ATE, 
+
+```{r}
+Y1 <- filter(df, D == 1) %>% pull(Y)
+Y0 <- filter(df, D == 0) %>% pull(Y)
 ```
 
 --
 
 ```{r}
-var(x_observed)
+(dm_hat <- mean(Y1) - mean(Y0))
 ```
+
+
+Legislators were 1.7 percentage points less likely to reply to an email if the sender was identified as DeShawn Jackson as compared to Jake Mueller. 
+
+---
+
+Note that again, the population that we're taking inference over is legislators--all of whom are included in our experiment. We're not assuming we're sampling from some other distribution. The only source of randomness is how treatment is assigned. 
+
+---
+
+There are ${4859 \choose 2428}$ different ways treatment could be assigned--this is too many to generate the whole matrix of permutations and get the *exact* sampling distribution. 
+
+Instead, we'll simulate the sampling process many times to find the *approximate* sampling distribution of $\hat\tau_{DM}$ under the sharp null.
 
 --
 
 ```{r}
+# randomization inference function
+my_ri <- function(df){
+  ri_out <- df %>%
+    mutate(newD = sample(D)) %>%
+    group_by(newD) %>%
+    summarize(mean = mean(Y)) %>%
+    pivot_wider(names_from = newD, values_from = mean) %>%
+    mutate(diff = `1` - `0`) %>%
+    pull(diff)
 
-mean( (x_observed - mean(x_observed) )^2)*n/(n-1)
-
+  return(ri_out)
+}
 ```
-
---
-
-R uses the formula for the unbiased sample variance. 
-
-
-
-
-
-
 
 ---
 
-The sample mean is itself a random variable, and so it has its own mean and variance. The mean of the sample mean is the population mean. The variance of the sample mean is:
+We can do this many times to find the distribution of $\hat\tau_{DM}$ under the sharp null.
 
-$$
-\textrm{Var}[\bar{X}] = \frac{\textrm{Var}[X]}{n}
-$$
-
-
---
-
-Let's check this in our simulation as well. We saw that mathematically, $\textrm{Var}[X]$ was 0.375. So
-$$
-\frac{\textrm{Var}[X]}{n} = \frac{0.375}{100} = 0.00375
-$$
-
---
 
 ```{r}
-var(unlist(sample_means))
-```
-
---
-
-It's not exactly what we calculated mathematically. 
-
----
-
-In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate sample means. From the variation in these sample means, we again *estimate* the variance of the sample mean. 
-
---
-
-But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take our `r n_iter` separate samples. 
-
----
-# Weak Law of Large Numbers
-
-
-
-As our sample size $n$ grows, we are increasingly likely to observe a sample mean $\bar X_n$ that is close to the mean of the distribution, $\textrm{E}[X]$.
-
---
-
-Formally, 
-
-If $X_1, \dots, X_n$ are i.i.d. random variables,  then 
-
-$$
-\bar{X}_n \overset{p}{\to} \textrm{E}[X].
-$$
-
---
-Convergence in probability here means that the probability that we measure a value of $\bar X_n$ that is any arbitrary distance away from $\textrm{E}[X]$ is decreasing with our sample size. 
-
-
-
----
-class: small-output
-
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE,}
-n <- 500
-x_list <- map(1:8, ~ sample(X, prob = probs, replace = TRUE, 
-                                 size = n))
-
-x_mat <- as_tibble(x_list, .name_repair = 'unique')
-
-new_mat <- x_mat %>% 
-  mutate(across(everything(), ~ cumsum(.x)/seq_along(.x)),
-         n = 1:n) %>% 
-  pivot_longer(cols = starts_with('..'),
-               values_to = "Sample mean")
-
-```
-
----
-
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
-
-ggplot(new_mat %>% filter(n < 26), aes(x = n, y = `Sample mean`, col = name)) +
-  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
-  geom_line() +
-  theme(legend.position = 'none') +
-  coord_cartesian(xlim = c(0, 500))
-
-```
-
----
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
-
-ggplot(new_mat %>% filter(n < 51), aes(x = n, y = `Sample mean`, col = name)) +
-  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
-  geom_line() +
-  theme(legend.position = 'none') +
-  coord_cartesian(xlim = c(0, 500))
-
-```
-
----
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
-
-ggplot(new_mat %>% filter(n < 101), aes(x = n, y = `Sample mean`, col = name)) +
-  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
-  geom_line() +
-  theme(legend.position = 'none') +
-  coord_cartesian(xlim = c(0, 500))
-
-```
-
----
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
-
-ggplot(new_mat %>% filter(n < 201), aes(x = n, y = `Sample mean`, col = name)) +
-  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
-  geom_line() +
-  theme(legend.position = 'none') +
-  coord_cartesian(xlim = c(0, 500))
-
-```
-
----
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
-
-ggplot(new_mat %>% filter(n < 351), aes(x = n, y = `Sample mean`, col = name)) +
-  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
-  geom_line() +
-  theme(legend.position = 'none') +
-  coord_cartesian(xlim = c(0, 500))
-
-```
-
----
-
-## 
-
-To see the WLLN in action, we'll try simulating our coinflip process, but with an increasing number of samples used to calculate the sample mean. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', message=FALSE, echo = FALSE}
-
-ggplot(new_mat %>% filter(n < 501), aes(x = n, y = `Sample mean`, col = name)) +
-  geom_hline(yintercept = Ex, color = 'darkgrey', lty = 'dashed') +
-  geom_line() +
-  theme(legend.position = 'none') +
-  coord_cartesian(xlim = c(0, 500))
-
-```
-
----
-
-Why is the WLLN so helpful to us?
-
---
-
-Given a sufficient sample from a population, we can estimate features of a random variable to arbitary precision
-
-<!-- --- -->
-<!-- ## Chebyshev? -->
-
-
----
-# Central Limit Theorem
-
-We can approximate probability statements about the sample mean, $\bar{X}_n$ using the Normal distribution. 
-
---
-
-Formally, 
-
-If $X_1, \dots, X_n$ are i.i.d. random variables with mean $\textrm{E}[X]$ and variance $\textrm{Var}[X]$,  then 
-
-$$
-Z_n \equiv  \frac{\bar{X}_n - \textrm{E}[X]}{\sqrt{\textrm{Var}[\bar{X}_n]}}  \overset{d}{\rightarrow} \mathcal{N}(0,1)
-$$
-where $\mathcal{N}(0,1)$ indicates the Standard Normal Distribution with mean 0 and variance 1. 
-
-
----
-class: tiny
-
-## Normal distribution
-
-The Normal distribution is frequently used in probability and statistics, because it is a useful approximation to many natural phenomena. 
-
-$$
-f(x) = \frac{1}{\sqrt{\sigma 2 \pi}}\textrm{exp}\left( -\frac{(x-\mu)^2}{2\sigma^2}\right) 
-$$
-
-It is defined by two parameters, $\mu$, the center of the distribution, and $\sigma$, which defines the distribution's standard deviation, or spread. The distribution is often notated $\mathcal{N}(\mu, \sigma^2)$.
-
-
----
-
-It has a bell curve shape, with more density around the middle, and less density at more extreme values. 
-
-
-```{r, fig.width = 6, fig.height=4, fig.align = 'center', echo=FALSE}
-result_n <- rnorm(n = 10000)
-plotdata <- tibble(
-  x = result_n,
-  Fx = pnorm(result_n),
-  fx = dnorm(result_n)
+reps <- 1000
+
+null_dist <- tibble(
+  dm = replicate(n = reps,
+                 my_ri(df))
 )
 
-ggplot(plotdata, aes(x = x, y = fx)) +
-  geom_line() +
-  coord_cartesian(xlim = c(-2.5, 2.5),
-                  ylim = c(0,0.5)) +
-  geom_vline(xintercept = 0, lty = 'dashed', color = 'skyblue') +
-  geom_segment(aes(x = 0, xend = -1, y = 0.2, yend = 0.2), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_segment(aes(x = 0, xend = 1, y = 0.2, yend = 0.2), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_point(aes(x = 0, y = 0.2), color = 'skyblue') + 
-  annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'skyblue') + 
-  annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'skyblue') + 
-  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'skyblue') +
-  ggtitle('PDF of Standard Normal Distribution')
-```
-
-
----
-
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-n <- 1000
-x_list <- map(1:10000, ~ sample(X, prob = probs, replace = TRUE, 
-                                 size = n))
-
-x_mat <- as_tibble(x_list, .name_repair = 'unique')
-
-new_mat <- x_mat %>% 
-  mutate(across(everything(), ~ (cumsum(.x)/seq_along(.x)-Ex)/(sqrt(0.375/row_number()) )) ,
-         n = 1:n)# %>% 
-  # pivot_longer(cols = starts_with('..'),
-  #              values_to = "Sample mean")
-
-
-x10 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:10]) )  
-x50 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:50]) )  
-x100 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:100]) )
-x200 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:200]) )
-x500 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:500]) )
-x1000 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:1000]) )
-x5000 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:5000]) )
-x10000 <- tibble('Standardized sample mean' = unlist(new_mat[100,1:10000]) )
-
-ggplot(x10, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('10 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
+null_dist
 ```
 
 ---
 
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+gg_bins <- null_dist %>% 
+  count(bins = cut(dm, breaks = 50)) %>% 
+  mutate(bin_min = as.numeric(gsub(".?(-?[0-9]+[.]+[0-9]+).*", "\\1", bins)),
+         bin_max = as.numeric(gsub(".*,(-?[0-9]+[.]+[0-9]+)]$", "\\1", bins)),
+         bin_mid = (bin_max - bin_min)/2 + bin_min,
+         col = abs(bin_min) >= abs(dm_hat)) 
 
 
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x50, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('50 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
+ggplot(gg_bins, aes(x = bin_mid, y = n)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red')
 ```
-
----
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x100, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('100 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
-```
-
----
-
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x200, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('200 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
-```
-
----
-
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x500, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('500 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
-```
-
----
-
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x1000, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('1000 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
-```
-
----
-
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x5000, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('5000 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
-```
-
----
-
-To see the CLT in action, we'll try simulating our coinflip process many times. We'll keep the individual sample size fixed at $n=$ 100. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-ggplot(x10000, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02) + 
-  ggtitle('10000 samples') +
-  coord_cartesian(xlim = c(-2.5, 2.5), ylim = c(0, 800))
-
-```
-
----
-
-We can rescale the y axis to get relative frequency of sample means, and overlay the normal PDF. 
-
-
-```{r,fig.width = 5, fig.height=5, fig.align = 'center', echo = FALSE, message=FALSE }
-
-
-ggplot(x10000, aes(x = `Standardized sample mean`)) +
-  geom_histogram(binwidth = .02, aes(y = ..count../1500)) + 
-  ggtitle('10000 samples') +
-  ylab('Relative frequency') +
-  coord_cartesian(xlim = c(-2.5, 2.5)) +
-  stat_function(fun=dnorm,
-                         color="red",
-                         args=list(mean=0,
-                                  sd=1))
-
-```
-
----
-# Beyond i.i.d.
-
-- In practice, beyond simple processes like coin flips and dice, it's hard to defend the claim that our data is *literally* i.i.d.
 
 --
 
-- The i.i.d. assumption is an approximation that gives us leverage to make statistical claims. Basically, we'd like to think that our data is close-enough to i.i.d. 
 
----
-# Finite population random sampling
 
-Suppose we are sampling from some finite population of units; say, students in a classroom, and we will measure ages. Suppose there are 5 students, with ages 7, 7, 7, 8, 8, and 9. We'll consider a random variable $X$, which is just one draw from the class. 
-
---
-
-We can identify the target mean and variance from our small population. 
-
---
-
-- $X = \{7,8,9\}$
-- $\textrm{E}[X] = 7 \frac 2 3$
-- $\textrm{E}[X] = \textrm{E}[X^2]- \textrm{E}[X]^2 = \frac 5 9$
-
---
-
-We can randomly sample from the class *with replacement*, i.e., after each draw, we can resample from all students in the class again: each draw is independent and identically distributed.
-
---
-
-If we randomly sample *without replacement*, draws are not independent--if I draw the student who is age 9 on my first draw, I can't get another age 9 draw again, and I'll run out after 5 draws. 
-
+```{r}
+(pval <- mean(abs(null_dist) >= abs(dm_hat)))
+```
 
 ---
 
-In practice most of our sampling in the social sciences is finite population random sampling *without* replacement. 
+
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') + 
+  scale_fill_manual(values=c("grey35", "#619CFF")) +
+  theme(legend.position = 'none')
+
+```
+
+
+
+```{r}
+(pval <- mean(abs(null_dist) >= abs(dm_hat)))
+```
+
+---
+
+The types of hypotheses we've considered are two-sided hypotheses: we look at effects in either direction from zero. 
 
 --
 
-But if the sample is sufficiently large, removing a few units doesn't affect the distribution for remaining draws in a meaningful way. 
+$$
+H_0: \tau_i = 0, \text{ for all } i \text{ in our pop.}
+$$
+
+
+$$
+H_A: \tau_i \neq 0, \text{ for some } i \text{ in our pop.}
+$$
+
+---
+
+We can also consider other alternative hypotheses. For example, the hypothesis that treatment effects are less than zero. This is called a one-sided hypothesis. 
+
 
 --
 
-Suppose I am sampling from *all* third graders in the US. We can define the mean and variance for this population; suppose there are 1.2 million third graders age 7, 1 million third graders 8, and 1.4 million third graders age 9. The mean in this population is 8.056 and variance is 0.809. 
+$$
+H_0: \tau_i = 0, \text{ for all } i \text{ in our pop.}
+$$
+
+
+$$
+H_A: \tau_i < 0, \text{ for some } i \text{ in our pop.}
+$$
+
+---
+The alternative hypothesis that we consider is a consequence of the social science theory we're trying to test. 
 
 --
 
-After I sample a few third graders, the mean and variance for the remaining students is still approximately the same. 
+Here, we want to see if legislators are *less likely* to respond to a constituent named DeShawn Jackson, as compared to Jake Mueller. 
 
 --
 
-When we're dealing with sampling from finite populations, we often make the assumption that we're sampling from a hypothetical, infinite *superpopulation* that is so large that there is no effect of sampling without replacement. 
+When we test a one-sided hypothesis, we want to check how likely we would be to observe statistics at least as large as the test statistic that we actually observe, in the direction of our hypothesis. 
 
-<!-- --- -->
+---
 
-<!-- # De moivre la place theorem -->
 
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+gg_bins <- gg_bins %>% 
+  mutate(col2 = bin_min <= dm_hat)
+
+ggplot(gg_bins, aes(x = bin_mid, y = n)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') 
+
+```
+
+
+
+```{r}
+(pval <- mean(null_dist <= dm_hat))
+
+
+```
+
+
+---
+
+
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+gg_bins <- gg_bins %>% 
+  mutate(col2 = bin_mid <= dm_hat)
+
+ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col2)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') + 
+  scale_fill_manual(values=c("grey35", "#619CFF")) +
+  theme(legend.position = 'none')
+
+```
+
+
+
+```{r}
+(pval <- mean(null_dist <= dm_hat))
+
+
+```
+
+---
+class: tiny
+
+## P-values
+
+Suppose $\hat{\theta}$ is the general form for an estimate produced by our estimator, and $\hat{\theta}^*$ is the value we have actually observed. 
+
+--
+
+- A lower one-tailed p-value under the null hypothesis is 
+
+$$
+p = \textrm{P}\_0[\hat{\theta} \le \hat{\theta}^*]
+$$
+
+i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is less than or equal to what we saw from the data. 
+
+--
+
+- An upper one-tailed p-value under the null hypothesis is 
+
+$$
+p = \textrm{P}\_0[\hat{\theta} \ge \hat{\theta}^*]
+$$
+
+i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is greater than or equal to what we saw from the data. 
+
+
+--
+- A two-tailed p-value under the null hypothesis is 
+
+$$
+p = \textrm{P}\_0[|\hat{\theta}| \ge |\hat{\theta}^*|]
+$$
+
+i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ as or more extreme as what we saw from the data. 
 

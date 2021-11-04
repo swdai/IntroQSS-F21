@@ -53,7 +53,7 @@ set.seed(60637)
   - We use this in addition to the sample space, so we can describe all types of events that we can define the probability for. 
   
 - $\textrm{P}$ : Probability measure. A function that assigns probability to all of the events in the event space. 
-  - Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}(A) = 1/2$. 
+  - Here, since our coin is fair, for the event that we get a head on the first flip, $\textrm{P}[A] = 1/2$. 
 
 
 ---
@@ -76,7 +76,7 @@ For example, with our two coin flips, let $X(\omega)$ be the number of heads in 
 Then the random variable, and its probability distribution, can be described as:
 
 
-|     $\omega$ | $\textrm{P}(\{\omega\})$ | $X(\omega)$ |
+|     $\omega$ | $\textrm{P}[\{\omega\}]$ | $X(\omega)$ |
 |-------------:|----------------:|------------:|
 | TT           | 1/4             | 0           |
 | TH           | 1/4             | 1           |
@@ -85,7 +85,7 @@ Then the random variable, and its probability distribution, can be described as:
 
 and,
 
-| $x$   | $\textrm{P}(X = x)$
+| $x$   | $\textrm{P}[X = x]$
 |----:|------------:|
 | 0   | 1/4         |
 | 1   | 1/2         |
@@ -152,7 +152,7 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 --
 
 $$
-f(x) = \textrm{P}(X = x)
+f(x) = \textrm{P}[X = x]
 $$
 
 --
@@ -201,7 +201,7 @@ Note that the probabilities sum to 1. This is one of the foundational axioms of 
 --
 
 $$
-F(x) = \textrm{P}(X \le x)
+F(x) = \textrm{P}[X \le x]
 $$
 
 --
@@ -272,7 +272,7 @@ Just like with univariate random variables, we can describe these bivariate rela
 ## Joint PMF of discrete random variables
 
 $$
-f(x,y) = \textrm{P}(X=x, Y=y)
+f(x,y) = \textrm{P}[X=x, Y=y]
 $$
 
 ---
@@ -286,7 +286,7 @@ Returning to our example of flipping two fair coins
 Then the joint probability distribution can be described as:
 
 
-|     $\omega$ | $\textrm{P}(\{\omega\})$ | $X(\omega)$ |  $Y(\omega)$ |
+|     $\omega$ | $\textrm{P}[\{\omega\}]$ | $X(\omega)$ |  $Y(\omega)$ |
 |-------------:|----------------:|------------:|-------------:|
 | TT           | 1/4             | 0           | 0            |
 | TH           | 1/4             | 1           | 0            |
@@ -345,7 +345,7 @@ These are the *marginal* distributions of $X$ and $Y$, i.e., their distributions
 ## Marginal distributions
 
 $$
-f\_X(x) = \textrm{P}(X = x)=\sum\_y \textrm{P}(X=x, Y=y) = \sum\_yf\_{X, Y}(x,y)
+f\_X(x) = \textrm{P}[X = x]=\sum\_y \textrm{P}[X=x, Y=y] = \sum\_yf\_{X, Y}(x,y)
 $$
 
 --
@@ -398,7 +398,7 @@ Plotting $X$ and $Y$ jointly gives us a better understanding of their joint rela
 We are also often interested in conditional relationships. 
 
 $$
-f\_{Y|X}(y|x) = \textrm{P}(Y = y | X = x) = \frac{\textrm{P}(X=x, Y=y)}{\textrm{P}(X=x)}  = \frac{f\_{X,Y}(x,y)}{f\_X(x)} 
+f\_{Y|X}(y|x) = \textrm{P}[Y = y | X = x] = \frac{\textrm{P}[X=x, Y=y]}{\textrm{P}[X=x]}  = \frac{f\_{X,Y}(x,y)}{f\_X(x)} 
 $$
 
 
@@ -840,7 +840,7 @@ class: small-output
 ## Presidential Daily Briefing
 
 ```{r carson, message = FALSE}
-file <- "../data/carsonPDB.csv"
+file <- "https://raw.githubusercontent.com/UChicago-pol-methods/IntroQSS-F21/main/data/carsonPDB.csv"
 df_pdb <- read_csv(file)
 
 df_pdb
@@ -963,7 +963,7 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 
 
 
-- Discrete random variables have non-zero mass on specific points, but for continuous random variables, $\textrm{P}(X = x) = 0$. Instead of mass, we refer to *density* for continuous variables. [1]
+- Discrete random variables have non-zero mass on specific points, but for continuous random variables, $\textrm{P}[X = x] = 0$. Instead of mass, we refer to *density* for continuous variables. [1]
 
 
 
@@ -972,7 +972,7 @@ ggplot(tibble(result_n), aes(x = result_n)) +
 - The *probability density function* $f(x)$ for a continuous random variable gives the slope of the CDF at any given point. This means that we can integrate the area under the PDF to get the relative probability of being between two points. 
 
 $$
-\textrm{P}(a < X < b) = \int_a^b f(x)dx
+\textrm{P}[a < X < b] = \int_a^b f(x)dx
 $$
 
 ---
@@ -1082,7 +1082,7 @@ ggplot(plotdata, aes(x = x, y = fx)) +
 - If we want to get the probability $X$ is between 0 and 0.75, 
 
 $$
-\textrm{P}(0 \le x \le .75) = \int_0^.75 f(x)dx
+\textrm{P}[0 \le x \le .75] = \int_0^.75 f(x)dx
 $$
 --
 we take the area under the density curve between 0 and 0.75 -- which is also 0.75. (Notice that we don't need to use calculus here.) 
