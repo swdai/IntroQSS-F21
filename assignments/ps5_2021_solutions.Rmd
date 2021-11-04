@@ -1,0 +1,141 @@
+---
+title: "Problem set 5"
+author: "Your name here"
+date: "Due 10/29/2021 at 5pm"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+*\textsc{Note1}: Start with the file `ps5_2021.Rmd` (available from the github repository at https://github.com/UChicago-pol-methods/IntroQSS-F21/tree/main/assignments). Modify that file to include your answers. Make sure you can "knit" the file (e.g. in RStudio by clicking on the `Knit` button). Submit both the Rmd file and the knitted PDF via Canvas*
+
+
+In this assignment we will examine data from an experiment that measured the effect of different messages on Michigan residents' likelihood of voting in the August 2006 primary election. The published paper is 
+
+Gerber, Alan S., Donald P. Green, and Christopher W. Larimer. 2008. "Social Pressure and Voter Turnout: Evidence from a Large-Scale Experiment." *American Political Science Review* 102(1): 33-48.
+
+The data file is `ggl.RData` and it is found in the `data` directory of the course github repository.
+
+To load the data (you may need to change the path after you save a copy of the dataset locally): 
+
+```{r load-data}
+load("./../data/ggl.RData")
+```
+
+The dataset will be loaded as an object called `ggl`.
+
+The variables in the dataset are as follows: 
+
+- ```sex```: male or female
+- ```yob```: year of birth
+- ```g2000```, ```g2002```, ```g2004```:  did this voter vote in the general elections in November of 2000, 2002, 2004? (binary)
+- ```p2000```, ```p2002```, ```p2004```:  did this voter vote in the primary elections of August 2000, 2002, 2004? (binary)
+- ```treatment```:  which of the five treatment did this voter's household receive?
+    + "Control": No mailing
+    + "CivicDuty": A mailing encouraging voting
+    + "Hawthorne": A mailing encouraging voting and saying that the sender will `be studying voter turnout in the August 8 primary election'
+    + "Self": A mailing encouraging voting and showing the recipients' past turnout,  saying `We intend to mail you an updated chart when we have that information'
+    + "Neighbors": Same thing, except including information on turnout by neighbors as well
+- ```cluster```: in what cluster of households was this voter's house located?
+- ```voted```: did the voter vote in the primary election of 2006?
+- ```hh_id```: what is the id number of this voter's household?
+- ```hh_size```: how many voters are in this household? 
+
+1) Use grouped summaries (`group_by()` and `summarize()`) to compute the proportion of subjects who voted in the 2002 primary election by year of birth. Make a plot showing the proportion voting (vertical axis) and year of birth (horizontal axis).
+
+```{r}
+ggl %>% 
+  group_by(yob) %>% 
+  summarize(turnout_share = mean(p2002, na.rm = T)) %>% 
+  ggplot(aes(x = yob, y = turnout_share)) + 
+  geom_point()
+```
+
+2) Run a regression with voting in the 2002 primary as the dependent variable and year of birth as the independent variable. Provide the `R` output showing the intercept and slope coefficients. Explain what the slope coefficient means.
+
+```{r}
+lm(p2002 ~ yob, data = ggl)
+```
+
+*The slope coefficient says that the predicted proportion of people who vote (or predicted probability of voting) decreases by .004787 with every increase in the person's year of birth. Put differently, with each additional year of age, the predicted probability of voting increases by about half a percentage point.* 
+
+3) Use `geom_smooth()` to show the regression line from the same regression.
+
+```{r}
+ggl %>% 
+  ggplot(aes(x = yob, y = p2002)) + 
+  geom_smooth(method = lm, se = F)
+```
+
+
+4) Using either syntax option shown in lecture (`poly()` or `I()`), run the same regression but now include a 4th-degree polynomial of `yob`. Show the coefficients from the output of `lm()`. Also, show the new regression line using `geom_smooth()` (specify `se = F`).
+
+```{r}
+lm(p2002 ~ yob + I(yob^2) + I(yob^3) + I(yob^4), data = ggl)
+lm(p2002 ~ poly(yob, 4), data = ggl)
+ggl %>% 
+  ggplot(aes(x = yob, y = p2002)) + 
+  geom_smooth(method = lm, formula = y ~ poly(x, 4), se = F)
+
+# equivalent:
+#ggl %>% 
+#  ggplot(aes(x = yob, y = p2002)) + 
+#  geom_smooth(method = lm, formula = y ~ x + I(x^2) + I(x^3) + I(x^4), se = F)
+
+```
+
+5) Regress an `p2002` on `sex`. Interpret the coefficients. What proportion of women in the sample voted in the 2002 primary? 
+
+```{r}
+lm(p2002 ~ sex, data = ggl) %>% summary()
+```
+
+*The proportion of women who voted in the 2002 primary is about .382.*  
+
+6) Regress `voted` on `sex`, `p2004`, and their interaction. Interpret the coefficient on `p2004`. Among men who voted in the 2004 primary, what is the proportion who voted in the 2006 primary? Show how to get that number from the regression coefficients.  
+
+```{r}
+lm(voted ~ sex*p2004, data = ggl) %>% summary()
+```
+
+*The proportion of men voting in the 2006 primary, given that they voted in the 2004 primary, is the sum of all four coefficients:* 
+
+```{r}
+sum(coef(lm(voted ~ sex * p2004, data = ggl)))
+```
+
+7) Regress `p2004` on `treatment`. Show the `R` output. What does the coefficient on `treatmentCivicDuty` mean?   
+
+```{r}
+lm(p2004 ~ treatment, data = ggl)
+```
+
+*The coefficient on `treatmentCivicDuty` tells us the difference in the proportion (or probability of) voting in the 2004 primary between people who in the "Civic Duty" treatment group and people in the control group. It should be small given that these groups are randomly determined and the 2004 primary happened before the treatment.* 
+
+8) Now regress `p2004` on `treatment` without an intercept (hint: add `-1` to the regression formula). Show the `R` output. Now what does the coefficient on `treatmentCivicDuty` mean?   
+
+```{r}
+lm(p2004 ~ treatment - 1, data = ggl)
+```
+
+*The coefficient now means the proportion of people in the Civic Duty treatment group who voted in the 2004 primary.* 
+
+9) Regress `voted` on `treatment`. What does the coefficient on `treatmentCivicDuty` mean?
+
+```{r}
+lm(voted ~ treatment, data = ggl)
+```
+
+*This is the difference in the proportion (probability of) voting in 2006 between the Civic Duty group and the control group. Because this is an experiment, this is an unbiased estimate of the effect of the Civic Duty treatment compared to control: this treatment increased the probability of voting by about .018.*  
+
+10) Add a fourth-degree polynomial of `yob` to the regression. Do
+any of the coefficients from the previous regression change much?
+
+```{r}
+lm(voted ~ treatment + poly(yob, 4), data = ggl)
+```
+
+*No, and this shouldn't be surprising because the treatment should be uncorrelated with age. The omitted variable bias formula (discussed in week 6) will give a more technical perspective on this.*
