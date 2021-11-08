@@ -1,25 +1,25 @@
 ---
-  title: "Problem set 7"
+title: "Problem set 7"
 author: "Your name here"
 date: "Due 11/12/2021 at 5pm"
 output: pdf_document
 ---
-  
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(estimatr)
 ```
 
-*\textsc{Note}: Start with the file `ps7_2021.Rmd` (available from the github repository at https://github.com/UChicago-pol-methods/IntroQSS-F21/tree/main/assignments). Modify that file to include your answers. Make sure you can "knit" the file (e.g. in RStudio by clicking on the `Knit` button). Submit both the Rmd file and the knitted PDF via Canvas*
+*\textsc{Note}: Start with the file `ps7_2021.Rmd` (available from the github repository at https://github.com/UChicago-pol-methods/IntroQSS-F21/tree/main/assignments). Modify that file to include your answers. Make sure you can "knit" the file (e.g. in RStudio by clicking on the `Knit` button). Submit both the Rmd file and the knitted PDF via Canvas.*
 
-In this assignment we will examine data from an experiment that measured the effect of different messages on Michigan residents' likelihood of voting in the August 2006 primary election. The published paper is 
+In this assignment we will return to data from an experiment that measured the effect of different messages on Michigan residents' likelihood of voting in the August 2006 primary election. The published paper is: 
 
 Gerber, Alan S., Donald P. Green, and Christopher W. Larimer. 2008. "Social Pressure and Voter Turnout: Evidence from a Large-Scale Experiment." *American Political Science Review* 102(1): 33-48.
 
 The data file is `ggl.RData` and it is found in the `data` directory of the course github repository.
 
-To load the data you can either read in the same local file as you did in problem set 5, or you can read in the url from github. Note that this will only work when you have an internet connection: 
+To load the data you can either read in the same local file as you did in problem set 5, or you can read in the url from github. Note that reading in by the url will only work when you have an internet connection: 
 
 ```{r load-data}
 load(url("https://github.com/UChicago-pol-methods/IntroQSS-F21/raw/main/data/ggl.RData"))
@@ -29,32 +29,10 @@ The dataset will be loaded as an object called `ggl`.
 
 The variables in the dataset are as follows: 
 
-- ```sex```: male or female
-- ```yob```: year of birth
-- ```g2000```, ```g2002```, ```g2004```:  did this voter vote in the general elections in November of 2000, 2002, 2004? (binary)
-- ```p2000```, ```p2002```, ```p2004```:  did this voter vote in the primary elections of August 2000, 2002, 2004? (binary)
-- ```treatment```:  which of the five treatment did this voter's household receive?
+- ```treatment```:  which of the treatment did this voter's household receive?
     + "Control": No mailing
     + "CivicDuty": A mailing encouraging voting
-    + "Hawthorne": A mailing encouraging voting and saying that the sender will `be studying voter turnout in the August 8 primary election'
-    + "Self": A mailing encouraging voting and showing the recipients' past turnout,  saying `We intend to mail you an updated chart when we have that information'
-    + "Neighbors": Same thing, except including information on turnout by neighbors as well
-- ```cluster```: in what cluster of households was this voter's house located?
-- ```voted```: did the voter vote in the primary election of 2006?
-- ```hh_id```: what is the id number of this voter's household?
-- ```hh_size```: how many voters are in this household? 
-
-Don't change the below:
-```{r}
-# We will only consider in our analysis households that were assigned the `Control` condition or the `CivicDuty` condition. 
-ggl <- ggl %>% 
-  filter(treatment == 'Control' | treatment == 'CivicDuty')
-```
-
-
-## Question 1: Randomization Inference
-
-Suppose we are only interested in conducting inference over the voters included in the study, and we are interested in treatment effects of the various treatment conditions relative to control. Treatment was assigned randomly by the researchers, and we know the treatment assignment probabilities. 
+- ```p2004```:  did this voter vote in the primary elections of August 2004? (binary)
 
 We will set a seed, because we'll use some random re-sampling and we would like to see the same results each time we compile this file. You can change the seed argument if you want.
 ```{r}
@@ -62,54 +40,160 @@ set.seed(60637)
 ```
 
 
-**(1a)**
-
-In the ggl data, the unit of observation is an **individual voter**, but treatment is assigned at the **household** level. Because there are multiple eligible voters in many households, the researchers thought people might talk about their treatments with other people in their households, and there could be treatment effect spillovers within households. Assigning the same treatment at the household level is a way to avoid this.
-
-**Using `group_by` and `summarize`, get counts of *households* (not individuals) in each treatment condition.** 
+ We will only consider in our analysis households that were assigned the 
+ `Control` condition or the `CivicDuty` condition. We will also include only one observation per household. Don't change the below:
 
 ```{r}
-ggl %>% 
-  group_by(treatment) %>% 
-  summarize(n_hh = length(unique(hh_id)))
+ggl <- ggl %>% 
+  filter(treatment == 'Control' | treatment == 'CivicDuty') %>% 
+  group_by(hh_id) %>% 
+  filter(row_number()==1) %>% 
+  ungroup()
 ```
 
 
-**(1b) Does it look like the probability of assigning treatment is the same across treatment and control?** 
+## Question 1: Randomization Inference
+
+Suppose we are only interested in conducting inference over the voters included in the study, and we are interested in treatment effects of the Civic Duty treatment condition relative to control. Treatment was assigned randomly by the researchers under complete random assignment, i.e., they fixed the number of individuals under treatment and under control, and then assigned conditions randomly. 
+
+
+**(1a) In the ggl data, create a new variable called `D`, which takes the value 1 if the observation was assigned the CivicDuty condition, and 0 if the observation was assigned control. Create a new variable called `Y`, which is a copy of `p2004`. Report the number of individuals in treatment (the CivicDuty condition) and control. **
 
 ```{r}
-probs <- 
+# Your code here
 ```
 
 
-**(1c) Regress `p2004` on `treatment`. Show the `R` output. Save the average treatment effect using `coef()` to extract the model coefficient. Exclude the intercept.** 
+**(1b) Get the difference-in-means estimate of the ATE on `Y`, and save the estimate as an object called `ate`. Report the value of your difference-in-means estimate of the ATE. **
+
+```{r}
+# Your code here
+```
+
+
+
+**(1c) Regress `Y` on `D`. Show the `R` output. Is the coefficient on `D` the same as your difference-in-means estimate?** 
 
 
 ```{r}
-lm1 <- lm_robust(p2004 ~ treatment, data = ggl)
-lm1
-
-(ate <- coef(lm1)[-1])
-
+# Your code here
 ```
 
-**(1c) Create a copy of the `ggl` data called `ggl2`. In this new data, create a new variable called `D`, which takes the value 1 if the observation was assigned the CivicDuty condition, and 0 if the observation was assigned control. **
+
+**(1d)  Create a new column called `newD` which resamples from `D` with replacement. Report the number of individuals assigned treatment and control under `newD`. Is it the same as under D?**
+```{r}
+# Your code here
+```
+
+
+
+**(1e) Calculate the difference in means estimate of the average treatment effect UNDER THE RE-SAMPLED TREATMENT, `newD`. **
 
 ```{r}
-ggl2 <- ggl%>% 
-  mutate(D = 1*(treatment == 'CivicDuty'))
+# Your code here
 ```
 
-**(1d) In the ggl2 dataset, create a variable called `newD`, where you resample from D, keeping **
+
+**(1f) Write a randomization inference function that takes a data frame `df` as an argument, then:**
+
+- **Creates a new column called `newD` which resamples from D.**
+
+- **Calculates the difference in means estimate of the average treatment effect UNDER THE RE-SAMPLED TREATMENT, `newD`.**
+
+- **Returns the value of estimated ATE. **
+
+**Apply your randomization inference function to the `ggl` data and report the estimated ATE**. 
 
 ```{r}
-
-
-
+# Your code here
 ```
 
+**(1g) Using `purrr::map()`, apply your function to the `ggl` data 1000 times. Note that the output of `map()` is a list, so you may want to apply `unlist()` to the output to get it in vector format. **
+```{r}
+# Your code here
+```
+
+**(1h) Report the portion of your results from question 1g that have a larger *absolute value* than the *absolute value* of the object `ate`.**
+
+```{r}
+# Your code here
+```
+
+
+**How do you interpret the p-value in 1f?**
 
 
 
 ## Question 2: Sampling Inference
+
+
+**The Poisson distribution is used for counts data. It is sometimes used to model the number of times an event occurs in a given period of time or over a given demographic space. For example, it has been used to model the number of times sectors in London were hit by bombs during World War II.**
+
+**We will use the `rpois()` function to sample 100 observations from a Poisson distribution, with a mean AND variance of 10, as defined by the "lambda" parameter. **
+
+
+```{r}
+y_poisson <- rpois(n = 100, lambda = 10)
+```
+
+**(2a) Report the sample mean of `y_poisson`.**
+
+```{r}
+# Your code here
+```
+
+
+**(2b) Estimate the variance from `y_poisson` using the formula for the unbiased sample variance. **
+
+```{r}
+# Your code here
+```
+
+**(2c) Estimate the variance from `y_poisson` using the `var()` function. Does it match what you calculated for question 2b? **
+
+```{r}
+# Your code here
+```
+
+
+**(2d) The formula for the standard error of the sample mean is $\sqrt{\frac{\textrm{Var}[X]}{n}}$. We said above that the population variance for our random variable here is 10, and our sample size $n$ is 100. Calculate the standard error of the sample mean mathematically.** 
+
+**This is the true value of the standard error of the sample mean--in practice, we won't usually get to know what this is, because we won't know the true population variance.**
+
+```{r}
+# Your code here
+```
+
+
+**(2e) Use the `purrr::map()` function to generate 1000 bootstrapped estimates of the sample mean. To do this, take a sample from `y_poisson` of size 100 with replacement 1000 times, and calculate the mean of each of your bootstrapped samples. Report the bootstrapped estimate of the standard deviation of the sample mean. Note that the output of `map()` is a list, so you may want to apply `unlist()` to the output to get it in vector format. ** 
+
+**Refer back to the class notes for more reference on how to do this if you need. **
+
+**This is an estimate of the standard error of the sample mean. Is it close to the value you calculated in part 2d?**
+
+
+```{r}
+# Your code here
+```
+
+
+
+**(2f) Now, simulate 1000 i.i.d. draws of size 100 from our poisson distribution. Use the `purrr::map()` function, where the function argument of `map` will take the same `rpois()` function that we used above to generate `y_poisson`.  You should end up with a list of length 1000, each element of which will have 100 observations.**
+
+```{r}
+# Your code here
+```
+
+
+**(2g) Using the `purrr::map()` function, calculate the sample mean of each of your 1000 i.i.d. draws from part 2f. You should have a list of length 1000, each element of which is a single sample mean. Report the mean and standard deviation across your sample means.**
+
+
+**This is a simulation that illustrates how the sample mean varies across i.i.d. draws from the same population distribution. The estimated standard deviation of the sample means across draws should look similar to your answers in 2d (the true value of the standard error of the sample mean) and 2f (our bootstrapped estimate of the standard error of the sample mean).**
+
+```{r}
+# Your code here
+```
+
+
+
 
