@@ -340,7 +340,7 @@ We differentiate the *sample mean* from the *population mean* because the sample
 
 --
 
-We'll use a simulation with `prrr::map` to see what would happen if we took a sample of size $n = 100$ from the population distribution many times. 
+We'll use a simulation with `purrr::map` to see what would happen if we took a sample of size $n = 100$ from the population distribution many times. 
 
 --
 
