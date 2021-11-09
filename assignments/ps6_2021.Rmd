@@ -1,8 +1,10 @@
 ---
-title: "Problem set 5"
-author: "Your name here"
-date: "Due 11/5/2021 at 5pm"
-output: pdf_document
+title: "Problem set 6"
+author: "Siwei Dai"
+date: \today
+output: 
+    pdf_document:
+        latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -38,56 +40,162 @@ dat <- cces %>%
 1) Create a histogram of `starthour`, which indicates what time (on the 24 hour clock) the respondent started the survey. Specify `binwidth = 1`.
 
 ```{r}
+plot1 <- dat %>% 
+    ggplot(aes(x = starthour)) +
+    geom_histogram(binwidth = 1) +
+    labs(x = "Start time of the response",
+         y = "Count",
+         title = "Histogram of when respondents started the survey")
+plot1
 ```
 
 2) Make another figure that shows the same histogram separately by year. You should see that there seems to be one pattern of survey timing for 2006, 2018, and 2020, and another for the other years. Which one is less surprising to you?
 
 ```{r}
+plot2 <- dat %>% 
+    ggplot(aes(x = starthour)) +
+    geom_histogram(binwidth = 1) +
+    facet_wrap(facets = vars(year)) +
+    labs(x = "Start time of the response",
+         y = "Count",
+         title = "Histogram of when respondents started the survey by year")
+plot2
 ```
+**The other pattern (excluding 2006, 2018, 2020) is less surprising as it reflects the bulk of respondents started survey response in the day, rather than at midnight. The number of respondents also decreases towards midnight and increases when it's approaching morning. **
+
 
 We're not sure why there are these two distinct patterns (it could be a difference in the manner of survey administration, or a coding error), but to be safe we'll focus on years with a similar pattern of response and the same president. In subsequent questions, restrict attention to 2010-2016. 
 
 3) Use `geom_smooth()` to show how the average `approve_pres` (a variable that was created above) changes over the course of the day. Interpret the result.
 
 ```{r}
+dat <- dat %>% 
+    filter(year >= 2010 & year <= 2016)
+plot3 <- dat %>% 
+    ggplot(aes(x = starthour,
+               y = approve_pres)) +
+    geom_smooth() +
+    labs(x = "Time that survey response started", 
+         y = "Approval for presidents",
+         title = "Average presidential approval by the hour when survey started")
+plot3
 ```
+
+**The average presidential apporval from those who received survey between 7 AM to 17PM is around 0.47; The average presidential apporval increases in the observations by each increase in survey start time from 17PM to 23PM, to 0.52 for those who received survey at 23PM. The average presidential apporval decreases from the respondents by each increase in survey start time from 0AM to 4AM, to less than 0.44 around 4AM; finally, the average presidential approval in observations increases as survey start time is later around 0.47 by 7AM. **
+
 
 4) Use `group_by()` and `summarize()` to compute the average of `approve_pres` by `starthour` (another variable that was created above) and plot the result.
 
 ```{r}
+# dataset is restricted to 2010 - 2016 as requested in response 3
+df4 <- dat %>% 
+    group_by(starthour) %>% 
+    summarize(avg_approve = mean(approve_pres, na.rm = TRUE))
+plot4 <- df4 %>% 
+    ggplot(aes(x = starthour, y = avg_approve)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Time that survey response started", 
+         y = "Mean of approval for presidents",
+         title = "Average of presidential approval by the time of response initiation")
+df4
+plot4
+    
 ```
 
 5) Regress `approve_pres` on `startcat` (another variable created above) and interpret the coefficients. Calculate the mean of `approve_pres` by `startcat`  using `group_by()` and `summarize()` and compare this to the regression coefficients. 
 
 ```{r}
+# dataset is restricted to 2010 - 2016 as requested in response 3
+model5 <- lm(approve_pres ~ startcat, data = dat)
+coef(model5)
+df5 <- dat %>% 
+    group_by(startcat) %>% 
+    summarize(avg_approve = mean(approve_pres, na.rm = TRUE))
+df5a <- df5 %>% 
+    mutate(diff_in_mean = avg_approve - avg_approve[startcat == '1) morning'][1])
+df5a
 ```
+**The intercept means, for observations in which survey started in morning (as the baseline category in the model), the mean of presidential approval is 0.469172429 .The coefficient on "starcat2) afternoon" means that compared to the baseline category (ie people who started their survey in the morning), the mean of presidential approval for people who started the survey in the afternoon is higher by 0.007154341 In the same vein, the coefficient on "starcat3) evening" means that compared to the baseline category, the mean of presidential approval for people who started the survey in the evening is higher by 0.016032578; the coefficient on "starcat4) late night" means that compared to the baseline category, the mean of presidential approval for people who started the survey in late night is lower by 0.029005818**  
+
+**As shown in diff_in_mean column in the "df5a" table, the mean calculations correpond with the interpretations of regression coefficients.**
 
 Looking at the results so far, one might wonder whether starting a survey in the evening causes respondents to give a higher rating to the president, while starting the survey in the late night/early morning causes respondents to give a lower rating to the president. There is a small literature suggesting that people's survey responses depend on the time of day when they take the survey.
 
 6) In brief, how could you design a randomized experiment to evaluate this hypothesis? 
 
+**For a given sample, we randomly assign the treatment: the time each respondent start their survey. Then, we can use the difference-in-means estimator to estimate the effect of different response time on presidential approval.**
+
 7) Use `group_by()` and `summarize()` to compute the average age of respondents by `starthour` and plot the result. Interpret what you find. Does it appear that `starthour` is randomly assigned?
 
 ```{r}
+df7 <- dat %>% 
+    group_by(starthour) %>% 
+    summarize(avg_age = mean(age))
+plot7 <- df7 %>% 
+    ggplot(aes(x = starthour, y = avg_age)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "The hour that survey response started", 
+         y = "Mean of age of respondents",
+         title = "Average respondent's age by the time of survey start")
+plot7
 ```
+**The average age of people who started their response after 3 AM is larger than the average age of those who started in late night. This means that "starthour" is not randomly assigned; if it were randomly assigned, then the average age of respondents at each hour should be close to the expected value of age throughout the sample.**  
 
 8) Regress `approve_pres` on age and interpret the coefficients. Does this support the idea that age might be a confounder for the relationship between `starthour` and `approve_pres`?   
 
 ```{r}
+model8 <- lm(approve_pres ~ age, data = dat)
+coef(model8)
 ```
+
+**The model indicates that age is negatively associated with presidential approval. Consider the correlation we found in Question 7 between "starthour" and "age", it means that age simultaneously is related with "starthour" and "approve_res". This means age might be a confounder for the relationship between "starthour" and "approve_pres".**
 
 9) Regress `approve_pres` on age and gender and note how the coefficient on `age` differs from the previous regression. Show how to use the omitted variable bias formula to account for this difference. 
 
 ```{r}
+model9 <- lm(approve_pres ~ age + gender, data = dat)
+coef(model9)
+model9a <- lm(gender ~ age, data = dat)
+coef(model9a)
 ```
+
+\begin{align*}
+\hat{approve_pres} & = \hat{\beta_0} + \hat{\beta_1} age + \hat{\beta_2} gender \\
+\hat{approve_pres} & = \hat{\gamma_0} + \hat{\gamma_1} age \\
+\hat{gender} & = \hat{\alpha_0} + \hat{\alpha_1} age \\
+\hat{\beta_1} & = -0.003898562 \\
+\hat{\beta_2} & = 0.065479521  \\
+\hat{\alpha_1} & = -0.003442585 \\
+\hat{\gamma_1} & = \hat{\beta_1} + \hat{\beta_2} * \hat{\alpha_1} \\
+& = -0.003898562 + 0.065479521 * (-0.003442585) = `r -0.003898562 + 0.065479521 * (-0.003442585)` \\
+OVB & = \hat{\beta_2} * \hat{\alpha_1} = `r 0.065479521 * (-0.003442585)`
+\end{align*}
 
 
 10) Regress `approve_pres` on `startcat` again but now controlling for age. Using the `modelsummary` package (which will be discussed in lab), make a figure or table comparing the key coefficients (i.e. those relating to the the time of day) when you don't control for age and when you control for different polynomials of age. (Hint: You might want to specify `coef_omit = "Int|age"`, which leaves out the intercept and the age coefficients.) 
 
 ```{r}
-
+library(modelsummary)
+model10 <- lm(approve_pres ~ startcat, data = dat)
+model10a <- lm(approve_pres ~ startcat + age, data = dat)
+model10b <- lm(approve_pres ~ startcat + poly(age, degree = 2), data = dat)
+model10c <- lm(approve_pres ~ startcat + poly(age, degree = 3), data = dat)
+models <- list("Age not included" = model10,
+               "1st-degree age" = model10a,
+               "2nd-degree polynomial of age" = model10b, 
+               "3rd-degree polynomial of age" = model10c)
+tb10 <- modelsummary(models,
+                     coef_omit = "Int|age", 
+                     stars = TRUE)
+tb10
 ```
 
 11) What other variables in the dataset would you control for if you wanted to assess the causal impact of the time of day on approval of the president? 
 
+**I would also control for "employ" (employment status). People employed in full-time jobs may not be able to start their survey responses during daytime. Meanwhile, employment status impact respondents' attitudes on taxation, welfare programs, which could impact their approval for a given president. Represented in a DAG, employment status is a non-collider as it is nor affected by the treatment.**  
+
 12) If there is a regression you plan to run as part of your final project, describe it here. If not, explain why not. 
+
+**I want to evaluate the effect of having one regional leader being demoted on changes in regional social spending in the following year. The dependent variable would be the difference between the social spending of the year in which bureaucrat removal occurred and the next year's social spending. The independent variables would include a binary variable indicating if there's a regional leader removed in a year, region fixed effects. But since the treatment is not raondomized, I should probably include more control variables after I'm more familiar with the literature.**

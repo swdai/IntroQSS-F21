@@ -19,7 +19,7 @@ library(modelsummary) #install first if necessary (use install.packages())
 Question 1 asked you to compute the proportion of individuals who voted in the 2002 primaries by year of birth and then plot the proportions. Most people did this successfully:
 
 ```{r}
-load("data/ggl.RData")  #adjust filepath as necessary to load ggl.Rdata
+load("./../data/ggl.RData")  #adjust filepath as necessary to load ggl.Rdata
 
 ggl_prop <- ggl %>%
   group_by(yob) %>%
@@ -49,7 +49,7 @@ Notice the difference in the coefficient on `yob`? The difference may not seem t
 
 The comment I left on many people's PS was that using the proportion as the DV in the regression was "overweighting" certain observations. Remember that OLS regression always minimizes the sum of square residuals.
 
-When you regress onto the proportions, each *proportion* is given equal weight in the residual sum of squares calculation, even though there is not an equal number of observations in each year of birth. To see how great the imbalance in observations is, we can plot the distribution of observations by year of birth:
+**When you regress onto the proportions, each proportion is given equal weight in the residual sum of squares calculation, even though there is not an equal number of observations in each year of birth.** To see how great the imbalance in observations is, we can plot the distribution of observations by year of birth:
 
 ```{r}
 ggl %>%
@@ -73,7 +73,9 @@ Now, let's look at a couple examples of coefficient plots in recently published 
 
 In this plot, what do the labels on the left edge of the plot represent? What do the circles and bars represent?
 
-*YOUR ANSWER HERE*
+**Point estimates, the dotted line is the null hypothesis; if there's no overlap b/w the line and the null hypothesis line, then we can reject the null hypothesis**  
+
+**specification: combination of covariates**  
 
 Next, let's look at Eggers et. al. (2021), "No evidence for systematic voter fraud: A guide to
 statistical claims about the 2020 election," published in PNAS. 
@@ -88,6 +90,8 @@ It is possible to hand code tables and plots like this, but doing so can be extr
 
 We're going to focus on `modelsummary`. You can look at the documentation in R Studio, or use [this link](https://vincentarelbundock.github.io/modelsummary/articles/modelsummary.html) to access the vignette in your browser. After you've taken a moment to read through the documentation, let's create some models to practice (hopefully you are familiar with this data now).
 
+`modelsummary` creates ggplot-like plots  
+
 ```{r}
 mod_1 <- lm(voted ~ treatment + sex, data = ggl)
   
@@ -100,7 +104,7 @@ mods <- list(mod_1, mod_2, mod_3)
 
 You don't necessarily need to save your list of models to a variable. In fact, you could generate models with `lm` within your call of `modelsummary` if you want to. Why might you want to save the list to a variable?
 
-*YOUR ANSWER HERE*
+**Pass either a model or a list to the modelsummary, and we can edit our model selection***
 
 Let's see what the `modelsummary` default call looks like:
 
@@ -110,7 +114,13 @@ modelsummary(mods)
 
 Even with the default arguments, this is a pretty nice and informative table! Now, create another table, but this time save it to an html file called "mod_summary.html," add significance stars (`***`) to it, and exclude the intercept (hint: check the docmentation). *(this will not render when you knit; it is being written to a file, so open the file to view it)*
 
-*YOUR CODE HERE*
+```{r}
+table2 <- modelsummary(models = mods,
+                       output = 'mod_summary.html',
+                       stars = TRUE,
+                       coef_omit = 'Int') # or 'Intercept'
+```
+
 
 Next, let's create a coefficient plot from the same models. The `modelsummary` package includes a function that does this too! Check the documentation for `modelplot` or read the vignette [here](https://vincentarelbundock.github.io/modelsummary/articles/modelplot.html).
 
@@ -123,3 +133,13 @@ modelplot(mods)
 This time, only show the coefficients on each treatment, display 90% confidence intervals, add a vertical line at the intercept, and title the plot. (hint: a nice feature of `modelsummary` is that it produces are regular `ggplot2` objects, so you can add layers like we did when we discussed visualization) 
 
 *YOUR CODE HERE*
+```{r}
+plot3 <- modelplot(models = mods,
+        conf_level = 0.9,
+        coef_omit = "Intercept|p2004|sex") +
+    labs(title = 'title') +
+    geom_vline(xintercept = 0)
+plot3
+
+```
+
