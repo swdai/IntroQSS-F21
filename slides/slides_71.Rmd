@@ -316,6 +316,7 @@ Consider all the ways treatment could be assigned:
 
 ```{r}
 (perms <- genperms(df$D))
+# generate permutations of treatment
 ```
 
 ---
