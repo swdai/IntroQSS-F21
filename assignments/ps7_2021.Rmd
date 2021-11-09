@@ -165,7 +165,7 @@ y_poisson <- rpois(n = 100, lambda = 10)
 ```
 
 
-**(2e) Use the `purrr::map()` function to generate 1000 bootstrapped estimates of the sample mean. To do this, take a sample from `y_poisson` of size 100 without replacement 1000 times, and calculate the mean of each of your bootstrapped samples. Report the bootstrapped estimate of the standard deviation of the sample mean. Note that the output of `map()` is a list, so you may want to apply `unlist()` to the output to get it in vector format. ** 
+**(2e) Use the `purrr::map()` function to generate 1000 bootstrapped estimates of the sample mean. To do this, take a sample from `y_poisson` of size 100 with replacement 1000 times, and calculate the mean of each of your bootstrapped samples. Report the bootstrapped estimate of the standard deviation of the sample mean. Note that the output of `map()` is a list, so you may want to apply `unlist()` to the output to get it in vector format. ** 
 
 **Refer back to the class notes for more reference on how to do this if you need. **
 
