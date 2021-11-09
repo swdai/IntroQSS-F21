@@ -2,8 +2,8 @@
 title: 7.1 Randomization Inference
 subtitle: PLSC30500, Fall 2021
 author: 
-  - co-taught by Molly Offer-Westort & Andy Eggers
-  # - .small-text[(This lecture with references to Gerber & Green 2012)]
+  # - co-taught by Molly Offer-Westort & Andy Eggers
+  - .small-text[(This lecture with references to Gerber & Green 2012)]
 output: 
   xaringan::moon_reader:
     self_contained: true
@@ -118,22 +118,40 @@ One way to think about this is to assume the ITE for all individuals is exactly 
 
 --
 
-We can then say how often we would see a treatment effect of this size just by chance, under the assumption that individual treatment effects were actually zero. 
+We can then say how often we would see a treatment effect estimate of this size just by chance, under the assumption that individual treatment effects were actually zero. 
 
 ---
 
 Assuming all treatment effects are exactly zero is called the **sharp null hypothesis of no effect**. 
-
 --
+Also referred to as "Fisher's null" after Sir Ronald Aylmer Fisher (1890-1962). 
 
-We might write it this way:
+
+```{r pdb_fig, echo=FALSE, out.width = "50%", fig.align="center"}
+knitr::include_graphics('assets/Youngronaldfisher2.jpeg')
+```
+
+
+---
+
+We might write the sharp null hypothesis this way:
 
 $$
 H_0: \tau_i = 0, \text{ for all } i \text{ in our pop.}
 $$
 
+--
+
+This implies that potential outcomes are identical under treatment and control, for all individuals. 
+
+$$
+Y_i(0) = Y_i(1)
+$$
+
 
 ---
+
+
 Then we can fill in this table $\dots$
 
 |           | $Y_i(0)$ | $Y_i(1)$ | $D_i$ | $Y_i$ | $\tau_i^0$ |
@@ -265,7 +283,7 @@ df
 
 ---
 
-And our average treatment effect estimate under the real data:
+And our difference in means estimate of the average treatment effect under the real data:
 
 ```{r}
 Y1 <- filter(df, D == 1) %>% pull(Y)
@@ -301,7 +319,7 @@ Consider all the ways treatment could be assigned:
 ```
 
 ---
-Then generate the sampling distribution of the ATE under the sharp null of no effect. 
+Then generate the sampling distribution of the ATE estimate under the sharp null of no effect. 
 
 ```{r}
 
@@ -311,8 +329,8 @@ Ys_null <- list(
 )
 
 dm <- gendist(Ys_null,
-                   perms, 
-                   prob=df$probs)
+              perms, 
+              prob=df$probs)
 dm
 
 null_dist <- tibble(dm)
@@ -335,10 +353,10 @@ mean(null_dist$dm)
 
 gg_bins <- null_dist %>% 
   group_by(dm) %>% 
-  count() %>% 
+  count(name = 'Relative frequency') %>% 
   mutate(col = abs(dm) >= dm_hat)
 
-ggplot(gg_bins, aes(x = dm, y = n)) +
+ggplot(gg_bins, aes(x = dm, y = `Relative frequency`)) +
   geom_col() +
   geom_vline(xintercept = 0, color = 'red')
 
@@ -358,7 +376,7 @@ prop.table(table(null_dist))
 
 ---
 ```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
-ggplot(gg_bins, aes(x = dm, y = n, fill = col)) +
+ggplot(gg_bins, aes(x = dm, y = `Relative frequency`, fill = col)) +
   geom_col() +
   geom_vline(xintercept = 0, color = 'red') + 
   scale_fill_manual(values=c("grey35", "#619CFF")) +
@@ -388,6 +406,15 @@ dispdist(distout = dm,
          display.plot = FALSE)$two.tailed.p.value.abs
 ```
 
+
+---
+Why is this test called an "exact" test?
+
+--
+
+Because we know the *exact* distribution of our estimate under the specified null. We do not have to approximate the distribution. 
+--
+This will not be true for all of our hypothesis testing\dots
 
 ---
 
@@ -448,7 +475,7 @@ Here, our hypothesis was about the *individual treatment effect*.
 
 ---
 
-## Sampling Distributions
+## Distributions of Estimators
 
 Our difference in means estimator is a function of the data we observe. 
 
@@ -474,6 +501,38 @@ But we DO know what the distribution would be under the null.
 
 ---
 
+Note that we are conducting inference with respect to:
+
+--
+- a defined population
+
+--
+- a defined treatment 
+
+--
+- a defined outcome
+
+--
+- a known treatment assignment mechanism
+
+--
+- a given estimating procedure
+
+--
+
+We could have considered the distribution of a different test statistic under the null. 
+
+--
+
+For example, the difference between one single observation under treatment, and one single observation under control. 
+
+--
+
+We can talk about the distributions of any functions of the data under our hypothetical null. This estimator will also be unbiased (if our selection and randomization are random), but it may not be as informative to us as if we used all the data. 
+
+
+---
+
 How do we determine what the null is?
 
 --
@@ -482,8 +541,20 @@ We formalize our hypotheses in terms of the effect we are trying to find in the 
 
 --
 
-The null is the case when there is no effect, or no difference. 
+The null is (often, but not always) the case when there is no effect, or no difference. 
 
+--
+
+We can imagine other kinds of hypotheses, for example that effects are bounded away from zero and positive, or exactly .2. And we can characterize the distribution of our test statistic under the null. 
+
+
+---
+
+Is the sharp null of no individual level effects plausible in this setting?
+
+--
+
+Does it matter?
 
 ---
 
@@ -580,22 +651,24 @@ my_ri <- function(df){
     pivot_wider(names_from = newD, values_from = mean) %>%
     mutate(diff = `1` - `0`) %>%
     pull(diff)
-
+  
   return(ri_out)
 }
 ```
 
 ---
 
-We can do this many times to find the distribution of $\hat\tau_{DM}$ under the sharp null.
+We can do this many times to find the distribution of $\hat\tau_{DM}$ under the sharp null. 
+--
+[Discuss use of `map()`]
 
 
 ```{r}
-reps <- 1000
+n_iter <- 1000
 
 null_dist <- tibble(
-  dm = replicate(n = reps,
-                 my_ri(df))
+  dm = map(1:n_iter,
+           ~ my_ri(df)) %>% unlist()
 )
 
 null_dist
@@ -735,13 +808,14 @@ ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col2)) +
 ```
 
 ---
-class: tiny
 
 ## P-values
 
 Suppose $\hat{\theta}$ is the general form for an estimate produced by our estimator, and $\hat{\theta}^*$ is the value we have actually observed. 
 
---
+---
+
+## P-values
 
 - A lower one-tailed p-value under the null hypothesis is 
 
@@ -753,6 +827,22 @@ i.e., the probability *under the null distribution* that we would see an estimat
 
 --
 
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col2)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') + 
+  scale_fill_manual(values=c("grey35", "#619CFF")) +
+  theme(legend.position = 'none')
+
+```
+
+---
+
+## P-values
+
+
+
 - An upper one-tailed p-value under the null hypothesis is 
 
 $$
@@ -761,8 +851,25 @@ $$
 
 i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is greater than or equal to what we saw from the data. 
 
-
 --
+
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+gg_bins <- gg_bins %>% 
+  mutate(col3 = bin_min >= dm_hat)
+
+ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col3)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') + 
+  scale_fill_manual(values=c("grey35", "#619CFF")) +
+  theme(legend.position = 'none')
+
+```
+
+---
+
+## P-values
+
 - A two-tailed p-value under the null hypothesis is 
 
 $$
@@ -771,3 +878,22 @@ $$
 
 i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ as or more extreme as what we saw from the data. 
 
+--
+
+```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE}
+
+
+ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col)) +
+  geom_col() +
+  geom_vline(xintercept = 0, color = 'red') + 
+  scale_fill_manual(values=c("grey35", "#619CFF")) +
+  theme(legend.position = 'none')
+
+```
+
+
+
+
+```{r knit, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+knitr::purl("slides_71.Rmd")
+```
