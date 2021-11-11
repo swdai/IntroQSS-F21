@@ -120,7 +120,7 @@ Suppose we are only interested in conducting inference over the voters included 
 ```
 
 
-**How do you interpret the p-value in 1f?**
+**How do you interpret the p-value in 1h?**
 
 
 
