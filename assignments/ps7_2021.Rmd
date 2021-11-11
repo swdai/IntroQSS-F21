@@ -80,7 +80,7 @@ Suppose we are only interested in conducting inference over the voters included 
 ```
 
 
-**(1d)  Create a new column called `newD` which resamples from `D` with replacement. Report the number of individuals assigned treatment and control under `newD`. Is it the same as under D?**
+**(1d)  Create a new column called `newD` which resamples from `D` without replacement. Report the number of individuals assigned treatment and control under `newD`. Is it the same as under D?**
 ```{r}
 # Your code here
 ```
@@ -120,7 +120,7 @@ Suppose we are only interested in conducting inference over the voters included 
 ```
 
 
-**How do you interpret the p-value in 1f?**
+**How do you interpret the p-value in 1h?**
 
 
 

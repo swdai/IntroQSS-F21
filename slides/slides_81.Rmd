@@ -1,0 +1,488 @@
+---
+title: 8.1 Statistical Inference Continued Hypothesis Testing
+subtitle: PLSC30500, Fall 2021
+author: 
+  # - co-taught by Molly Offer-Westort & Andy Eggers
+  - .small-text[(This lecture with references to Aronow & Miller 2019)]
+output: 
+  xaringan::moon_reader:
+    self_contained: true
+    css: [default, uchicago_pol_meth.css]
+    nature:
+      highlightLines: true
+      countIncrementalSlides: no
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+set.seed(60637)
+options(width = 60)
+```
+
+```{css, echo=FALSE}
+.small-output .remark-code{
+  font-size: x-small;
+}
+
+.white { color: white; }
+.red { color: red; }
+.blue { color: blue; }
+
+# .show-only-last-code-result pre + pre:not(:last-of-type) code[class="remark-code"] {
+#     display: none;
+# }
+```
+
+
+
+- We have some data that are produced from an i.i.d. sampling procedure. 
+
+--
+- We've produced an estimate of some target estimand using our estimating procedure. 
+
+--
+- We then produced an estimate of the standard error of our estimate. 
+
+--
+- Now we would like to be able to say something what that means. 
+
+
+---
+
+# Confidence intervals
+
+- A valid confidence interval $CI_n$ for a target parameter $\theta$ with coverage $1-\alpha$
+$$
+\textrm{P}[\theta \in CI_n]\ge 1- \alpha
+$$
+--
+
+- $CI_n$ is a random interval. It is a function of the data we observe. 
+--
+
+- $\theta$ is a fixed parameter. It does not move. $^*$ 
+
+--
+
+( $^*$ In the frequentist view of statistics.)
+
+
+- If you use valid confidence repeatedly in your work, 95% of the time, your confidence intervals will include the true value of the relevant $\theta.$
+
+---
+
+- We could trivially define valid confidence intervals by including the entire support of the data. 
+--
+(Why wouldn't we want to do that?)
+
+---
+
+## Normal approximation-based confidence intervals
+
+Let $\hat\theta_n$ be an asymptotically normal estimator of some estimand $\theta$. Let $\hat{\textrm{se}}$ be a consistent estimator of the standard error of the estimate. 
+
+--
+
+Since $\hat\theta_n$ is asymptotically normal, we can discuss coverage in terms of the normal distribution. 
+
+
+---
+
+Recall the normal distribution. It has a bell curve shape, with more density around the middle, and less density at more extreme values. 
+
+
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
+result_n <- rnorm(n = 10000)
+plotdata <- tibble(
+  x = result_n,
+  Fx = pnorm(result_n),
+  fx = dnorm(result_n)
+)
+
+g <- ggplot(plotdata, aes(x = x, y = fx)) +
+  geom_line() +
+  coord_cartesian(xlim = c(-2.5, 2.5),
+                  ylim = c(0,0.5)) +
+  ggtitle('PDF of Standard Normal Distribution')
+
+g +
+  geom_vline(xintercept = 0, lty = 'dashed', color = 'skyblue') + 
+  geom_segment(aes(x = 0, xend = -1, y = 0.2, yend = 0.2), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_segment(aes(x = 0, xend = 1, y = 0.2, yend = 0.2), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_point(aes(x = 0, y = 0.2), color = 'skyblue') + 
+  annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'steelblue')
+
+```
+
+
+---
+
+For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the normal distribution. 
+
+--
+
+For example, the 5th quantile describes the point which is greater than 5% of the distribution. 
+
+
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
+g +
+  stat_function(fun = dnorm,
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(-10, qnorm(0.05))) +
+  geom_vline(xintercept = qnorm(0.05), lty = 'dashed', color = 'skyblue') +  
+  annotate(geom="text", x = qnorm(0.05), y = .2, label = round(qnorm(0.05), 3), parse = TRUE, color = 'steelblue')
+
+```
+
+
+---
+
+For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the normal distribution. 
+
+
+
+The 95th quantile describes the point which is greater than 95% of the distribution. 
+
+
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
+g +
+  stat_function(fun = dnorm,
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(-10, qnorm(0.95))) +
+  geom_vline(xintercept = qnorm(0.95), lty = 'dashed', color = 'skyblue') +  
+  annotate(geom="text", x = qnorm(0.95), y = .2, label = round(qnorm(0.95), 3), parse = TRUE, color = 'steelblue')
+  
+
+```
+
+
+---
+
+We can calculate $z(c)$ in R using the `qnorm()` function, which reports the value of quantile input. 
+
+By default, it gives us the standard normal distribution, with mean 0 and sd 1. 
+
+```{r}
+qnorm(0.05)
+qnorm(0.95)
+```
+
+--
+
+Notice that for the standard normal distribution, with mean 0, the quantiles are symmetric around zero. 
+
+---
+
+If we want to describe symmetric bounds around the mean that contain 95% of the distribution, this would be from the 2.5th percentile to the 97.5th percentile. 
+
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
+g +
+  stat_function(fun = dnorm,
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(qnorm(0.025), qnorm(0.975))) +
+  geom_vline(xintercept = qnorm(0.975), lty = 'dashed', color = 'skyblue') + 
+  geom_vline(xintercept = qnorm(0.025), lty = 'dashed', color = 'skyblue') +  
+  annotate(geom="text", x = qnorm(0.025), y = .2, label = round(qnorm(0.025), 3), parse = TRUE, color = 'steelblue') +  
+  annotate(geom="text", x = qnorm(0.975), y = .2, label = round(qnorm(0.975), 3), parse = TRUE, color = 'steelblue')
+  
+
+```
+
+--
+
+These values are about -2 and 2. We will use them a lot. 
+
+---
+
+
+Now, we can define the normal approximation-based confidence interval as:
+
+$$
+CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
+$$
+
+
+--
+
+For the 95% confidence interval, $\alpha = 0.05$ and, $z_{1-\alpha/2} \approx 1.96$.
+
+$$
+CI\_n = \left(\hat \theta\_n - 1.96 \times \hat{\textrm{se}},\  \theta\_n + 1.96 \times \hat{\textrm{se}} \right)
+$$
+
+--
+Then,
+
+$$
+\textrm{P}[\theta \in CI_n] \rightarrow 1- \alpha.
+$$
+
+Asymptotically, the normal approximation-based confidence interval will have correct coverage. 
+
+---
+
+# [Example showing how the confidence interval moves around, while the true mean stays fixed]
+
+
+---
+## Applied example
+
+We can see this in action with respect to the Gerber, Green, and Larimer data. 
+
+
+Gerber, Alan S., Donald P. Green, and Christopher W. Larimer. 2008. "Social Pressure and Voter Turnout: Evidence from a Large-Scale Experiment." *American Political Science Review* 102(1): 33-48.
+
+
+```{r, message=FALSE}
+
+file <- "https://github.com/UChicago-pol-methods/IntroQSS-F21/raw/main/data/ggl.RData"
+load(url(file))
+
+```
+
+
+
+```{r, echo = FALSE}
+ggl
+```
+
+---
+
+The primary outcome is whether respondents voted. 
+
+```{r}
+(table(ggl$voted))
+```
+
+
+---
+
+Our $\hat{\theta}$ is the mean of vote. 
+
+```{r}
+(theta_hat <- mean(ggl$voted))
+```
+--
+
+Our $\hat{se}$ is our estimate of the standard error of the mean, 
+$$\hat{se} = \sqrt{\hat{\textrm{Var}}[X]/n};$$ 
+
+we get this by plugging in our unbiased sample variance estimate into the formula for the standard error of the mean. 
+
+```{r}
+(se_hat <- sd(ggl$voted)/sqrt(length(ggl$voted)))
+```
+
+---
+
+We can then get our 95% confidence intervals by plugging into the formula, 
+
+
+$$
+CI\_n = \left(\hat \theta\_n - 1.96 \times \hat{\textrm{se}},\  \theta\_n + 1.96 \times \hat{\textrm{se}} \right)
+$$
+
+
+```{r}
+(CI <- c(theta_hat + c(-1,1)*qnorm(1-0.025)*se_hat))
+```
+
+
+
+
+---
+
+We can see the exact same confidence intervals in the output of `estimatr::lm_robust`.
+
+```{r}
+library(estimatr)
+
+lm_robust(voted ~1, data = ggl)
+
+```
+
+---
+This is the normal distribution we're using as an *approximation* of the distribution of the sample mean, based on our estimates. .white[And our confidence intervals, overlaid on this distribution.]
+
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
+result_n <- rnorm(n = 10000, mean = theta_hat, sd = se_hat)
+plotdata <- tibble(
+  x = result_n,
+  Fx = pnorm(result_n, mean = theta_hat, sd = se_hat),
+  fx = dnorm(result_n, mean = theta_hat, sd = se_hat)
+)
+
+g <- ggplot(plotdata, aes(x = x, y = fx)) +
+  geom_line() +
+  coord_cartesian(xlim = c(qnorm(0.01, mean = theta_hat, sd = se_hat), 
+                           qnorm(0.99, mean = theta_hat, sd = se_hat))) +
+  ggtitle('Normal Approximation of the Distribution of the Sample Mean')
+
+g +
+  geom_vline(xintercept = theta_hat, lty = 'dashed', color = 'skyblue') + 
+  geom_segment(aes(x = theta_hat, xend = theta_hat-se_hat, y = 280, yend = 280), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_segment(aes(x = theta_hat, xend = theta_hat + se_hat, y = 280, yend = 280), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_point(aes(x = theta_hat, y = 280), color = 'skyblue') + 
+  annotate(geom="text", x = theta_hat - se_hat/2, y = 270, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = theta_hat + se_hat/2, y = 270, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = theta_hat + .0001, y = 420, label = as.character(expression(mu)), parse = TRUE, color = 'steelblue')
+
+```
+
+---
+This is the normal distribution we're using as an *approximation* of the distribution of the sample mean, based on our estimates. And our confidence intervals, overlaid on this distribution. 
+
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
+g +
+  stat_function(fun = dnorm,
+                args = list(mean = theta_hat, sd = se_hat),
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(qnorm(0.025, mean = theta_hat, sd = se_hat), 
+                           qnorm(0.975, mean = theta_hat, sd = se_hat))) +
+  geom_vline(xintercept = qnorm(0.975, mean = theta_hat, sd = se_hat), 
+             lty = 'dashed', color = 'skyblue') + 
+  geom_vline(xintercept = qnorm(0.025, mean = theta_hat, sd = se_hat), 
+                                lty = 'dashed', color = 'skyblue') +  
+  annotate(geom="text", x = qnorm(0.025, mean = theta_hat, sd = se_hat), y = 280, 
+           label = round(qnorm(0.025, mean = theta_hat, sd = se_hat), 3),
+           parse = TRUE, color = 'steelblue') +  
+  annotate(geom="text", x = qnorm(0.975, mean = theta_hat, sd = se_hat), y = 280, 
+           label = round(qnorm(0.975, mean = theta_hat, sd = se_hat), 3), 
+           parse = TRUE, color = 'steelblue')
+```
+
+
+
+
+---
+# Hypothesis testing
+
+In our randomization inference section, we specified the null distribution in terms of the individual treatment effect, $\tau_i$. 
+
+--
+
+When we use the normal approximation to conduct inference, we generally posit our null with respect to the *mean* of the parameter. 
+--
+I.e., 
+
+$$
+H_0: \tau = 0
+$$
+
+$$
+H_A: \tau \neq 0
+$$
+
+
+## P-values
+
+Suppose $\hat{\theta}$ is the general form for an estimate produced by our estimator, and $\hat{\theta}^*$ is the value we have actually observed. 
+
+---
+
+## P-values
+
+- A lower one-tailed p-value under the null hypothesis is 
+
+$$
+p = \textrm{P}\_0[\hat{\theta} \le \hat{\theta}^*]
+$$
+
+i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is less than or equal to what we saw from the data. 
+
+--
+
+<!-- ```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE} -->
+
+<!-- ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col2)) + -->
+<!--   geom_col() + -->
+<!--   geom_vline(xintercept = 0, color = 'red') +  -->
+<!--   scale_fill_manual(values=c("grey35", "#619CFF")) + -->
+<!--   theme(legend.position = 'none') -->
+
+<!-- ``` -->
+
+---
+
+## P-values
+
+
+
+- An upper one-tailed p-value under the null hypothesis is 
+
+$$
+p = \textrm{P}\_0[\hat{\theta} \ge \hat{\theta}^*]
+$$
+
+i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is greater than or equal to what we saw from the data. 
+
+--
+
+<!-- ```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE} -->
+
+<!-- gg_bins <- gg_bins %>%  -->
+<!--   mutate(col3 = bin_min >= dm_hat) -->
+
+<!-- ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col3)) + -->
+<!--   geom_col() + -->
+<!--   geom_vline(xintercept = 0, color = 'red') +  -->
+<!--   scale_fill_manual(values=c("grey35", "#619CFF")) + -->
+<!--   theme(legend.position = 'none') -->
+
+<!-- ``` -->
+
+---
+
+## P-values
+
+- A two-tailed p-value under the null hypothesis is 
+
+$$
+p = \textrm{P}\_0[|\hat{\theta}| \ge |\hat{\theta}^*|]
+$$
+
+i.e., the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ as or more extreme as what we saw from the data. 
+
+--
+
+<!-- ```{r, fig.height=4, fig.width = 5, fig.align = "center", echo=FALSE} -->
+
+
+<!-- ggplot(gg_bins, aes(x = bin_mid, y = n, fill = col)) + -->
+<!--   geom_col() + -->
+<!--   geom_vline(xintercept = 0, color = 'red') +  -->
+<!--   scale_fill_manual(values=c("grey35", "#619CFF")) + -->
+<!--   theme(legend.position = 'none') -->
+
+<!-- ``` -->
+
+
+
+---
+## The duality of confidence intervals and hypothesis testing
+
+
+---
+
+## power of test statistic
+
+---
+
+# Properties of estimators
+
+## Unbiasedness
+
+## Consistency
+
+## MSE
+
