@@ -198,7 +198,7 @@ The process that we just did -- sampling and estimation based on observed data -
 
 --
 
-But we may notice that the mean, variance, and standard deviation are not exactly what we calculated mathematically. 
+But we may notice that the mean, variance, and standard deviation are not exactly what we calculated analytically. 
 
 ---
 
@@ -765,6 +765,7 @@ In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate 
 
 But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take our `r n_iter` separate samples. 
 
+
 ---
 # Weak Law of Large Numbers
 
@@ -1006,7 +1007,7 @@ Or when our sampling procedure is a bit more complicated, for example we sample 
 
 --
 
-It can be tricky to get a nice analytical solution for the standard error of the estimate in these solutions, but the bootstrap estimator will tend to perform well when our data is i.i.d. 
+It can be tricky to get a nice analytical solution for the standard error of the estimate in these situations, but the bootstrap estimator will tend to perform well when our data is i.i.d. 
 
 
 
@@ -1019,12 +1020,26 @@ We can approximate probability statements about the sample mean, $\bar{X}_n$ usi
 
 Formally, 
 
-If $X_1, \dots, X_n$ are i.i.d. random variables with mean $\textrm{E}[X]$ and variance $\textrm{Var}[X]$,  then 
+If $X_1, \dots, X_n$ are i.i.d. random variables with mean $\textrm{E}[X]$ and variance $\textrm{Var}[X]$, we can take a standardized version of the sample mean 
 
 $$
-Z_n \equiv  \frac{\bar{X}_n - \textrm{E}[X]}{\sqrt{\textrm{Var}[\bar{X}_n]}}  \overset{d}{\rightarrow} \mathcal{N}(0,1)
+Z_n \equiv  \frac{\bar{X}_n - \textrm{E}[X]}{\sqrt{\textrm{Var}[\bar{X}_n]}}
 $$
+which has mean 0 and variance 1. 
+--
+(Why?)
+
+--
+
+Then, 
+
+$$
+Z_n  \overset{d}{\rightarrow} \mathcal{N}(0,1)
+$$
+
+
 where $\mathcal{N}(0,1)$ indicates the Standard Normal Distribution with mean 0 and variance 1. 
+
 
 
 ---
@@ -1046,7 +1061,7 @@ It is defined by two parameters, $\mu$, the center of the distribution, and $\si
 It has a bell curve shape, with more density around the middle, and less density at more extreme values. 
 
 
-```{r, fig.width = 6, fig.height=4, fig.align = 'center', echo=FALSE}
+```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
 result_n <- rnorm(n = 10000)
 plotdata <- tibble(
   x = result_n,
@@ -1054,20 +1069,21 @@ plotdata <- tibble(
   fx = dnorm(result_n)
 )
 
-ggplot(plotdata, aes(x = x, y = fx)) +
+g <- ggplot(plotdata, aes(x = x, y = fx)) +
   geom_line() +
   coord_cartesian(xlim = c(-2.5, 2.5),
                   ylim = c(0,0.5)) +
   geom_vline(xintercept = 0, lty = 'dashed', color = 'skyblue') +
-  geom_segment(aes(x = 0, xend = -1, y = 0.2, yend = 0.2), 
+  ggtitle('PDF of Standard Normal Distribution')
+
+g + geom_segment(aes(x = 0, xend = -1, y = 0.2, yend = 0.2), 
                arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
   geom_segment(aes(x = 0, xend = 1, y = 0.2, yend = 0.2), 
                arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
   geom_point(aes(x = 0, y = 0.2), color = 'skyblue') + 
-  annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'skyblue') + 
-  annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'skyblue') + 
-  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'skyblue') +
-  ggtitle('PDF of Standard Normal Distribution')
+  annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'steelblue')
 ```
 
 
