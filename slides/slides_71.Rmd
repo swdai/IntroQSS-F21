@@ -67,7 +67,7 @@ What we see:
 | Village 5 | 10       | .red[?]        | 0     | 10       |
 | Village 6 | 15       | .red[?]        | 0     | 15       |
 | Village 7 | .red[?]        | 30       | 1     | 30       |
-| .white[**Average**]| .white[**15**] |   .white[**22.14**]  |  |  |
+| .white[**Average**]| .white[**16**] |   .white[**22.5**]  |  |  |
 
 
 
@@ -414,7 +414,7 @@ Why is this test called an "exact" test?
 
 Because we know the *exact* distribution of our estimate under the specified null. We do not have to approximate the distribution. 
 --
-This will not be true for all of our hypothesis testing\dots
+This will not be true for all of our hypothesis testing...
 
 ---
 
