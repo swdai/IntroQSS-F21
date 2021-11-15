@@ -97,7 +97,7 @@ $$
 
 ## Question 2: Inference from linear models 
 
-**(2a) Using `lm_robust`, regress `treat_deshawn` on `reply_atall` interacted with `leg_republican`. Print the model object. Save the vector of coefficients as `theta_hats`.**
+**(2a) Using `lm_robust`, regress `reply_atall` on `treat_deshawn` interacted with `leg_republican`. Print the model object. Save the vector of coefficients as `theta_hats`.**
 
 ```{r}
 # your code here
@@ -114,7 +114,7 @@ $$
 ```
 
 
-**(2d) Using `map()` again, run the same regression as above on *each* of your boostrapped samples; extract coefficient estimates; and use `bind_rows()` to create a matrix where each row represents estimates from one of your bootstrap samples, and each column is one of the coefficients.**
+**(2d) Using `map()` again, run the same regression as above on *each* of your bootstrapped samples; extract coefficient estimates; and use `bind_rows()` to create a matrix where each row represents estimates from one of your bootstrap samples, and each column is one of the coefficients.**
 ```{r}
 # your code here
 ```
