@@ -38,7 +38,7 @@ bb <- read_csv(url(file))
 # your code here
 ```
 
-**(1b) Create an object called `se_hat` which is the estimate of the standard error of the mean of the `reply_atall` variable in the data set.**
+**(1b) Create an object called `se_hat` which is the estimate of the standard error of the mean of the `reply_atall` variable in the data set, using the formula based on the unbiased sample variance.**
 
 ```{r}
 # your code here
@@ -58,7 +58,7 @@ $$
 ```
 
 
-**(1d) Report the 95% normal approximation-based confidence intervals for the estimate of `theta_hat`**
+**(1d) Using `theta_hat`, `se_hat`, and your answer to the previous question, report the 95% normal approximation-based confidence intervals for the estimate of `theta_hat`**
 
 ```{r}
 # your code here
