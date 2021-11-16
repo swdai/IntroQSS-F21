@@ -33,12 +33,109 @@ options(width = 60)
 # }
 ```
 
+# Housekeeping
 
+- final presentations
+- grades
+
+
+
+---
+
+# Some properties of estimators
+
+---
+
+## Unbiasedness
+
+An estimator $\hat{\theta}_n$ is unbiased for an estimand $\theta$ if
+
+$$
+\textrm{E}[\hat{\theta}_n] = \theta
+$$
+--
+
+- In expectation, the value of our estimator is the same as our estimand. 
+
+--
+
+- Unbiasedness is a helpful quality, but it is not the only thing we care about. 
+
+---
+## Consistency
+
+An estimator $\hat{\theta}_n$ is consistent for an estimand $\theta$ if
+
+$$
+\hat{\theta}_n \overset{p}{\to} \theta
+$$
+--
+
+- As we get more data, estimates produced by our estimator are less likely to be far away from our estimand. 
+
+--
+
+- Why might we care about consistency?
+
+---
+### Some examples:
+
+--
+
+Our target is the population mean. We have an i.i.d. sample. 
+
+--
+
+- The sample mean is both unbiased and a consistent estimator for the population mean. 
+
+--
+
+- What if our estimator just uses the first observation as a guess for $\theta$, every time we take a sample, no matter the sample size? 
+--
+Is this unbiased? 
+--
+Is this consistent?
+
+--
+
+- What if our estimator is $\frac{1}{n-3}\sum_{i = 1}^n X_i$? 
+--
+Is this unbiased? Is this consistent?
+
+--
+
+Which estimator is better? 
+--
+How do we evaluate "better?"
+
+
+---
+
+## Mean squared error
+
+- We sometimes use mean squared error as a metric to evaluate the relative quality of an estimator. 
+
+$$
+\textrm{E}[(\hat\theta_n - \theta)^2]
+$$
+
+--
+
+$$
+= \textrm{Var}[\hat \theta] + \textrm{bias}[\hat\theta]^2
+$$
+--
+
+- When we compare estimators, we say the estimator with the lower MSE is more *efficient*. 
+
+
+
+---
 
 - We have some data that are produced from an i.i.d. sampling procedure. 
 
 --
-- We've produced an estimate of some target estimand using our estimating procedure. 
+- We've selected an estimating procedure, and produced a point estimate of some target estimand using our estimating procedure. 
 
 --
 - We then produced an estimate of the standard error of our estimate. 
@@ -46,6 +143,9 @@ options(width = 60)
 --
 - Now we would like to be able to say something what that means. 
 
+
+---
+One way to do this is to use our estimated standard errors to give an interval of uncertainty around our point estimate. 
 
 ---
 
@@ -57,15 +157,21 @@ $$
 $$
 --
 
+- If $\alpha = 0.05$, the probability that the estimand $\theta$ is in our confidence interval is greater than or equal to 0.95.
+
+--
+
+
 - $CI_n$ is a random interval. It is a function of the data we observe. 
---
-
-- $\theta$ is a fixed parameter. It does not move. $^*$ 
 
 --
 
-( $^*$ In the frequentist view of statistics.)
+- $\theta$ is a fixed parameter. It does not move. 
 
+--
+(In the frequentist view of statistics.)
+
+--
 
 - If you use valid confidence repeatedly in your work, 95% of the time, your confidence intervals will include the true value of the relevant $\theta.$
 
@@ -114,7 +220,7 @@ g +
   geom_point(aes(x = 0, y = 0.2), color = 'skyblue') + 
   annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
   annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
-  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'steelblue')
+  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(theta)), parse = TRUE, color = 'steelblue')
 
 ```
 
@@ -122,6 +228,10 @@ g +
 ---
 
 For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the normal distribution. 
+
+--
+
+In terms of the standard normal distribution, $\Phi(z(c)) = c$, where $\Phi(\cdot)$ is the CDF of the distribution.
 
 --
 
@@ -144,12 +254,8 @@ g +
 
 For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the normal distribution. 
 
---
 
-In terms of the distribution of the standard normal distribution, $\Phi(z(c)) = c$, where $\Phi(\cdot)$ is the CDF.
-
---
-
+In terms of the standard normal distribution, $\Phi(z(c)) = c$, where $\Phi(\cdot)$ is the CDF of the distribution.
 
 The 95th quantile describes the point which is greater than 95% of the distribution. 
 
@@ -171,7 +277,7 @@ g +
 
 We can calculate $z(c)$ in R using the `qnorm()` function, which reports the value of quantile input. 
 
-By default, it gives us the standard normal distribution, with mean 0 and sd 1. 
+By default, it gives us the value wrt the standard normal distribution, with mean 0 and sd 1. 
 
 ```{r}
 qnorm(0.05)
@@ -180,7 +286,7 @@ qnorm(0.95)
 
 --
 
-Notice that for the standard normal distribution, with mean 0, the quantiles are symmetric around zero. 
+Notice that for the standard normal distribution, with mean 0, these quantiles are symmetric around zero. 
 
 ---
 
@@ -233,7 +339,148 @@ Asymptotically, the normal approximation-based confidence interval will have cor
 
 ---
 
-# [Example showing how the confidence interval moves around, while the true mean stays fixed]
+Returning to our example where we flip a coin twice, let $X$ be the number of heads we observe. Our coin is *not* fair, and the probability of getting a heads is 0.8. 
+
+```{r}
+X <- c(0, 1, 2)
+fx <- c(1/16, 3/8, 9/16)
+(Ex <- sum(X*fx))
+```
+
+
+--
+
+Let's take a sample of size $n = 100$ from this distribution, and see what our confidence intervals look like. 
+
+```{r}
+n <- 100
+x_observed <- sample(X, prob = fx, replace = TRUE, size = n)
+
+head(x_observed)
+```
+
+---
+
+Our estimates of the mean and standard error of the mean. 
+
+```{r}
+(theta_hat <- mean(x_observed))
+(se_hat <- sd(x_observed)/sqrt(n))
+```
+
+--
+
+Our quantile. 
+
+```{r}
+(z975 <- qnorm(0.975))
+```
+
+
+--
+
+Putting it together, the 95% normal approxmation-based confidence interval. 
+
+```{r}
+(CI95 <- c(theta_hat + c(-1,1)*z975*se_hat))
+```
+
+---
+
+```{r, echo=FALSE, out.width = "80%", fig.align="center"}
+ggplot(tibble(conf_lower = CI95[1], conf_upper = CI95[2], mean = theta_hat), 
+       aes(y = 1, x = mean)) + 
+  geom_point(color = 'skyblue') +
+  geom_linerange(aes(xmin=conf_lower,xmax=conf_upper), color = 'skyblue', alpha = 0.85) +
+  coord_cartesian(xlim = c(1.25, 1.75),) +
+  geom_vline(xintercept = Ex, color = 'black', lty = 'dashed') +
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  ggtitle('95% Normal Approximation-Based CI, 2 Weighted Coin Flips, Sample Size = 100')
+  
+```
+
+
+---
+
+What if we did this many times?
+
+--
+
+```{r}
+n_iter <- 50
+x_list <- map(1:n_iter, ~ sample(X, prob = fx, replace = TRUE, 
+                                 size = n))
+```
+
+--
+
+```{r}
+CI_95f <- function(x){
+  theta_hat <- mean(x)
+  se_hat <- sd(x)/sqrt(n)
+  CI_hat <- theta_hat + 
+    c('conf_lower' = -1, 'conf_upper' = 1)*qnorm(0.975)*se_hat
+}
+  
+sample_CIs <- map(x_list, CI_95f) 
+
+head(sample_CIs, 3)
+```
+
+---
+
+```{r}
+CI_n <- bind_rows(sample_CIs)
+
+head(CI_n)
+```
+
+
+---
+
+```{r, echo=FALSE, out.width = "80%", fig.align="center"}
+ggplot(tibble(CI_n), 
+       aes(y = seq(from = 0, to = 2, length.out = n_iter), x = 1)) + 
+  geom_linerange(aes(xmin=conf_lower,xmax=conf_upper), color = 'skyblue', alpha = 0.85) +
+  coord_cartesian(xlim = c(1.25, 1.75)) +
+  geom_vline(xintercept = Ex, color = 'black', lty = 'dashed') +
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  ggtitle('95% Normal Approximation-Based CI, 2 Weighted Coin Flips, Sample Size = 100')
+```
+
+---
+The true mean stays the same. 
+--
+The confidence intervals change, based on the sample. 
+
+--
+
+```{r}
+mean( (Ex >= CI_n$conf_lower) & (Ex <= CI_n$conf_upper) )
+```
+
+---
+
+What if we did this many more times?
+
+--
+
+```{r}
+x_list <- map(1:5000, ~ sample(X, prob = fx, replace = TRUE, 
+                                 size = n))
+CI_n <- map(x_list, CI_95f) %>% bind_rows()
+```
+
+--
+
+```{r}
+mean( (Ex >= CI_n$conf_lower) & (Ex <= CI_n$conf_upper) )
+```
+
 
 
 ---
@@ -249,6 +496,19 @@ Pager, D. (2003). The mark of a criminal record. *American Journal of Sociology*
 ---
 
 
+The study was an audit study, where pairs of white and pairs of black hypothetical job applicants applied to real jobs. 
+
+--
+
+In each pair, one respondent listed a criminal record on job applications; the other did not. Otherwise, applicants were matched. 
+
+--
+
+The outcome is whether applicants got a callback. 
+
+---
+
+
 ```{r, message=FALSE}
 mcr <- tibble(
   black = rep(c(0, 1), times = c(300, 400)),
@@ -258,7 +518,7 @@ mcr <- tibble(
     # whites without criminal records
     rep(c(0, 1), times = c(99, 51)), # 150
     # whites with criminal records
-    rep(c(0, 1), times = c(125, 25)), # 150: could be 25 or 26 got callback
+    rep(c(0, 1), times = c(125, 25)), # 150: could be 25 or 26
     # blacks without criminal records
     rep(c(0, 1), times = c(172, 28)), # 200
     # blacks with criminal records
@@ -275,14 +535,7 @@ mcr <- tibble(
 
 ---
 
-The study was an audit study, where pairs of white and pairs of black hypothetical job applicants applied to real jobs. 
-
---
-
-The outcome is whether applicants got a callback. 
-
-
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 mcr %>% 
   group_by(black, record) %>% 
   summarize(n = n(), 
@@ -290,14 +543,14 @@ mcr %>%
 ```
 
 
-```{r pdb_fig, echo=FALSE, out.width = "20%", fig.align="center"}
+```{r pdb_fig, echo=FALSE, out.width = "60%", fig.align="center"}
 knitr::include_graphics('assets/pager_2003.png')
 ```
 
 
 ---
 
-Let's say our $\hat{\theta}$ right here is the overall mean of `call_back` among black applicants.
+Let's say our $\hat{\theta}$ here is the overall mean of `call_back` among black applicants.
 
 ```{r}
 (theta_hat <- mcr %>% 
@@ -351,9 +604,9 @@ confint.default(model)
 
 ---
 
-By default, `lm_robust` gives confidence intervals that are adjusted for the sample size--these are equivalent in large samples to our normal approximation estimators. 
+By default, `lm_robust` gives confidence intervals that are adjusted for the sample size--for models with one parameter, these are equivalent in large samples to our normal approximation estimators. 
 
---
+---
 
 To see exactly the same confidence intervals as in `lm_robust`, we can use the Student t distribution with the degrees of freedom, which we extract from the object. 
 
@@ -369,79 +622,38 @@ model
 
 
 ---
-This is the normal distribution we're using as an *approximation* of the distribution of the sample mean, based on our estimates. .white[And our confidence intervals, overlaid on this distribution.]
-
-```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
-result_n <- rnorm(n = 10000, mean = theta_hat, sd = se_hat)
-plotdata <- tibble(
-  x = result_n,
-  Fx = pnorm(result_n, mean = theta_hat, sd = se_hat),
-  fx = dnorm(result_n, mean = theta_hat, sd = se_hat)
-)
-
-g <- ggplot(plotdata, aes(x = x, y = fx)) +
-  geom_line() +
-  coord_cartesian(xlim = c(qnorm(0.01, mean = theta_hat, sd = se_hat), 
-                           qnorm(0.99, mean = theta_hat, sd = se_hat))) +
-  ggtitle('Normal Approximation of the Distribution of the Sample Mean')
-
-g +
-  geom_vline(xintercept = theta_hat, lty = 'dashed', color = 'skyblue') + 
-  geom_segment(aes(x = theta_hat, xend = theta_hat-se_hat, y = 10, yend = 10), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_segment(aes(x = theta_hat, xend = theta_hat + se_hat, y = 10, yend = 10), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_point(aes(x = theta_hat, y = 10), color = 'skyblue') + 
-  annotate(geom="text", x = theta_hat - se_hat/2, y = 9, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
-  annotate(geom="text", x = theta_hat + se_hat/2, y = 9, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
-  annotate(geom="text", x = theta_hat + .005, y = 15, label = as.character(expression(mu)), parse = TRUE, color = 'steelblue')
-
-```
-
----
-This is the normal distribution we're using as an *approximation* of the distribution of the sample mean, based on our estimates. And our confidence intervals, overlaid on this distribution. 
-
-```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
-g +
-  stat_function(fun = dnorm,
-                args = list(mean = theta_hat, sd = se_hat),
-                geom = "area",
-                fill = "skyblue",
-                xlim = c(qnorm(0.025, mean = theta_hat, sd = se_hat), 
-                         qnorm(0.975, mean = theta_hat, sd = se_hat))) +
-  geom_vline(xintercept = qnorm(0.975, mean = theta_hat, sd = se_hat), 
-             lty = 'dashed', color = 'skyblue') + 
-  geom_vline(xintercept = qnorm(0.025, mean = theta_hat, sd = se_hat), 
-             lty = 'dashed', color = 'skyblue') +  
-  annotate(geom="text", x = qnorm(0.025, mean = theta_hat, sd = se_hat), y = 10, 
-           label = round(qnorm(0.025, mean = theta_hat, sd = se_hat), 3),
-           parse = TRUE, color = 'steelblue') +  
-  annotate(geom="text", x = qnorm(0.975, mean = theta_hat, sd = se_hat), y = 10, 
-           label = round(qnorm(0.975, mean = theta_hat, sd = se_hat), 3), 
-           parse = TRUE, color = 'steelblue')
-```
-
-
-
-
----
 # Hypothesis testing
 
-In our randomization inference section, we specified the null distribution in terms of the individual treatment effect, $\tau_i$. 
+In our randomization inference section, we specified the null distribution in terms of the individual treatment effect. 
 
 --
 
-When we use the normal approximation to conduct inference, we generally posit our null with respect to the *mean* of the parameter. 
+When we use the normal approximation to conduct inference, we generally posit our null with respect to the *mean* of the parameter, $\theta$. 
 --
 I.e., 
 
 $$
-H_0: \tau = 0
+H_0: \theta = \theta_0
 $$
 
 $$
-H_A: \tau \neq 0
+H_A: \theta \neq \theta_0
 $$
+--
+We can also consider a one-sided alternative, 
+
+$$
+H_A: \theta \leq \theta_0
+$$
+--
+Or
+
+$$
+H_A: \theta \ge \theta_0
+$$
+--
+
+Which alternative we choose is determined by the questions we're asking of the data. 
 
 ---
 
@@ -502,7 +714,7 @@ How do we produce our $p$-values under the normal approximation based approach?
 
 Suppose $\hat{\theta}$ is the general form for an estimate produced by our asymptotically normal estimator, and let $\hat{\theta}^*$ be the value of the estimate we have actually observed. 
 
-Let $\hat{se}$ be a consistent estimator of the sampling variance of the estimator, such as, for the standard error of the sample mean, $\sqrt{S^2/n}$. 
+Let $\hat{se}$ be a consistent estimator of the sampling variance of the estimator. 
 
 --
 
@@ -512,6 +724,11 @@ t = \frac{\hat{\theta}^* - \theta_0}{\hat{se}}
 $$
 
 ---
+
+The t-statistic will tell us how unusual our evidence is relative to the null distribution, but it is standardized, so that we can interpret t-statistics the same way in different settings. 
+
+---
+
 ## Normal-approximation based p-values
 
 We'll use the t-statistic to get our $p$-values. 
@@ -542,7 +759,7 @@ $$
 - For an asymptotically valid two-tailed $p$-value **under the null**
 
 $$
-p = 2 \times \left( 1 - \Phi\left( \frac{\hat{\theta}^* - \theta_0}{\hat{se}} \right)\right)
+p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
 $$
 
 ---
@@ -552,7 +769,7 @@ Let's try it out with the mcr data.
 
 --
 
-Recall that our $\hat{\theta}$ is the mean of `call_back`.
+Recall that our $\hat{\theta}^*$ is the mean of `call_back`.
 
 
 ```{r}
@@ -571,54 +788,96 @@ se_hat
 
 ---
 
-Suppose we frame our null in terms of the average call back rate among black respondents being 16%--this is the average across all of our respondents.  
-
-$$
-H_0: \tau = 0.16 
-$$
+Suppose we frame our null in terms of the average call back rate among black respondents being 10%. 
+--
+This could be the known average callback rate across the overall population. 
 
 --
 
-First, our t-statistic under the null is:
+
 $$
-\frac{\hat{\theta}^* - \theta_0}{\hat{se}}
+H_0: \theta = 0.10 
 $$
 
-```{r}
-(tstat <- (theta_hat - 0.16)/se_hat)
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach. 
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE}
+result_n <- rnorm(n = 10000, mean = 0.10, sd = se_hat)
+plotdata <- tibble(
+  x = result_n,
+  Fx = pnorm(result_n, mean = 0.10, sd = se_hat),
+  fx = dnorm(result_n, mean = 0.10, sd = se_hat)
+)
+
+g <- ggplot(plotdata, aes(x = x, y = fx)) +
+  geom_line() +
+  coord_cartesian(xlim = c(qnorm(0.000001, mean = 0.10, sd = se_hat), 
+                           qnorm(0.999999, mean = 0.10, sd = se_hat))) +
+  ggtitle('Null Distribution of the Sample Mean')
+
+g +
+  geom_vline(xintercept = 0.10, lty = 'dashed', color = 'skyblue') + 
+  geom_segment(aes(x = 0.10, xend = 0.10-se_hat, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_segment(aes(x = 0.10, xend = 0.10 + se_hat, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
+  geom_point(aes(x = 0.10, y = 15), color = 'skyblue') + 
+  annotate(geom="text", x = 0.10 - se_hat/2, y = 14, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = 0.10 + se_hat/2, y = 14, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
+  annotate(geom="text", x = 0.10 + .001, y = 20, label = as.character(expression(theta)), parse = TRUE, color = 'steelblue')
+
 ```
 
+--
 
-
----
-
-
-We will consider several different alternative hypotheses. 
-
----
-
-First, we'll consider the one-tailed alternative hypothesis that $\tau$ is less than zero
-
-
-$$
-H_A: \tau \leq 0
-$$
+- The mean is our proposed $\theta_0 = 0.10$, 
 
 --
-Then we calculate our one-sided lower p-value as
+- the standard error is the same as what we estimated, `r round(se_hat, 3)`. 
+
+---
+
+
+Our t-statistic under the null is:
 
 $$
-p = \Phi\left( \frac{\hat{\theta}^* - \theta_0}{\hat{se}} \right)
+\frac{\hat{\theta}^* - \theta_0}{\hat{se}}
 $$
 
 Recall that the $p$-value is calculated *under the assumption that the null is true*, so $\theta_0$ is the value of $\theta$ under the null. 
 
 ```{r}
+(tstat <- (theta_hat - 0.10)/se_hat)
+```
 
-(lower_p_value <- pnorm( tstat))
+---
 
 
 
+
+We will consider a couple of different alternative hypotheses. 
+
+---
+
+First, we'll consider the one-tailed alternative hypothesis that $\theta$ is less than $\theta_0 = 0.10$.
+
+
+$$
+H_A: \theta \leq 0.10
+$$
+
+--
+To evaluate this, we calculate our one-sided lower p-value as:
+
+$$
+p = \Phi\left(  \frac{\hat{\theta}^* - \theta_0}{\hat{se}}  \right)
+$$
+
+--
+
+```{r}
+(lower_p_value <- pnorm(tstat))
 ```
 
 --
@@ -627,95 +886,88 @@ How do we interpret this?
 
 --
 
-(the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is less than or equal to what we saw from the data.)
+It is the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is less than or equal to what we saw from the data.
 
 
 ---
 
 
-```{r, fig.width = 6, fig.height=5, fig.align = 'center', echo=FALSE}
-result_n <- rnorm(n = 10000, mean = 0.16, sd = se_hat)
-plotdata <- tibble(
-  x = result_n,
-  Fx = pnorm(result_n),
-  fx = dnorm(result_n)
-)
 
-g <- ggplot(plotdata, aes(x = x, y = fx)) +
-  geom_line() +
-  coord_cartesian(xlim = c(-6, 6),
-                  ylim = c(0,0.5)) +
-  ggtitle('PDF of Standard Normal Distribution')
-
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE}
 g +
-  geom_vline(xintercept = tstat, lty = 'dashed', color = 'skyblue') + 
-  geom_segment(aes(x = 0, xend = -1, y = 0.2, yend = 0.2), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_segment(aes(x = 0, xend = 1, y = 0.2, yend = 0.2), 
-               arrow = arrow(length = unit(0.25, "cm")), color = 'skyblue') +
-  geom_point(aes(x = 0, y = 0.2), color = 'skyblue') + 
-  annotate(geom="text", x = 0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
-  annotate(geom="text", x = -0.5, y = .19, label = as.character(expression(sigma)), parse = TRUE, color = 'steelblue') + 
-  annotate(geom="text", x = 0.075, y = .42, label = as.character(expression(mu)), parse = TRUE, color = 'steelblue')
+  stat_function(fun = dnorm,
+                args = list(mean = 0.10, sd = se_hat),
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(0, qnorm(lower_p_value, mean = 0.10, sd = se_hat))) +
+  geom_vline(xintercept = theta_hat, color = 'skyblue', lty= 'dashed') +
+  geom_segment(aes(x = 0.09, xend = 0.04 + se_hat, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = .06, y = 12.5, color = 'darkgray', 
+           label = 'area under the curve in this direction', size = 6)
 
 ```
 
 
 
 ---
+
+
+Then, we'll consider the two-sided alternative hypothesis that $\theta$ is not equal to $\theta_0 = 0.10$. 
+
+
+$$
+H_A: \theta \neq 0.10
+$$
+
+--
+Then we calculate our two-tailed  p-value as
+
+$$
+p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+$$
+
+--
 
 ```{r}
-
-(upper_p_value <- pnorm( tstat, lower.tail = FALSE ))
-
-lm_robust(call_back ~ 1, data = mcr)
-
+(two_tailed_p_value <- 2*(1 - pnorm(abs(tstat))))
 ```
 
-```{r}
-# 
-# (two_sided_t_value <- 2*(1 - pt( tstat, dof)))
-# 
-# 2 * pt(abs(tstat), df = df.residual(model), lower.tail = FALSE)
-# 
-# 
-# 2 * pnorm(abs(tstat), lower.tail = FALSE)
-# 
-# summary(lm())
-# 
-# 
-# upper_p_value + lower_p_value
-# 
-# model$df
-# 
-# model <- lm_robust(call_back ~1, data = mcr %>% filter(black == 1))
-# 
-# confint.default(lm(call_back ~1, data = mcr %>% filter(black == 1)))
-# 
-# 
-# lm_robust(call_back ~ 1, data = mcr)
+--
 
-```
+How do we interpret this?
 
+--
 
-
-
-
-
-## The duality of confidence intervals and hypothesis testing
+It is the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is more extreme than what we saw from the data.
 
 
 ---
 
-## power of test statistic
 
----
 
-# Properties of estimators
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE}
+g +
+  stat_function(fun = dnorm,
+                args = list(mean = 0.10, sd = se_hat),
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(0, qnorm(lower_p_value, mean = 0.10, sd = se_hat))) +
+  stat_function(fun = dnorm,
+                args = list(mean = 0.10, sd = se_hat),
+                geom = "area",
+                fill = "skyblue",
+                xlim = c(qnorm(1-lower_p_value, mean = 0.10, sd = se_hat), 1)) +
+  geom_vline(xintercept = theta_hat, color = 'skyblue', lty= 'dashed') +
+  geom_vline(xintercept = 0.10+0.10-theta_hat, color = 'skyblue', lty= 'dashed') +
+  geom_segment(aes(x = 0.09, xend = 0.04 + se_hat, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = .06, y = 12.5, color = 'darkgray', 
+           label = 'area under the curve in this direction', size = 6) +
+  geom_segment(aes(x = 0.10+0.10-0.09, xend = 0.10+0.10-(0.04 + se_hat), y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = 0.10+0.10-.06, y = 8.5, color = 'darkgray', 
+           label = 'and this direction', size = 6)
 
-## Unbiasedness
-
-## Consistency
-
-## MSE
+```
 
