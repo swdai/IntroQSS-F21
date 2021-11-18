@@ -15,13 +15,15 @@ output:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(gridExtra)
+library(broom)
 set.seed(60637)
 options(width = 60)
 ```
 
 ```{css, echo=FALSE}
 .small-output .remark-code{
-  font-size: x-small;
+  font-size: small;
 }
 
 .white { color: white; }
@@ -252,7 +254,7 @@ g +
 
 ---
 
-For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the normal distribution. 
+For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the standard normal distribution. 
 
 
 In terms of the standard normal distribution, $\Phi(z(c)) = c$, where $\Phi(\cdot)$ is the CDF of the distribution.
@@ -316,7 +318,7 @@ These values are about -2 and 2. We will use them a lot.
 Now, we can define the normal approximation-based confidence interval as:
 
 $$
-CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
+CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \hat\theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
 $$
 
 
@@ -530,22 +532,23 @@ mcr <- tibble(
 
 
 
-
-
-
 ---
+class:small-output
 
-```{r, echo = FALSE, message = FALSE}
+# 
+
+```{r, message = FALSE}
 mcr %>% 
   group_by(black, record) %>% 
   summarize(n = n(), 
             call_back = mean(call_back))
 ```
 
-
-```{r pdb_fig, echo=FALSE, out.width = "60%", fig.align="center"}
+```{r pdb_fig, echo=FALSE, out.width = "80%", fig.align="center"}
 knitr::include_graphics('assets/pager_2003.png')
 ```
+
+
 
 
 ---
@@ -561,9 +564,11 @@ Let's say our $\hat{\theta}$ here is the overall mean of `call_back` among black
 --
 
 Our $\hat{se}$ is our estimate of the standard error of the mean, 
-$$\hat{se} = \sqrt{\hat{\textrm{Var}}[X]/n};$$ 
+$$\hat{se} = \sqrt{\hat{\textrm{Var}}[X]/n}.$$ 
 
-we get this by plugging in our unbiased sample variance estimate into the formula for the standard error of the mean. 
+--
+
+We get this by plugging in our unbiased sample variance estimate into the formula for the standard error of the mean. 
 
 ```{r}
 (se_hat <- mcr %>% 
@@ -587,19 +592,51 @@ $$
 (CI <- c(theta_hat + c(-1,1)*qnorm(1-0.025)*se_hat))
 ```
 
-
-
-
 ---
 
 We can see the exact same confidence intervals in the output of `lm` or `estimatr::lm_robust`, if we use the `confint()` function with the `.default` version, which gives the asymptotically normal confidence intervals.
 
 ```{r}
-library(estimatr)
 
-model <- lm_robust(call_back ~1, data = mcr %>% filter(black == 1))
+model <- estimatr::lm_robust(call_back ~ 1, data = mcr %>% filter(black == 1))
 
 confint.default(model)
+```
+
+---
+## Bootstrapping
+
+The normal approximation based confidence intervals work with our standard error estimates produced from bootstrapping, as well. 
+
+--
+
+We'll apply this to our mcr data. 
+
+```{r}
+
+boot_ests <- map(1:1000, # for 1000 times
+                 # resample w/replacement
+                 ~ sample(mcr %>% filter(black == 1) 
+                          %>% pull(call_back), 
+                          replace = TRUE) %>%
+                   mean()) # and calculate the resampled mean
+
+boot_vec <- unlist(boot_ests)
+
+(boot_se_hat <- sd(boot_vec))
+```
+
+---
+
+We then insert our bootstrapped estimates of the standard error of the mean into the same formula for normal approximation-based confidence intervals. 
+
+$$
+CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
+$$
+
+
+```{r}
+(CI <- c(theta_hat + c(-1,1)*qnorm(1-0.025)*boot_se_hat))
 ```
 
 ---
@@ -712,28 +749,24 @@ How do we produce our $p$-values under the normal approximation based approach?
 
 --
 
-Suppose $\hat{\theta}$ is the general form for an estimate produced by our asymptotically normal estimator, and let $\hat{\theta}^*$ be the value of the estimate we have actually observed. 
-
-Let $\hat{se}$ be a consistent estimator of the sampling variance of the estimator. 
+We'll use a statistic called the t-statistic to get our $p$-values. 
 
 --
+
 
 The *t-statistic* is:
 $$
 t = \frac{\hat{\theta}^* - \theta_0}{\hat{se}}
 $$
 
----
+--
 
-The t-statistic will tell us how unusual our evidence is relative to the null distribution, but it is standardized, so that we can interpret t-statistics the same way in different settings. 
+The t-statistic will tell us how unusual our evidence is relative to the null distribution, but it is standardized (*with respect to the null!*), so that we can interpret t-statistics the same way in different settings. 
 
 ---
 
 ## Normal-approximation based p-values
 
-We'll use the t-statistic to get our $p$-values. 
-
---
 
 We plug the t-statistic produced by our estimates into the CDF function of the standard normal distribution, $\Phi(\cdot)$. 
 
@@ -742,7 +775,7 @@ We plug the t-statistic produced by our estimates into the CDF function of the s
 - For an asymptotically valid lower one-tailed $p$-value **under the null**, 
 
 $$
-p = \Phi\left( \frac{\hat{\theta}^* - \theta_0}{\hat{se}} \right)
+p = \Phi\left( t \right)
 $$
 
 --
@@ -750,7 +783,7 @@ $$
 - For an asymptotically valid upper one-tailed $p$-value **under the null**, 
 
 $$
-p = 1 - \Phi\left( \frac{\hat{\theta}^* - \theta_0}{\hat{se}} \right)
+p = 1 - \Phi\left( t \right)
 $$
 
 
@@ -759,7 +792,7 @@ $$
 - For an asymptotically valid two-tailed $p$-value **under the null**
 
 $$
-p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+p = 2 \times \left(1 -  \Phi\left(  \lvert t \rvert \right)\right)
 $$
 
 ---
@@ -871,7 +904,7 @@ $$
 To evaluate this, we calculate our one-sided lower p-value as:
 
 $$
-p = \Phi\left(  \frac{\hat{\theta}^* - \theta_0}{\hat{se}}  \right)
+p = \Phi\left(  t  \right)
 $$
 
 --
@@ -923,8 +956,9 @@ $$
 --
 Then we calculate our two-tailed  p-value as
 
+
 $$
-p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+p = 2 \times \left(1 -  \Phi\left( \lvert t \rvert  \right)\right)
 $$
 
 --
@@ -939,7 +973,10 @@ How do we interpret this?
 
 --
 
-It is the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is more extreme than what we saw from the data.
+It is the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is more extreme than what we saw from the data. 
+--
+
+This is a high probability; we would fail to reject the null at any kind of conventional $p$-value (0.001, 0.01, 0.05, 0.1, ...). 
 
 
 ---
@@ -970,4 +1007,460 @@ g +
            label = 'and this direction', size = 6)
 
 ```
+
+
+---
+## Duality of confidence intervals and hypothesis testing
+
+
+
+Let's consider the null hypothesis that the mean is $0$, applied to the mcr data. 
+
+$$
+H_0: \theta = 0 
+$$
+$$
+H_A: \theta \neq 0 
+$$
+
+
+---
+
+Our t-statistic under the null is:
+
+$$
+\frac{\hat{\theta}^* - \theta_0}{\hat{se}}
+$$
+
+```{r}
+(tstat <- (theta_hat - 0)/se_hat)
+```
+
+--
+
+Then we calculate our two-tailed  p-value as
+
+$$
+p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+$$
+
+```{r}
+(two_tailed_p_value <- 2*(1 - pnorm(abs(tstat))))
+```
+
+
+
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach.
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+result_n <- rnorm(n = 10000, mean = 0, sd = se_hat)
+plotdata <- tibble(
+  x = result_n,
+  Fx = pnorm(result_n, mean = 0, sd = se_hat),
+  fx = dnorm(result_n, mean = 0, sd = se_hat)
+)
+
+g <- ggplot(plotdata, aes(x = x, y = fx)) +
+  geom_line() +
+  coord_cartesian(xlim = c(qnorm(0.000001, mean = 0, sd = se_hat), 
+                           qnorm(0.999999, mean = 0, sd = se_hat))) +
+  ggtitle('Null Distribution of the Sample Mean')
+```
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+g +
+  coord_cartesian(xlim = c(-.1, .1))
+```
+
+
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach.
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+g +
+  coord_cartesian(xlim = c(-.1, .1)) +
+  geom_vline(xintercept = -theta_hat, col = 'skyblue', lty = 'dashed') +
+  geom_vline(xintercept = theta_hat, col = 'skyblue', lty = 'dashed')
+
+```
+
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach.
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+g +
+  coord_cartesian(xlim = c(-.1, .1)) +
+  geom_vline(xintercept = -theta_hat, col = 'skyblue', lty = 'dashed') +
+  geom_vline(xintercept = theta_hat, col = 'skyblue', lty = 'dashed') +
+  geom_segment(aes(x = -0.06, xend = -0.12 + se_hat, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = -.06, y = 12.5, color = 'darkgray', 
+           label = 'area under the curve in this direction', size = 6) +
+  geom_segment(aes(x = 0.06, xend = 0.1, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = .06, y = 8.5, color = 'darkgray', 
+           label = 'and this direction', size = 6)
+
+```
+
+--
+
+Our $p$-value is very small; we would reject the null hypothesis at a $p$-value $< 0.001$. 
+
+---
+
+- Confidence intervals and hypothesis tests have a specific relationship. 
+
+---
+
+- Consider all of the hypotheses that take the form:
+
+$$
+H_0: \theta = \theta_0
+$$
+$$
+H_A: \theta \neq \theta_0
+$$
+
+--
+
+- If the calculated two-tailed $p$-value is less than $0.05$, reject the hypothesis. 
+
+--
+
+- If the calculated two-tailed $p$-value is greater than $0.05$, fail to reject the hypothesis. 
+
+--
+
+- The $\theta_0$ for which we would fail to reject the hypothesis lie within the 95% confidence interval. 
+
+
+
+---
+One way that this is very useful:
+
+- If $0$ is outside the 95% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.05$. 
+
+--
+
+- If $0$ is outside the 99% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.01$. 
+
+--
+
+- If $0$ is outside the 99.9% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.001$. 
+
+---
+
+# Inference for linear models
+
+We have already seen that when we regress $Y$ on an indicator, we just get the sample mean of $Y$. 
+
+--
+
+In this case, estimating standard errors and confidence intervals follows the same procedures as for sample means. 
+
+
+```{r}
+model <- estimatr::lm_robust(call_back ~1, 
+                             data = mcr %>% filter(black == 1))
+
+model$coefficients
+model$std.error
+
+confint.default(model)
+```
+
+
+---
+
+We can think about parameters in a linear model in a similar way. 
+
+$$
+\textrm{E}[Y| X] = \beta_0 + {\beta}_1 X
+$$ 
+
+--
+
+The true population parameters are generally unknown. 
+
+---
+
+We estimate them for a given sample. 
+
+$$ \hat{Y}_i = \hat{\beta}_0 +  \hat{\beta}_1 X_i $$ 
+
+--
+
+We will think about our random sample being not just for one variable, but from the joint distribution of $(Y, X)$. 
+
+--
+
+Then each $\hat{\beta}_k$ is also random, with its own sampling distribution. 
+
+--
+
+We can get a point estimate for each of the parameters, $\hat{\beta}_k$: the coefficients in our linear model. 
+
+--
+
+We also want to get an estimate of the standard errors of the estimates, $\sqrt{\hat{\textrm{Var}}[\hat{\beta}_k]}$. 
+
+---
+## Robust standard errors
+
+We will use *robust* standard errors; these standard errors don't require much beyond that our data is i.i.d.
+
+
+--
+
+- "classical" regression modeling puts much stronger assumptions on the data, including that errors are "homoskedastic;" they don't vary with $X$
+
+
+---
+
+```{r, fig.width = 8, fig.height=6, fig.align = 'center', echo=FALSE}
+X <- runif(1000)
+Y <- 3*X + rnorm(1000, sd = 0.6)
+Y2 <- 3*X + rnorm(1000)*X
+
+
+df <- tibble(X, Y, Y2)
+
+g1 <- ggplot(df, aes(x = X, y = Y)) + 
+  geom_point() + 
+  coord_cartesian(ylim = c(-0.25, 5.25)) + 
+  ggtitle('Homoskedastic data')
+
+g2 <- ggplot(df, aes(x = X, y = Y2)) + 
+  geom_point() + 
+  coord_cartesian(ylim = c(-0.25, 5.25)) +
+  ggtitle('Heteroskedastic data')
+
+
+grid.arrange(g1, g2, ncol=2)
+```
+
+
+---
+
+## Bootstrapping
+
+- We can estimate robust standard errors by bootstrapping. 
+
+--
+
+Let's try this with the mcr data, where the outcome $Y$ is `call_back`, regressed on `black` and `record`, interacted. 
+
+$$
+\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 \textrm{Black}_i + \hat{\beta}_2 \textrm{Record}_i + \hat{\beta}_3 \textrm{Black}_i  \times \textrm{Record}_i
+$$
+
+
+```{r}
+
+model2 <- estimatr::lm_robust(call_back ~ black*record, data = mcr)
+
+(theta_hats <- coef(model2))
+```
+
+---
+class: small-output
+
+# 
+
+
+```{r}
+boot_samples <- map(1:1000, # for 1000 times
+                    # resample w/replacement
+                    ~ slice_sample(mcr, 
+                                   replace = TRUE, 
+                                   n = nrow(mcr)))
+
+head(boot_samples, 2)
+```
+
+
+---
+class: small-output
+
+# 
+
+```{r}
+boot_lm <- map(boot_samples, 
+               ~ estimatr::lm_robust(call_back ~ black*record, data = .) %>% 
+                 coef())
+
+head(boot_lm)
+```
+
+---
+
+```{r}
+boot_lm_df <- bind_rows(boot_lm)
+
+boot_lm_df
+```
+
+---
+
+```{r}
+boot_se_hats <- boot_lm_df %>% 
+  map_dbl(sd) 
+
+boot_se_hats
+```
+
+---
+
+We then insert our bootstrapped estimates of the standard error of the mean into the same formula for normal approximation-based confidence intervals--**for each estimated coefficient and standard error separately**. 
+
+$$
+CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
+$$
+
+---
+
+```{r}
+boot_ci <- bind_cols(term = names(theta_hats), 
+          est = theta_hats, 
+          boot_se = boot_se_hats) %>% 
+  mutate(conf_lower = est - qnorm(.975)*boot_se,
+         conf_upper = est + qnorm(.975)*boot_se)
+
+boot_ci
+```
+
+---
+class: small-output
+
+# 
+
+Consider the standard errors produced by `estimatr::lm_robust()` :
+```{r}
+estimatr::lm_robust(call_back ~ black*record, data = mcr) %>% 
+                                                   broom::tidy() %>% 
+  select(term, estimate, std.error)
+```
+--
+
+Compare these to the standard errors produced by `lm()`
+
+```{r}
+summary(lm(call_back ~ black*record, data = mcr)) %>% 
+                                                   broom::tidy() %>% 
+  select(term, estimate, std.error)
+```
+
+
+
+---
+
+- `estimatr::lm_robust()` outputs robust standard errors by default; this is why it's really nice to use. 
+
+--
+
+- There are options for different types of robust standard errors which have different small sample properties, but they're asymptotically equivalent.
+
+
+---
+class: inverse, middle, center
+
+# Appendix (for reference): Difference in means
+
+
+---
+## Difference in means
+
+The case where we have a simple difference in means is a special case. 
+--
+Let's compare respondents with and without records. 
+
+
+```{r}
+model3 <- estimatr::lm_robust(call_back ~ record, data = mcr)
+
+model3$coefficients
+```
+
+
+--
+
+We have seen that the coefficient estimate produced by the model coincides with the difference-in-means estimate. 
+
+```{r}
+Y1 <- filter(mcr, record == 1) %>% pull(call_back)
+Y0 <- filter(mcr, record == 0) %>% pull(call_back)
+
+(dm_hat <- mean(Y1) - mean(Y0))
+
+```
+
+---
+
+## Normal approximation based approach
+
+For the difference in two means from i.i.d. data, $Y$ and $Z$, each sample mean is approximately normally distributed, and a linear combination of normal random variables is also approximately normally distributed:
+
+$$
+\bar Y - \bar Z \mathrel{\dot\sim} \mathcal{N}\left( \textrm{E}[Y] - \textrm{E}[Z], \sigma^2\left(\frac{1}{n} + \frac{1}{m} \right) \right)
+$$
+where $n$ is the sample assigned to $Y$, and $m$ is the sample assigned to $Z$. 
+
+---
+
+Generally, we will not know $\sigma^2$, so we can estimate it as a weighted average of the unbiased sample variances of $Y$ and $Z$ respectively using the **pooled sample variance**. 
+
+$$
+S^2_p =\frac{(n-1) S^2_Y + (m-1)S^2_Z }{m + n -2} 
+$$
+
+--
+
+For our difference in callbacks with and without records. 
+
+```{r}
+n <- length(Y1)
+m <- length(Y0)
+var_hat1 <- var(Y1)
+var_hat0 <- var(Y0)
+s2p <- ( (n-1)*var_hat1 + (m-1)*var_hat0 )/(m + n -2)
+```
+
+
+---
+
+```{r}
+(dm_se_hat <- sqrt(s2p)*sqrt(1/n + 1/m)) # estimate of standard error of diff in means
+(dm_tstat <- dm_hat/(sqrt(s2p)*sqrt(1/n + 1/m))) # t-statistic for diff in means
+```
+
+--
+And then calculating confidence intervals
+
+```{r}
+
+dm_hat + c(-1, 1)*qnorm(1-0.025)*dm_se_hat # confidence interval
+```
+
+
+--
+Compare these to the standard error and t-statistic under `estimatr::lm_robust()`
+
+```{r}
+model3
+```
+
+
+---
+Again, you can reproduce the confidence interval produced by `lm_robust` using `qt()` and the degrees of freedom, instead of `qnorm()` for the quantiles. 
+
+
+```{r}
+dof <- m + n - 2 # degrees of freedom
+
+dm_hat + c(-1, 1)*qt(1-0.025, 698)*dm_se_hat
+```
+
+
 
