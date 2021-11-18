@@ -122,7 +122,7 @@ ggplot(plotdata, aes(x = x, y = fx)) +
 Variance = average squared distance from the mean
 $$
 \begin{align}
-\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X)^2]\\\\
+\textrm{Var}[X] & = \textrm{E}[(X - \textrm{E}[X])^2]\\\\
 & = 2.25 \times \frac{1}{16} + 0.25 \times \frac{3}{8} + 0.25 \times \frac{9}{16} \\\\
 & = 0.375
 \end{align}
@@ -481,7 +481,7 @@ $$S^2_n = \frac{1}{n-1}\sum_{i = 1}^n (X_i - \bar{X}_n)^2$$
 This looks a little bit different from a straightforward sample analog to the population variance formula, 
 
 $$
-\textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X]^2]
+\textrm{Var}[X] = \textrm{E}[(X-\textrm{E}[X])^2]
 $$
 --
 
@@ -648,7 +648,7 @@ var(x_observed)
 
 ```{r}
 
-mean( (x_observed - mean(x_observed) )^2)*n/(n-1)
+sum( (x_observed - mean(x_observed) )^2)/(n-1)
 
 ```
 
@@ -764,6 +764,13 @@ In fact, from our `r n_iter` separate samples, we calculate `r n_iter` separate 
 --
 
 But *this estimate is itself a random variable*, with, again, its own sampling distribution. We will get slightly different estimates of the sampling variance of the sample mean each time we take our `r n_iter` separate samples. 
+--
+
+In practice, we will estimate the standard error of the sample mean by plugging our unbiased sample variance formula into the standard error formula:
+
+$$
+\hat{\textrm{se}} = \sqrt{S^2_n/n }
+$$
 
 
 ---
@@ -1342,3 +1349,8 @@ When we're dealing with sampling from finite populations, we often make the assu
 
 <!--  - heteroskedasticity -->
 <!--  cluster robust -->
+
+
+```{r knit, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+knitr::purl("slides_72.Rmd")
+```

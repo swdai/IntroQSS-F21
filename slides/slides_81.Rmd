@@ -254,7 +254,7 @@ g +
 
 ---
 
-For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the normal distribution. 
+For $0 \le c \le 1$,  $z(c)$ describes the $c$-th quantile of the standard normal distribution. 
 
 
 In terms of the standard normal distribution, $\Phi(z(c)) = c$, where $\Phi(\cdot)$ is the CDF of the distribution.
@@ -318,7 +318,7 @@ These values are about -2 and 2. We will use them a lot.
 Now, we can define the normal approximation-based confidence interval as:
 
 $$
-CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
+CI\_n = \left(\hat \theta\_n - z\_{1-\alpha/2} \times \hat{\textrm{se}},\  \hat\theta\_n + z\_{1-\alpha/2}\times \hat{\textrm{se}} \right)
 $$
 
 
@@ -598,7 +598,7 @@ We can see the exact same confidence intervals in the output of `lm` or `estimat
 
 ```{r}
 
-model <- estimatr::lm_robust(call_back ~1, data = mcr %>% filter(black == 1))
+model <- estimatr::lm_robust(call_back ~ 1, data = mcr %>% filter(black == 1))
 
 confint.default(model)
 ```
@@ -749,28 +749,24 @@ How do we produce our $p$-values under the normal approximation based approach?
 
 --
 
-Suppose $\hat{\theta}$ is the general form for an estimate produced by our asymptotically normal estimator, and let $\hat{\theta}^*$ be the value of the estimate we have actually observed. 
-
-Let $\hat{se}$ be a consistent estimator of the sampling variance of the estimator. 
+We'll use a statistic called the t-statistic to get our $p$-values. 
 
 --
+
 
 The *t-statistic* is:
 $$
 t = \frac{\hat{\theta}^* - \theta_0}{\hat{se}}
 $$
 
----
+--
 
-The t-statistic will tell us how unusual our evidence is relative to the null distribution, but it is standardized, so that we can interpret t-statistics the same way in different settings. 
+The t-statistic will tell us how unusual our evidence is relative to the null distribution, but it is standardized (*with respect to the null!*), so that we can interpret t-statistics the same way in different settings. 
 
 ---
 
 ## Normal-approximation based p-values
 
-We'll use the t-statistic to get our $p$-values. 
-
---
 
 We plug the t-statistic produced by our estimates into the CDF function of the standard normal distribution, $\Phi(\cdot)$. 
 
@@ -779,7 +775,7 @@ We plug the t-statistic produced by our estimates into the CDF function of the s
 - For an asymptotically valid lower one-tailed $p$-value **under the null**, 
 
 $$
-p = \Phi\left( \frac{\hat{\theta}^* - \theta_0}{\hat{se}} \right)
+p = \Phi\left( t \right)
 $$
 
 --
@@ -787,7 +783,7 @@ $$
 - For an asymptotically valid upper one-tailed $p$-value **under the null**, 
 
 $$
-p = 1 - \Phi\left( \frac{\hat{\theta}^* - \theta_0}{\hat{se}} \right)
+p = 1 - \Phi\left( t \right)
 $$
 
 
@@ -796,7 +792,7 @@ $$
 - For an asymptotically valid two-tailed $p$-value **under the null**
 
 $$
-p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+p = 2 \times \left(1 -  \Phi\left(  \lvert t \rvert \right)\right)
 $$
 
 ---
@@ -908,7 +904,7 @@ $$
 To evaluate this, we calculate our one-sided lower p-value as:
 
 $$
-p = \Phi\left(  \frac{\hat{\theta}^* - \theta_0}{\hat{se}}  \right)
+p = \Phi\left(  t  \right)
 $$
 
 --
@@ -960,8 +956,9 @@ $$
 --
 Then we calculate our two-tailed  p-value as
 
+
 $$
-p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+p = 2 \times \left(1 -  \Phi\left( \lvert t \rvert  \right)\right)
 $$
 
 --
@@ -1017,7 +1014,7 @@ g +
 
 
 
-Let's consider the null hypothesis that the mean is 0, applied to the mcr data. 
+Let's consider the null hypothesis that the mean is $0$, applied to the mcr data. 
 
 $$
 H_0: \theta = 0 
@@ -1149,6 +1146,10 @@ One way that this is very useful:
 
 - If $0$ is outside the 99% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.01$. 
 
+--
+
+- If $0$ is outside the 99.9% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.001$. 
+
 ---
 
 # Inference for linear models
@@ -1264,18 +1265,26 @@ model2 <- estimatr::lm_robust(call_back ~ black*record, data = mcr)
 ```
 
 ---
+class: small-output
+
+# 
 
 
 ```{r}
 boot_samples <- map(1:1000, # for 1000 times
                     # resample w/replacement
-                    ~ slice_sample(mcr, replace = TRUE, n = nrow(mcr)))
+                    ~ slice_sample(mcr, 
+                                   replace = TRUE, 
+                                   n = nrow(mcr)))
 
 head(boot_samples, 2)
 ```
 
 
 ---
+class: small-output
+
+# 
 
 ```{r}
 boot_lm <- map(boot_samples, 
@@ -1315,7 +1324,7 @@ $$
 ```{r}
 boot_ci <- bind_cols(term = names(theta_hats), 
           est = theta_hats, 
-          boot_se = as.numeric(boot_se_hats)) %>% 
+          boot_se = boot_se_hats) %>% 
   mutate(conf_lower = est - qnorm(.975)*boot_se,
          conf_upper = est + qnorm(.975)*boot_se)
 
@@ -1323,6 +1332,9 @@ boot_ci
 ```
 
 ---
+class: small-output
+
+# 
 
 Consider the standard errors produced by `estimatr::lm_robust()` :
 ```{r}
@@ -1348,7 +1360,7 @@ summary(lm(call_back ~ black*record, data = mcr)) %>%
 
 --
 
-- (There are options for different types of robust standard errors which have different small sample properties, but they're asymptotically equivalent.)
+- There are options for different types of robust standard errors which have different small sample properties, but they're asymptotically equivalent.
 
 
 ---
@@ -1445,12 +1457,9 @@ Again, you can reproduce the confidence interval produced by `lm_robust` using `
 
 
 ```{r}
-(dof <- model2$df[2]) # degrees of freedom
+dof <- m + n - 2 # degrees of freedom
 
-# compare to:
-m + n -2
-
-dm_hat + c(-1, 1)*qt(1-0.025, dof)*dm_se_hat
+dm_hat + c(-1, 1)*qt(1-0.025, 698)*dm_se_hat
 ```
 
 
