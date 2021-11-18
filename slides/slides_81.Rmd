@@ -976,7 +976,10 @@ How do we interpret this?
 
 --
 
-It is the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is more extreme than what we saw from the data.
+It is the probability *under the null distribution* that we would see an estimate of $\hat{\theta}$ that is more extreme than what we saw from the data. 
+--
+
+This is a high probability; we would fail to reject the null at any kind of conventional $p$-value (0.001, 0.01, 0.05, 0.1, ...). 
 
 
 ---
@@ -1009,6 +1012,142 @@ g +
 ```
 
 
+---
+## Duality of confidence intervals and hypothesis testing
+
+
+
+Let's consider the null hypothesis that the mean is 0, applied to the mcr data. 
+
+$$
+H_0: \theta = 0 
+$$
+$$
+H_A: \theta \neq 0 
+$$
+
+
+---
+
+Our t-statistic under the null is:
+
+$$
+\frac{\hat{\theta}^* - \theta_0}{\hat{se}}
+$$
+
+```{r}
+(tstat <- (theta_hat - 0)/se_hat)
+```
+
+--
+
+Then we calculate our two-tailed  p-value as
+
+$$
+p = 2 \times \left(1 -  \Phi\left(  \frac{\lvert \hat{\theta}^* - \theta_0 \rvert}{\hat{se}}  \right)\right)
+$$
+
+```{r}
+(two_tailed_p_value <- 2*(1 - pnorm(abs(tstat))))
+```
+
+
+
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach.
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+result_n <- rnorm(n = 10000, mean = 0, sd = se_hat)
+plotdata <- tibble(
+  x = result_n,
+  Fx = pnorm(result_n, mean = 0, sd = se_hat),
+  fx = dnorm(result_n, mean = 0, sd = se_hat)
+)
+
+g <- ggplot(plotdata, aes(x = x, y = fx)) +
+  geom_line() +
+  coord_cartesian(xlim = c(qnorm(0.000001, mean = 0, sd = se_hat), 
+                           qnorm(0.999999, mean = 0, sd = se_hat))) +
+  ggtitle('Null Distribution of the Sample Mean')
+```
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+g +
+  coord_cartesian(xlim = c(-.1, .1))
+```
+
+
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach.
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+g +
+  coord_cartesian(xlim = c(-.1, .1)) +
+  geom_vline(xintercept = -theta_hat, col = 'skyblue', lty = 'dashed') +
+  geom_vline(xintercept = theta_hat, col = 'skyblue', lty = 'dashed')
+
+```
+
+---
+This is the null distribution we're using for the sample mean under the normal approximation-based approach.
+
+```{r, fig.width = 10, fig.height=5, fig.align = 'center', echo=FALSE, message = FALSE}
+g +
+  coord_cartesian(xlim = c(-.1, .1)) +
+  geom_vline(xintercept = -theta_hat, col = 'skyblue', lty = 'dashed') +
+  geom_vline(xintercept = theta_hat, col = 'skyblue', lty = 'dashed') +
+  geom_segment(aes(x = -0.06, xend = -0.12 + se_hat, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = -.06, y = 12.5, color = 'darkgray', 
+           label = 'area under the curve in this direction', size = 6) +
+  geom_segment(aes(x = 0.06, xend = 0.1, y = 15, yend = 15), 
+               arrow = arrow(length = unit(0.25, "cm")), color = 'darkgray') +
+  annotate('text', x = .06, y = 8.5, color = 'darkgray', 
+           label = 'and this direction', size = 6)
+
+```
+
+--
+
+Our $p$-value is very small; we would reject the null hypothesis at a $p$-value $< 0.001$. 
+
+---
+
+- Confidence intervals and hypothesis tests have a specific relationship. 
+
+---
+
+- Consider all of the hypotheses that take the form:
+
+$$
+H_0: \theta = \theta_0
+$$
+$$
+H_A: \theta \neq \theta_0
+$$
+
+--
+
+- If the calculated two-tailed $p$-value is less than $0.05$, reject the hypothesis. 
+
+--
+
+- If the calculated two-tailed $p$-value is greater than $0.05$, fail to reject the hypothesis. 
+
+--
+
+- The $\theta_0$ for which we would fail to reject the hypothesis lie within the 95% confidence interval. 
+
+
+
+---
+One way that this is very useful:
+
+- If $0$ is outside the 95% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.05$. 
+
+--
+
+- If $0$ is outside the 99% confidence interval, we would reject the hypothesis that $\theta = 0$ at $p = 0.01$. 
 
 ---
 
