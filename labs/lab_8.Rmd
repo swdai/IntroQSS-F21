@@ -1,7 +1,7 @@
 ---
-title: "Lab 8 Solutions"
+title: "Lab 8"
 author: "Steven Boyd"
-date: "11/17/2021"
+date: "11/18/2021"
 output: pdf_document
 ---
 
@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include=FALSE}
 library(tidyverse)
 library(estimatr)
 
@@ -44,11 +44,11 @@ What do these values represent? Are they symmetric about the mean like the value
 
 **[YOUR ANSWER HERE]** 
 
-Now, use `qunif` to find the .05 and .95 quantiles of the same uniform distirbution used to generate the sample above.  
+Now, use `qunif` to find the .05 and .95 quantiles of the same uniform distribution used to generate the sample above.  
 
 How do the values compare to the quantiles of the sample? When you increase the sample size, what happens to the sample quantiles relative to the distribution quantiles?
 
-**[YOUR ANSWEr HERE]**
+**[YOUR ANSWER HERE]**
 
 ## More on Bootstrapping
 
@@ -77,4 +77,4 @@ boot_lm <- map(mt_cars_boot_2, ~lm_robust(mpg ~ cyl + disp, data = .) %>%
 
 head(boot_lm)
 
-What does the output look like? Alter the code to iterate a linear model of your own design over the bootstrapped dataframes. Output a vector of the coefficients on each variable as a *matrix* (hint: use `bind_rows`). 
+What does the output look like? Alter the code to iterate a linear model of your own design over the bootstrapped dataframes. Output the regression coefficients on each variable as a *matrix* (hint: use `bind_rows`). 
