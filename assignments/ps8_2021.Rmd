@@ -1,7 +1,7 @@
 ---
 title: "Problem set 8"
-author: "Your name here"
-date: "Due 11/19/2021 at 5pm"
+author: "Siwei Dai"
+date: \today
 output: pdf_document
 ---
 
@@ -24,8 +24,8 @@ To load the data you can either download and read in the local file, or you can 
 
 ```{r, message=FALSE}
 
-file <- 'https://raw.githubusercontent.com/UChicago-pol-methods/IntroQSS-F21/main/data/legislators_email/Butler_Broockman_AJPS_2011_public_csv.csv'
-bb <- read_csv(url(file))
+file <- './../data/legislators_email/Butler_Broockman_AJPS_2011_public_csv.csv'
+bb <- read_csv(file)
 
 ```
 
@@ -36,12 +36,16 @@ bb <- read_csv(url(file))
 
 ```{r}
 # your code here
+theta_hat <-  mean(bb$reply_atall)
+theta_hat
 ```
 
 **(1b) Create an object called `se_hat` which is the estimate of the standard error of the mean of the `reply_atall` variable in the data set, using the formula based on the unbiased sample variance.**
 
 ```{r}
 # your code here
+se_hat <- sqrt(var(bb$reply_atall)/length(bb$reply_atall))
+se_hat
 ```
 
 **(1c) The formula for the normal approximation-based confidence intervals is below**
@@ -55,6 +59,7 @@ $$
 
 ```{r}
 # your code here
+qnorm(p = 0.975)
 ```
 
 
@@ -62,21 +67,27 @@ $$
 
 ```{r}
 # your code here
+CI_1d <- c(theta_hat + c(-1, 1) * qnorm(p = 0.975) * se_hat)
+CI_1d
 ```
 
-**(1e) Interpret what the 95% confidence interval means.**
+**(1e) Interpret what the 95% confidence interval means.**  
+The probability that the true value of the estimand falls in (`r CI_1d[[1]]`, `r CI_1d[[2]]`) is 95%.  
 
 
 **(1f) To get the 90% confidence intervals, we will set $\alpha$ as 0.10. So we want to find $z_{1-\alpha/2} = z_{0.95}$. Using qnorm, get the 95-th quantile of the standard normal distribution.**
 
 ```{r}
 # your code here
+z_0.95 <- qnorm(p = 0.95)
 ```
 
 
 **(1g) Using your answer from the question above, report the 90% normal approximation-based confidence intervals for the estimate of `theta_hat`.**
 ```{r}
 # your code here
+CI_1g <- c(theta_hat + c(-1, 1) * se_hat * z_0.95)
+CI_1g
 ```
 
 
@@ -86,12 +97,27 @@ $$
 
 ```{r}
 # your code here
+bootsp_mean <- map(1:1000, ~sample(bb$reply_atall, size = nrow(bb), replace = TRUE)) %>% 
+    map(mean) %>% 
+    unlist
+# default in sample(size) is the size of the data input 
+bootsp_mean_sd <- bootsp_mean %>% 
+    sd()
+bootsp_mean_sd
+    
+    
+
 ```
 
 **(1i) We can compare the distribution of the estimator under the bootstrap procedure and under the normal approximation. Using the `quantile()` function and your saved vector of 1000 bootstrapped estimates of the sample mean, report the 2.5th and 97.5th quantiles of the estimates under the bootstrap. These cover 95% of the empirical distribution of the bootstrap. How do they compare to your 95% normal approximation-based confidence intervals in your answer to 1d above?**
 
 ```{r}
 # your code here
+quantile(bootsp_mean, probs = c(0.025, 0.975))
+CI_1d
+
+# The CI of estimates from bootstraps are close to the CI we gather from the sample we observe
+
 ```
 
 
@@ -101,32 +127,60 @@ $$
 
 ```{r}
 # your code here
+model2a <- lm_robust(reply_atall ~ treat_deshawn * leg_republican, data = bb) 
+theta_hats <- model2a %>% 
+    coef()
+model2a
 ```
 
-**(2b) From the model object above, report and interpret the standard errors and 95% confidence intervals on `treat_deshawn` and `treat_deshawn:leg_republican`. Do the confidence intervals include zero? If so/if not, what does that imply?**
+**(2b) From the model object above, report and interpret the standard errors and 95% confidence intervals on `treat_deshawn` and `treat_deshawn:leg_republican`. Do the confidence intervals include zero? If so/if not, what does that imply?**  
 
+The standard error on 'treat_deshawn' means that the standard deviation of the sample mean, an estimator of "treat_deshawn", is  `r model2a$std.error["treat_deshawn"]`; the standard error on "treat_deshawn:leg_republican" means the standard deviation of the sample mean for the interactive effect of "treat_deshawn" and "leg_republican" is `r model2a$std.error["treat_deshawn:leg_republican"]`. 
+
+The 95% confidence interval for "treat_deshawn" is (`r c(model2a$conf.low["treat_deshawn"], model2a$conf.high["treat_deshawn"]) `), which means under the assumption that the estimates are normally distributed acorss all samples, the probability of the true estimand falling within the CI is 95%. Similarly, the 95% confidence interval for "treat_deshawn:leg_republican" is (`r c(model2a$conf.low["treat_deshawn:leg_republican"], model2a$conf.high["treat_deshawn:leg_republican"]) `) means that assuming the estimates are normally distributed, the probability of the true value of the estimand falling within the CI is 95%. 
+
+The CI on "treat_deshawn" include 0, which means we would fail to reject the null hypothesis at a p-value $p = 0.05$; the CI on "treat_deshawn:leg_republican" doesn't include 0, which menas we would reject the null hypothesis at a p-value $p \leq 0.05$. 
 
 
 **(2c) Using `map()` and `slice_sample(, replace = TRUE)`, take 1000 bootstrap re-samples with replacement of the same size as the original data from the `bb` dataset. Save your bootstrapped samples as an object.**
 
 ```{r}
 # your code here
+bootsp <- map(1:1000, ~slice_sample(bb, n = nrow(bb), replace = TRUE))
 ```
 
 
 **(2d) Using `map()` again, run the same regression as above on *each* of your bootstrapped samples; extract coefficient estimates; and use `bind_rows()` to create a matrix where each row represents estimates from one of your bootstrap samples, and each column is one of the coefficients.**
 ```{r}
 # your code here
+tbl2d <- bootsp %>% 
+    map(~lm_robust(reply_atall ~ treat_deshawn * leg_republican, data = .) %>% 
+            coef()) %>% 
+    bind_rows
+tbl2d
 ```
 
 **(2e) Report the bootstrapped estimates of the standard errors of each of the coefficients. To do this, get the standard deviations of each of the columns.**
 ```{r}
 # your code here
+# OR can use map(1:ncol(tbl2d), ~sd(tbl2d[[.]]))
+bootsp_se <- apply(tbl2d, 2, sd)
+bootsp_se
 ```
 
 **(2f) Produce normal approximation-based confidence intervals for each of the coefficients using the bootstrapped standard errors, inserted into the same formula for confidence intervals as presented in 1c. Compare these to the standard errors from your original `lm_robust()` model object in question 2a.**
 
 ```{r}
 # your code here
+bootsp_CI <- bind_cols(term = names(theta_hats),
+                       mean = theta_hats, 
+                       se = bootsp_se)  %>% 
+    mutate('CI_lower' = mean - qnorm(0.975) * se,
+           'CI_upper' = mean + qnorm(0.975) * se)
+
+bootsp_CI
+bind_cols(coef_lower = model2a$conf.low, 
+          coef_upper = model2a$conf.high)
+# The CIs from bootstraps are pretty close to those in the model
 ```
 

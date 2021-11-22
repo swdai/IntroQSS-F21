@@ -35,7 +35,9 @@ So, this works if the normal distribution is a suitable approximation of the nul
 ```{r}
 unif_sample <- runif(100, min = 0, max = 100)
 
+#The actual CDF of runif would be 1/x
 quantile(unif_sample, probs = .9)
+# This is the ECDF, given the value of ECDF, quantile(x) = the value of ECDF (0.9)
 
 quantile(unif_sample, probs = c(.05, .95))
 ```
@@ -49,8 +51,25 @@ Now, use `qunif` to find the .05 and .95 quantiles of the same uniform distribut
 How do the values compare to the quantiles of the sample? When you increase the sample size, what happens to the sample quantiles relative to the distribution quantiles?
 
 **[YOUR ANSWER HERE]**
+```{r}
+qunif(p = c(0.05, 0.95), min = 0, max = 100)
+# p gives the probability, 
+# this is the functional form, the real distribution
+```
+
+```{r}
+unif_sample <- runif(5000, min = 0, max = 100)
+quantile(unif_sample, probs = c(0.05, 0.95))
+# This is a sample of uniform distribution
+# In expectation, as the sample size goes up, 
+# Weak law of large numbers in action
+quantile(runif(5000, min = 0, max = 100), probs = c(0.05, 0.95))
+```
+
 
 ## More on Bootstrapping
+
+Use bootstraps to approximate the robust standard errors  
 
 Last week we practiced bootstrapping from a specific sample, which was a vector. But, we can bootstrap from dataframes too! To do so, we'll use the `slice_sample()` function. Rather than randomly sample values from a vector, it randomly samples rows. This is helpful if you want to do bootstrapping and there are multiple variables that you want to keep from your data. Why might you want to do so?
 
@@ -60,21 +79,38 @@ Run the following chunk. What is the structure of the output?
 
 ```{r}
 mt_cars_boot_1 <- map(1:1000, ~slice_sample(mtcars))
+# slice_sample rather than sample() due to it is a dataframe
 
-head(mt_cars_boot_1)
+head(mt_cars_boot_1, 1)
 ```
 
 Alter the code to take 1000 bootstrapped versions of `mtcars`, where each bootstrapped dataframe has the same number of rows as the original. Save the output as an object called `mt_cars_boot_2`. 
 
 What does the output look like now?
+```{r}
+# replacement needs to be true, otherwise it would be just reshuffle the rows
+mt_cars_boot_2 <- map(1:1000, ~slice_sample(mtcars, n = nrow(mtcars), replace = TRUE))
+head(mt_cars_boot_2, 1)
+length(mt_cars_boot_2)
+```
+
 
 ## Iterating linear models
 
 One thing we can do with these bootstrapped dataframes is feed them into map and fit a linear model to each. Run the following code in a chunk:
-
+```{r}
 boot_lm <- map(mt_cars_boot_2, ~lm_robust(mpg ~ cyl + disp, data = .) %>%
                  coef()) 
-
+lm_robust(mpg ~ cyl + disp, data = mt_cars_boot_2[[1]])
 head(boot_lm)
+```
 
 What does the output look like? Alter the code to iterate a linear model of your own design over the bootstrapped dataframes. Output the regression coefficients on each variable as a *matrix* (hint: use `bind_rows`). 
+```{r}
+boot_lm <- map(mt_cars_boot_2, ~lm_robust(mpg ~ cyl + disp, data = .) %>%
+                 coef()) %>% 
+                bind_rows()
+boot_lm
+```
+
+

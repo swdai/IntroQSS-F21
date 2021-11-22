@@ -1,0 +1,23 @@
+---
+title: "Final PJ"
+author: "Siwei Dai"
+date: \today
+header-includes:
+    - \usepackage{xeCJK}
+    - \pagenumbering{arabic}
+output: 
+    pdf_document:
+        latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r env setup, echo=FALSE}
+library(tidyverse)
+datapath <- './ps_data/FullData.csv'
+df <- as_tibble(read.csv(datapath))
+```
+
+
