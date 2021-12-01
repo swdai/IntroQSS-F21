@@ -1,5 +1,5 @@
 ---
-title: "Final PJ"
+title: "Years in office, promotion incentives, and fiscal behavior"
 author: "Siwei Dai"
 date: \today
 header-includes:
@@ -14,10 +14,334 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r env setup, echo=FALSE}
+```{r env setup, message=FALSE, warning=FALSE}
 library(tidyverse)
+library(estimatr)
+library(modelsummary)
+options(modelsummary_format_numeric_latex = "mathmode")
 datapath <- './ps_data/FullData.csv'
 df <- as_tibble(read.csv(datapath))
+biodatapath <- './ps_data/BiographicalData.csv'
+biodf <- as_tibble(read.csv(biodatapath))
+fiscdatapath <- './ps_data/fiscal.dta'
+fiscdf <- haven::read_dta(fiscdatapath)
 ```
 
+# Data description
+This project is based on two datasets. The first dataset is the "Chinese Political Elite Database" (CPED), compiled by Junyan Jiang (accessed at https://www.junyanjiang.com/data.html). This dataset includes the biographical and career information of all mayors and municipal party secretaries from 2000 to 2015, provincial governors  and party secretaries (1995 - 2015).  
+
+Another dataset documents county-level fiscal revenue and expenditure during 1994 to 2008. The dataset comes from Xu Xu (2021) who purchased and digitized the original "Fiscal Statistics of Cities and Counties" compiled by the Budget Department of the Ministry of Finance of China. The original paper concerns the effect of implementing digital surveillance programs on public security spending.
+
+Before running analyses, I tidied and merged the two datasets to produce a leader-year dataset.
+
+On the CPED dataset, I first created the key variables needed for analysis; I then converted the CPED dataset to a county-year level dataset. 
+
+On the county-level fiscal data, I dealt with certain coding discrepancies within the data. In some cases, missing data is coded `NA` and in other cases, it's coded 0. I recoded the missing data points to `NA`.  
+
+Finally, I merged the datasets together. As some politicians may only start their position closer to December, they may not have sufficient control over the fiscal expenditure and income that particular year. For politicians who came into office between July to December, I coded the first year of their tenure the next year.  
+
+The final dataset has 11,062 leader-year observations. Each observation documents who the leaders were at a particular city in a given year, how much was the fiscal expenditure and revenue. 
+
+```{r data cleaning}
+df_tidy <- df %>% 
+    # translate the variables into English
+    # exper_num refers to the career stage
+    rename('identifier' = 用户编码,
+           'name' = 姓名,
+           'job' = 标志位,
+           'position_ori' = 级别, 
+           'exper_num' = 经历序号,
+           'start_date' = 起始时间.YYYY.MM.DD.,
+           'end_date' = 终止时间..YYYY.MM.DD..,
+           'prefectural_code' = 二级关键词编码,
+           'provincial_code' = 一级关键词编码,
+           'position_code' = 职务一级关键词编码) %>% 
+    select(identifier, name, job, position_ori, exper_num, start_date, end_date, 
+           prefectural_code, provincial_code, position_code) %>% 
+    # impute prefectural code from provincial code if the prefectural code is missing due to being a provincial leader
+    mutate(prefectural_code = ifelse(is.na(prefectural_code), provincial_code, prefectural_code)) %>% 
+    # recode the position from strings into numeric; larger the number, higher the position
+    mutate('position_numeric' = case_when(position_ori == '无级别' ~ 0, 
+                                          position_ori == '小于副处' ~ 1,
+                                          position_ori == '副处' ~ 2,
+                                          position_ori == '正处' ~ 3,
+                                          position_ori == '副厅' ~ 4,
+                                          position_ori == '正厅' ~ 5,
+                                          position_ori == '副部' ~ 6,
+                                          position_ori == '正部' ~ 7,
+                                          position_ori == '副国' ~ 8,
+                                          position_ori == '正国' ~ 9)) %>% 
+    # Code the term length
+    mutate('term_length' = (as.numeric(as.Date(end_date) - as.Date(start_date)))/365,
+           'start_year' = ifelse(as.numeric(format(as.Date(start_date), '%b')) >= 7, as.numeric(format(as.Date(start_date), '%Y')) + 1, as.numeric(format(as.Date(start_date), '%Y'))),
+           'end_year' = as.numeric(format(as.Date(end_date), '%Y'))) %>%
+    # Create a `leader` variable to code if the official is a municipal/provincial governor or party secretary 
+    mutate(governor = job %in% c("市长", "省长"),
+           mayor = (job == "市长"),
+           party_secretary = job %in% c("市委书记", "省委书记"),
+           leader = governor | party_secretary) %>% 
+    # Create promotion or demotion
+    group_by(name) %>% 
+    # rank the experiences in the temporal order
+    arrange(exper_num, by_group = TRUE) %>% 
+    mutate(dem = (lag(position_numeric) > position_numeric),
+           # or being moved to an inconsequential position
+           prom = (lead(position_numeric) > position_numeric))
+    
+```
+
+# Converting to county-year dataset
+```{r county-year conversion}
+df_tidy_year <- df_tidy %>% 
+    # filter out NAs, otherwise there would be errors in mutating new variables
+    filter(!is.na(start_year) & !is.na(end_year) & !is.na(prefectural_code)) %>% 
+    mutate('year' = map2(start_year, end_year, `:`)) %>% 
+    unnest(cols = c(year)) %>% 
+    # filter out the experiences after the fiscal data is available
+    filter(year >= 1994) %>% 
+    # Create two dummies
+    mutate('term_year' = year - start_year + 1,
+           'first_year' = ifelse(year == start_year, 1, 0),
+           'last_year' = ifelse(year == end_year, 1, 0))
+```
+
+# Merge the dataset with spending data and biographical information
+```{r data merging}
+# merge with fiscal data using regional code and year
+# first, filter only include those who have ascended to the position of making decisions
+biodf_tidy <- biodf %>% 
+    rename('bio_identifier' = X,
+           'birth_date' = 出生日期.YYYY.MM.DD.,
+           'discipline_date' = '查处.罢黜时间',
+           'discipline_cause' = '查处.罢黜原因') %>% 
+    select(bio_identifier, birth_date, discipline_date, discipline_cause) %>% 
+    mutate('birth_year' = as.numeric(format(as.Date(birth_date), '%Y')),
+           'disciplined' = (discipline_cause == '贪污腐败' | discipline_cause == '违纪'),
+           'discipline_year' = as.numeric(format(as.Date(discipline_date), '%Y')))
+
+fiscdf_tidy <- fiscdf %>% 
+    filter(!is.na(admcode) & admcode %in% unique(df_tidy$prefectural_code)) %>% 
+    # Code the income and expenditure observations that are 0 to NA
+    mutate(income_ttl = ifelse(income_ttl == 0, NA, income_ttl),
+           exp_ttl = ifelse(exp_ttl == 0, NA, exp_ttl),
+           exp_shbz = ifelse(exp_shbz == 0, NA, exp_shbz))
+
+df_merged <- fiscdf_tidy %>% 
+    left_join(df_tidy_year, by = c('admcode' = 'prefectural_code',
+                             'year' = 'year')) %>% 
+    left_join(biodf_tidy, by = c('identifier' = 'bio_identifier')) %>% 
+    mutate('income_log' = log(income_ttl),
+           'exp_log' = log(exp_ttl),
+           'social_exp_log' = log(exp_shbz),
+           'edu_exp_log' = log(exp_jy),
+           'age' = year - birth_year,
+           'post_discipline_time' = (year > discipline_year)) %>% 
+    # filter out the leaders
+    filter(leader == 1) %>% 
+    arrange(admcode, year)
+```
+
+# Summary Statistics & Visualizations
+## How many observations
+```{r}
+df_merged %>% 
+    summarise_at(c("income_log", "social_exp_log"), mean, stderr)
+```
+
+
+
+## Distribution of start and end date
+One concern with merging fiscal data with political cycles is whether the leader can still decide 
+```{r}
+fig_distofstartdate <- df_merged %>% 
+    filter(!is.na(format(as.Date(start_date), '%b'))) %>% 
+    ggplot(aes(x = format(as.Date(start_date), '%b'))) +
+    geom_bar() +
+    labs(x = 'Month of term start', 
+         y = 'Count',
+         title = "Distribution of the month municipal leadership starts")
+fig_distofstartdate
+ggsave("./FinalPJ/fig_distofstartdate.png")
+```
+
+### Average Term length 
+There is a formal term limit for Chinese mayors and provincial governors: 5 years. Yet this formal term limit is not strictly enforced. As shown in the following figure, most of Chinese mayors are promoted or transferred to other positions before reaching the 5-year term limit(the red vertical line marks the fifth year in office). This means that politicians face substantial uncertainty on how long they could stay at a particular position. 
+
+```{r}
+fig_tenuretime <- df_merged %>% 
+    group_by(name) %>% 
+    filter(governor)  %>% 
+    ggplot(aes(x = term_length)) +
+    geom_histogram(binwidth = 0.5) + 
+    coord_cartesian(xlim = c(0, 10)) +
+    geom_vline(color = "red", xintercept = 5) +
+    # Change x coordinates
+    labs(x = "Term length of munipal/provincial leadership",
+         y = "Count",
+         title = "Histogram of municipal/provincial leadership term length",
+         caption = "Zoomed in on 10 years")
+fig_tenuretime
+ggsave("./FinalPJ/fig_tenuretime.png")
+```
+
+## How much time does it take for one to become a municipal leader
+Age also shapes promotion incentives. 
+```{r}
+fig_promotiontime <- df_merged %>% 
+    group_by(name) %>% 
+    filter(job == "市长") %>% 
+    filter(age == min(age)) %>% 
+    ggplot(aes(x = age)) +
+    geom_histogram(binwidth = 1) +
+    geom_vline(color = "red", xintercept = 55) +
+    labs(x = "The age when the official gets the first mayor job",
+         y = "Count",
+         title = "Number of terms prior to the first municipal leadership")
+fig_promotiontime
+```
+
+
+# Political cycles on spending
+Given the age constraint on future promotions and substantial uncertainty on how long a politician can serve as a mayor or provincial governor, we would predict that in the starting years of their terms, politicians are incentivised to signal their competence to the upper-level organizational department for promotion. As a politician serves longer on a particular position and her age goes up, promotion incentives may decrease and fiscal necessity pushes the politician back to responsible behavior. 
+
+This difference in promotion incentives could be reflected in fiscal behaviors. Building on existing literature, I predict that politicians have two objectives: boost economic performance and maintain social stability (or prevent collective action). To boost economic performance, politicians may create tax exemptions or sell the state-owned land cheaply to developers for development; this would result in lower fiscal revenue. On the social stability side, politicians may opt to increase social expenditure to reduce social grievances and prevent collective actions. 
+
+Hypothesis 1: 
+
+### Dependent variables
+The key dependent variables are social expenditure and fiscal revenue. I logged the dependent variables.
+
+### Independent variables
+The key independent variables are `years in current office` and `age`.
+
+I also added year fixed effects in the estimations.
+
+
+
+In the second model, I estimate the model with robust standard errors. 
+
+To account for the effect of age on promotion incentives, I have also 
+
+## Graph over
+```{r graph, warning=FALSE}
+# filter out who the mayors/leaders are
+fig_fisc <- df_merged %>% 
+    filter(mayor) %>% 
+    pivot_longer(cols = c(social_exp_log, income_log),
+                 names_to = "fiscal_type",
+                 values_to = "values") %>% 
+    ggplot(aes(x = term_year, y = values, color = fiscal_type)) +
+    geom_point() +
+    geom_smooth( method = 'lm', formula = y ~ poly(x, 2)) +
+    labs(x = "Years in current office",
+         y = "Fiscal performance (logged)",
+         title = "Fiscal performance over years in current office") +
+    scale_color_discrete(name = "Fiscal data (logged)",
+                         labels = c("Fiscal revenue", "Social spending"))
+fig_fisc
+ggsave("./FinalPJ/fig_fisc.png")
+```
+
+## Regression analysis
+```{r}
+# This set of regressions use social expenditure (logged) as DV
+model_socexp <- lm(social_exp_log ~ term_year +  factor(year), 
+                   data = df_merged %>% filter(governor)) %>% summary
+# Add a non-linear term
+model_socexp2 <- lm(social_exp_log ~ poly(term_year, 2) + factor(year), 
+                    data = df_merged %>% filter(governor)) 
+# Produce robust standard errors
+modelr_socexp2 <- lm_robust(social_exp_log ~ poly(term_year, 2) +factor(year), 
+                            data = df_merged %>% filter(governor)) 
+# add an interaction with age
+model_socexp_interage <- lm_robust(social_exp_log ~ age*term_year + factor(year), 
+                            data = df_merged %>% filter(governor))
+mdlist_socexp <- list(model_socexp, model_socexp2, modelr_socexp2, model_socexp_interage)
+# Producing the regression tables
+modelsummary(mdlist_socexp, 
+             stars = TRUE,
+             output = "./FinalPJ/tbl_socexp.jpg",
+             coef_map = c("term_year" = "Years in office",
+                          "poly(term_year, 2)1" = "Years in office", 
+                          "poly(term_year, 2)2" = "Years in office (squared)",
+                          "age" = "Age",
+                          "age:term_year" = "Age X Years in office"))
+```
+
+## Interpretation part: coef, standard errors, p-values
+Model 1 is a linear model of regressing social expenditure on years in current office and year fixed effects. 
+
+Model 2 adds a second-degree term of years in office to the regression. 
+
+Model 3 is similar to model 2 but is estimated with robust standard errors. Compared to model 2, 
+
+Model 4 adds an interaction term of years in office and age, and is estimated with robust standard errors.
+
+## Income trends
+```{r income, warning=FALSE}
+# This regression is for mayors
+model_inc <- lm(income_log ~ term_year + factor(year), data = df_merged %>% filter(governor)) 
+# Add 
+model_inc2 <- lm(income_log ~ poly(term_year, 2) + factor(year), data = df_merged %>% filter(governor)) 
+# Produce robust standard errors
+modelr_inc2 <- lm_robust(income_log ~ poly(term_year, 2) + factor(year), data = df_merged %>% filter(governor))
+# add an interaction with age
+model_inc_interage <- lm(income_log ~ age*term_year + factor(year), data = df_merged %>% filter(governor))
+mdlist_inc <- list(model_inc, "2nd-degree" = model_inc2, "Robust standard errors" = modelr_inc2, model_inc_interage)
+# Producing the regression tables
+modelsummary(mdlist_inc,
+             stars = TRUE)
+```
+
+
+## Alternative specifications
+In the following sections, I use different specifications for the regression. First I created a lagged dependent variable. 
+### Using lagged DV in the estimation
+```{r}
+# Creating lagged DV in the dataset
+df_lagged <- df_merged %>% 
+    group_by(admcode, year) %>% 
+    summarise(sumed_disciplined = any(disciplined == 1), 
+              sumed_exp_log = mean(exp_log),
+              sumed_income_log = mean(income_log),
+              sumed_social_exp_log = mean(social_exp_log)) %>%
+    mutate(treatment = lag(sumed_disciplined), 
+           lag_exp = lag(sumed_exp_log),
+           lag_income = lag(sumed_income_log),
+           lag_socialexp = lag(sumed_social_exp_log)) %>% 
+    select(-sumed_disciplined, -sumed_exp_log) %>% 
+    right_join(df_merged, by = c('admcode' = 'admcode', 
+                                 'year' = 'year')) 
+```
+
+```{r regression with lagged DV}
+# Add a lagged DV to the regression
+model_lag_socexp <- lm_robust(social_exp_log ~ lag_socialexp + term_year, 
+                       data = df_lagged %>% filter(mayor)) 
+
+model_lag_income <- lm_robust(income_log ~ lag_income + term_year, 
+                       data = df_lagged %>% filter(mayor)) 
+tbl_lag <- list(model_lag_socexp, model_lag_income)
+modelsummary(tbl_lag, stars = TRUE)
+```
+
+## Interpretation
+
+### Using indicator variables
+```{r}
+# Using indicator variables
+model_fac_socexp <- lm_robust(social_exp_log ~ factor(term_year) + factor(year), 
+                              data = df_merged %>% filter(governor & term_year <= 11)) 
+model_fac_income <- lm(income_log ~ factor(term_year) + factor(year), 
+                              data = df_merged %>% filter(governor)) 
+tbl_fac <- list(model_fac_socexp, model_fac_income)
+modelplot(tbl_fac)
+```
+
+## Visualize the results of specification
+
+
+
+
+## Bootstrap the standard errors
 
