@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.10.28)  1 DEC 2021 10:02
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.10.28)  5 DEC 2021 15:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1037,23 +1037,23 @@ guage=dflt;"
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 7.0pt on input line 149.
+(Font)              scaled to size 7.0pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(1)/m/n' will be
-(Font)              scaled to size 5.0pt on input line 149.
+(Font)              scaled to size 5.0pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 10.00092pt on input line 149.
+(Font)              scaled to size 10.00092pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 7.00064pt on input line 149.
+(Font)              scaled to size 7.00064pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(2)/m/n' will be
-(Font)              scaled to size 5.00046pt on input line 149.
+(Font)              scaled to size 5.00046pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 9.99893pt on input line 149.
+(Font)              scaled to size 9.99893pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 6.99925pt on input line 149.
+(Font)              scaled to size 6.99925pt on input line 151.
 LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
-(Font)              scaled to size 4.99947pt on input line 149.
+(Font)              scaled to size 4.99947pt on input line 151.
 LaTeX Font Info:    Font shape `TU/FandolFang-Regular(0)/m/n' will be
-(Font)              scaled to size 9.4104pt on input line 189.
+(Font)              scaled to size 9.4104pt on input line 191.
 [1
 
 ] [2] [3]
@@ -1066,32 +1066,37 @@ File: FinalPJ_files/figure-latex/unnamed-chunk-2-1.pdf Graphic file (type pdf)
 File: FinalPJ_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (type pdf)
 <use FinalPJ_files/figure-latex/unnamed-chunk-3-1.pdf>
 [6]
+
+Package hyperref Warning: Difference (2) between bookmark levels is greater 
+(hyperref)                than one, level fixed on input line 424.
+
 File: FinalPJ_files/figure-latex/graph-1.pdf Graphic file (type pdf)
 <use FinalPJ_files/figure-latex/graph-1.pdf>
-[7]
-Overfull \hbox (469.99498pt too wide) in paragraph at lines 463--463
+[7] [8]
+Overfull \hbox (469.99498pt too wide) in paragraph at lines 512--512
 []\TU/lmtt/m/n/10 ## Warning: In version 0.8.0 of the `modelsummary` package, t
 he default significance markers produced by the `stars=TRUE` argument were chan
 ged to be consistent with R's defaults.[] 
  []
 
-File: FinalPJ_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pdf)
-<use FinalPJ_files/figure-latex/unnamed-chunk-5-1.pdf>
-[8] [9] [10]
-Overfull \hbox (34.24498pt too wide) in paragraph at lines 650--650
+[9] [10]
+Overfull \hbox (34.24498pt too wide) in paragraph at lines 654--654
 []\TU/lmtt/m/n/10 ## `summarise()` has grouped output by 'admcode'. You can ove
 rride using the `.groups` argument.[] 
  []
 
-[11] [12] (./FinalPJ.aux)
+[11]
+File: FinalPJ_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
+<use FinalPJ_files/figure-latex/unnamed-chunk-6-1.pdf>
+[12] (./FinalPJ.aux)
 Package rerunfilecheck Info: File `FinalPJ.out' has not changed.
-(rerunfilecheck)             Checksum: 9B9ACD3285794011DF44710BF5832509;3320.
+(rerunfilecheck)             Checksum: 7C2D372C030B8D58B6285398DFC8C7DE;3848.
  ) 
 Here is how much of TeX's memory you used:
- 19401 strings out of 478472
- 358966 string characters out of 5860455
- 877581 words of memory out of 5000000
- 39419 multiletter control sequences out of 15000+600000
+ 19406 strings out of 478472
+ 359063 string characters out of 5860455
+ 861725 words of memory out of 5000000
+ 39424 multiletter control sequences out of 15000+600000
  410577 words of font info for 87 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  87i,10n,120p,818b,449s stack positions out of 5000i,500n,10000p,200000b,80000s
