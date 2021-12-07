@@ -18,7 +18,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(estimatr)
 library(modelsummary)
-options(modelsummary_format_numeric_latex = "mathmode")
 datapath <- './ps_data/FullData.csv'
 df <- as_tibble(read.csv(datapath))
 biodatapath <- './ps_data/BiographicalData.csv'
@@ -27,27 +26,27 @@ fiscdatapath <- './ps_data/fiscal.dta'
 fiscdf <- haven::read_dta(fiscdatapath)
 ```
 
-# Data sources, data tidying, and data description
-This project investigates 
-Cities in China are under dual-leadership. The municipal party secretary and the mayor jointly leads the city. 
+# Introduction: Data sources, data tidying, and data description
+This project investigates how promotion incentives could impact fiscal behaviors of Chinese mayors over the years they are in office. 
 
 ## Data Sources
-Two datasets are used for analysis. The first dataset is the "Chinese Political Elite Database" (CPED), compiled by Junyan Jiang (accessed at https://www.junyanjiang.com/data.html). This dataset includes the biographical and career information of all mayors and municipal party secretaries from 2000 to 2015, provincial governors  and party secretaries (1995 - 2015).  This dataset is originally constructed for Jiang (2018), a paper that investigates 
+Two datasets are used in the analysis. The first dataset is the "Chinese Political Elite Database" (CPED), compiled by Junyan Jiang (accessed at https://www.junyanjiang.com/data.html). This dataset includes the biographical and career information of all mayors and municipal party secretaries from 2000 to 2015, provincial governors  and party secretaries (1995 - 2015). This dataset is originally constructed for Jiang (2018), a paper that investigates the effect of patron-client relations of city leaders and provincial leaders on municipal economic performance. 
 
 Another dataset documents county-level fiscal revenue and expenditure from 1994 to 2007. The dataset is accessed from the replication data of Xu Xu (2021) who purchased and digitized the original "Fiscal Statistics of Cities and Counties" compiled by the Budget Department of the Ministry of Finance of China. The original paper concerns the effect of implementing digital surveillance programs on public security spending.
 
-## Data Tidying
-Before running analyses, I tidied and merged the two datasets to produce a leader-year dataset. On the CPED dataset, I first translated and created the key variables needed for analysis; I then converted the CPED dataset to a county-year dataset using the start date and end date of politicians' terms. 
+As these two papers are not closely related to this project, I did not reference their replication codes for this project, and thus have not attached the replication codes within this report.    
 
-Two problems arise 
-As some politicians may only start their position closer to December, they may not have sufficient control over the fiscal expenditure and income that particular year. For politicians who came into office between July to December, I coded the first year of their tenure the next year. In the following sections, there is a figure that shows the distribution of the month in which newly-appointed mayors start their jobs.
+## Data Tidying
+Before running analyses, I tidied and merged the datasets to produce a leader/office-year dataset. On the CPED dataset, I first translated and created the key variables needed for analysis; I then converted the CPED dataset to a county-year dataset using the start date and end date of politicians' terms.   
+
+An extra note is due here on how I code the start date. As some politicians may only start their position closer to December, they may not have sufficient control over the fiscal expenditure and income that particular year. Therefore, for politicians who came into office between July to December, I coded the first year of their tenure the next year. In the following sections, I provide a figure that reports the distribution of the month in which newly-appointed mayors start their jobs and shows a substantial portion of Chinese mayors are appointed between July and December.
 
 On the county-level fiscal data, I dealt with certain coding discrepancies within the original data. In some cases, missing data is coded `NA` and in other cases, it's coded 0. I recoded the missing data points on social expenditure and fiscal revenue to `NA`s.  
 
-Finally, I merged the datasets together, and filter out only the mayors and their terms.
+Finally, I merged the datasets together based on city and year; I filter out only the mayors and their terms.  
 
 ## Data Description
-The final dataset includes 1397 mayors and has 11,062 leader-year observations. Each observation documents who the leaders were at a particular city in a given year, how much was the fiscal expenditure and revenue. 
+The tidied dataset documents information on 1397 mayors and has 5143 leader-year observations. Each observation records who the mayor was at a particular city in a given year, the amount of city-level fiscal expenditure and revenue in that year, how many years.
 
 ```{r data cleaning}
 df_tidy <- df %>% 
@@ -92,26 +91,13 @@ df_tidy <- df %>%
     mutate(governor = (job == "省长"),
            mayor = (job == "市长"),
            party_secretary = job %in% c("市委书记", "省委书记"),
-           leader = governor | mayor | party_secretary) %>% 
-    # Create a term identifier
-    mutate(term_identifier = row_number()) %>% 
-    # Create promotion or demotion
-    group_by(name) %>% 
-    # rank the experiences in the temporal order
-    arrange(exper_num, by_group = TRUE) %>% 
-    mutate(dem = (lag(position_numeric) > position_numeric),
-           # or being moved to an inconsequential position
-           prom = (lead(position_numeric) > position_numeric))
+           leader = governor | mayor | party_secretary)
 
 biodf_tidy <- biodf %>% 
     rename('bio_identifier' = X,
-           'birth_date' = 出生日期.YYYY.MM.DD.,
-           'discipline_date' = '查处.罢黜时间',
-           'discipline_cause' = '查处.罢黜原因') %>% 
-    select(bio_identifier, birth_date, discipline_date, discipline_cause) %>% 
-    mutate('birth_year' = as.numeric(format(as.Date(birth_date), '%Y')),
-           'disciplined' = (discipline_cause == '贪污腐败' | discipline_cause == '违纪'),
-           'discipline_year' = as.numeric(format(as.Date(discipline_date), '%Y')))
+           'birth_date' = 出生日期.YYYY.MM.DD.) %>% 
+    select(bio_identifier, birth_date) %>% 
+    mutate('birth_year' = as.numeric(format(as.Date(birth_date), '%Y')))
 
 fiscdf_tidy <- fiscdf %>% 
     filter(!is.na(admcode) & admcode %in% unique(df_tidy$prefectural_code)) %>% 
@@ -124,7 +110,7 @@ fiscdf_tidy <- fiscdf %>%
 ### Converting the Political Elite datase to a leader-year dataset
 ```{r county-year conversion}
 df_tidy_year <- df_tidy %>% 
-    # filter out NAs, otherwise there would be errors in mutating new variables
+    # filter out NAs, otherwise there would be errors in converting to leader-year
     filter(!is.na(start_year) & !is.na(end_year) & !is.na(prefectural_code)) %>% 
     mutate('year' = map2(start_year, end_year, `:`)) %>% 
     unnest(cols = c(year)) %>% 
@@ -148,12 +134,12 @@ df_merged <- fiscdf_tidy %>%
            'exp_log' = log(exp_ttl),
            'social_exp_log' = log(exp_shbz),
            'edu_exp_log' = log(exp_jy),
-           'age' = year - birth_year,
-           'age50' = age >= 50,
+           'age' = year - birth_year + 1,
+           'age55' = age >= 55,
            'midterm' = (term_year >= 3),
            'completeterm' = (term_year >= 5)) %>% 
-    # filter out the leaders
-    filter(leader == 1) %>% 
+    # Create a term identifier
+    mutate(term_identifier = paste(name, admcode)) %>% 
     arrange(admcode, year)
 
 df_merged_mayor <- df_merged %>% 
@@ -164,7 +150,7 @@ df_merged_mayor <- df_merged %>%
 As discussed above in the data tidying section, one concern with merging fiscal data with political cycles is how much influence a politician has over fiscal spending and revenue. If all politicians are appointed to their job in January of each year, we can assume they have substantial control over the fiscal behaviors of that year. Alternatively, if politicians are appointed in December of a particular year, they wouldn't have enough control over policies and fiscal revenue/expenditure. The following figure shows the distribution of the month that mayors start their new jobs.
 
 ```{r}
-fig_distofstartdate <- df_merged %>% 
+fig_distofstartdate <- df_merged_mayor %>% 
     filter(!is.na(format(as.Date(start_date), '%b'))) %>% 
     ggplot(aes(x = format(as.Date(start_date), '%b'))) +
     geom_bar() +
@@ -193,24 +179,22 @@ fig_tenuretime <- df_merged_mayor %>%
          title = "Histogram of municipal leadership term length",
          caption = "Zoomed in on 10 years")
 fig_tenuretime
-# ggsave("./FinalPJ/fig_tenuretime.png")
 ```
 
-## Age constraint in promotions
-Chinese politicians also face another constraint in promotions: age. 
+## Age constraint on promotions
+Chinese politicians also face another constraint in promotions: age. For politicians who have reached the position of mayor and the corresponding administrative rank，the age constraint for further promotion is 55 years old (Kou & Tsai, 2014). The following figure shows the age at which politicians got their first mayor job. The red vertical line marks the 55-year-old cutoff. This figure shows for the bulk of the politicians, they started their first mayorship between age 40 to 55, which means politicians have approximately 10 years to seek further promotion.  
 
 
 ```{r}
-fig_promotiontime <- df_merged %>% 
+fig_promotiontime <- df_merged_mayor %>% 
     group_by(name) %>% 
-    filter(job == "市长") %>% 
     filter(age == min(age)) %>% 
     ggplot(aes(x = age)) +
     geom_histogram(binwidth = 1) +
     geom_vline(color = "red", xintercept = 55) +
     labs(x = "The age when the official gets the first mayor job",
          y = "Count",
-         title = "Politician's age when he has the first municipal leadership")
+         title = "Politician's age when the politician has the first municipal leadership")
 fig_promotiontime
 ```
 
@@ -219,34 +203,31 @@ fig_promotiontime
 
 # Promotion incentives and Fiscal Behaviors
 
-Given the age constraint on future promotions and substantial uncertainty on how long a politician can serve as a mayor or provincial governor, we would predict that in the starting years of their terms, politicians are incentivised to signal their competence to the upper-level organizational department for promotion. As a politician serves longer on a particular position and her age goes up, promotion incentives may decrease and fiscal necessity pushes the politician back to responsible behavior. 
+Given the age constraint on future promotions and substantial uncertainty on how long a politician can serve as a mayor, we would predict that in the starting years of their terms, politicians are incentivised to signal their competence to the upper-level organizational department for early promotion. Promotion prospects may prompt politicians to adopt certain policies and fiscal choices in the beginning of their terms. Given the time period this project centers on (1995 to 2007), I argue Chinese mayors may focus on two objectives: (1) boost economic performance and (2) maintain social stability (or prevent collective action).  
 
-The time period for the data .
+To boost economic performance, Chiense mayors may create tax exemptions or sell the state-owned land cheaply to developers for development at the beginning of their term; this would result in lower fiscal revenue in the early years of their mayorship. When these ad-hoc economic policies expire later in their term, fiscal revenue would increase. On preventing collective actions and maintaining social stability, Chiense mayors may opt to spend more on social welfare and distribute more resources to reduce social grievances at the beginning of their term. Therefore, I choose to investigate how fiscal revenue and social expenditure changes over the years in office.
 
-This difference in promotion incentives could be reflected in fiscal behaviors. Building on existing literature, I predict that politicians have two objectives: boost economic performance and maintain social stability (or prevent collective action). To boost economic performance, politicians may create tax exemptions or sell the state-owned land cheaply to developers for development; this would result in lower fiscal revenue. On the social stability side, politicians may opt to increase social expenditure to reduce social grievances and prevent collective actions. 
+Alternatively, if the politician has reached the age of 55, the impact of career incentives on policy choices and fiscal behaviors is expected to diminish as the politician is excluded from further promotion give the age constraint.
 
-Hypothesis 1: social spending is positively correlated with 
-
-Hypothesis 2: 
+Building on these reasoning, I generate two hypotheses to test in empirical analysis:
+Hypothesis 1: If the politician is aged under 55, fiscal revenue would increase as a politician ;
+Hypothesis 2: Social expenditure decreases over the 
 
 ### Dependent variables
 The key dependent variables are city-level `social expenditure` and `fiscal revenue`. The dependent variables are logged in the regression models.
 
 ### Independent variables
-The key independent variables are `years in office` and `age`. 
+The key independent variables are `years in office` and `Age >= 55`. `Age >= 55` is a dummy variable indicating if a particular year, a polician's age have reached or exceeded 55, the cutoff age for potential promotion. I'm interested in the interaction term of `years in office` and `Age >= 55`: the hypothesis put forward above means that if a politician has reached the age of 55, 
 
-In the models, I control for year fixed
-I also control for year fixed effects in the models to capture for the macro
+The alternative specification of using the continuous variable of `age` is not viable because `age` is perfectly collinear with `Years in office`.
+
+In the models, I control for year fixed effects and mayoralty fixed effects.
 
 
-
-To account for the effect of age on promotion incentives, I have also 
 
 ## Do Chinese mayors change fiscal behaviors over different years in an office?
 
-The following figure shows how 
-
-I used `pivot_longer` to restructure
+The following figure shows how fiscal behaviors change over the years in office. The regressions underlying the regression curves employ a quadratic specification of the years in office without controlling for year fixed effects and mayoralty fixed effects. To produce the plot, I first used `pivot_longer` to reshape the dataset and produce the regression curves on the same plot. 
 
 ```{r graph, warning=FALSE}
 # filter out who the mayors/leaders are
@@ -266,31 +247,78 @@ fig_fisc
 # ggsave("./FinalPJ/fig_fisc.png")
 ```
 
+# Regression
+## Regressions using fiscal revenue (logged) as dependent variable
+```{r mayor revenue, warning=FALSE}
+# OLS linear model
+model_inc <- lm(income_log ~ term_year + factor(year) + factor(term_identifier), 
+                data = df_merged_mayor) 
+# Estimate with robust standard errors
+modelr_inc <- lm_robust(income_log ~ term_year, 
+                        fixed_effects = ~ year + term_identifier, 
+                        data = df_merged_mayor) 
+# Add a non-linear term into the model
+modelr_inc2 <- lm_robust(income_log ~ poly(term_year, 2), 
+                         fixed_effects = ~ year + term_identifier, 
+                         data = df_merged_mayor)
+# Add an interaction term of term_year with Age >= 55
+modelr_inc_interage <- lm_robust(income_log ~ age55*term_year,
+                                fixed_effects = ~ year + term_identifier,
+                                data = df_merged_mayor)
+mdlist_inc <- list(model_inc, modelr_inc, modelr_inc2, modelr_inc_interage)
+# Create two rows indicating fixed effects have been added to the models
+tbl_fe2 <- tibble("variable" = c("Mayoralty fixed effects", "Year fixed effects"),
+                 "values" = "Y") %>% 
+    cbind(replicate(.$values, n = length(mdlist_inc) - 1))
+# Producing the regression tables
+tbl_inc <- modelsummary(mdlist_inc,
+             stars = TRUE,
+             coef_map = c("term_year" = "Years in office",
+                          "poly(term_year, 2)1" = "Years in office", 
+                          "poly(term_year, 2)2" = "Years in office (squared)",
+                          "age55TRUE" = "Age >= 55",
+                          "age55TRUE:term_year" = "Age >= 55 X Years in office"),
+             add_rows = tbl_fe2)
+tbl_inc
+```
 
-## Regression analysis
-In the following analysis sections,
-The data used in the regressions
 
-```{r mayor's social expenditure, warning=FALSE}
+Table 1 shows the regression results when using city-level fiscal revenue (logged) as the dependent variable. In all the models, mayoralty fixed effects and year fixed effects are controlled.    
+
+`Model 1` estimates a linear model of fiscal revenue on the years a politican has been a mayor. The coefficient on the `Years in office` variable is 0.019, which means for every 1 year increase in `Years in office` is associated with a 0.019 increase in logged fiscal revenue. The estimated standard error on the OLS coefficient of `Years in office` is 0.011, which is the estimate of the standard deviation of the coefficient on `Years in office` over a sampling distribution. The p-value is `r summary(model_inc)$coefficients[2,4]`, which means the probability that we would observe a value at least as extreme as the estimate under the null distribution is `r summary(model_inc)$coefficients[2,4]`. Given this p-value, we fail to reject the null hypothesis that the coefficient on `Years in office` is zero at a p-value p < 0.1.
+
+`Model 2` is estimated with robust standard errors and the same specification as model 1. The coefficient on the `Years in office` variable remains the same as the one in model 1. The estimated robust standard error on the coefficient of `Years in office` is 0.007, which is smaller than the standard error estimated in model 1. The p-value is `r summary(modelr_inc)$coefficients[1,4]`; in other words, we can reject the null hypothesis that the coefficient on `Years in office` is zero at a p-value p < 0.01.         
+
+`Model 3` uses a second-degree polynomial of `Years in office` in the specification. It is also estimated with robust standard errors. The coefficient on `Years in office` is 2.575, and it is larger than the coefficient on `Years in office` in model 1 and model 2. The corresponding p-value is `r summary(modelr_inc2)$coefficients[1,4]`; this means we can reject the null hypothesis that the coefficient on `Years in office` is zero at a p-value p < 0.01. On the second-degree term of `Years in office`, the coefficient is 0.768; the corresponding p-value is `r summary(modelr_inc2)$coefficients[2,4]`. This p-value also means that we can reject the null hypothesis that the coefficient on second-degree term of `Years in office` is zero at a p-value p < 0.01. These coefficients on the first-degree and the second-degree term suggest that fiscal revenue may increase over the years in office on a quadratic curve.   
+
+`Model 4` adds an interaction term of `Years in office` and `Age >= 55`, and is estimated with robust standard errors. The coefficient on the `Years in office` variable is 0.005, with a corresponding p-value of `r summary(modelr_inc_interage)$coefficients[2,4]`. Compared to the coefficient on `Years in office` in model 2, the coefficient decreases, and the coefficient is no longer statistically significant. 
+
+The coefficient on `Age >= 55` is -0.046 with a p-value of `r summary(modelr_inc_interage)$coefficients[1,4]`. 
+
+The coefficient on the interaction term (`Age >= 55` * `Years in office`) is 0.02 with a p-value of `r summary(modelr_inc_interage)$coefficients[3,4]`. The p-values suggest that we can reject the null hypothesis that the coefficient on the interaction term is 0 at a p-value p < 0.01. The coefficient means for politicians who have reached the age of 55 and above, every year increase in `Years in office` is associated with `0.005 + 0.02` increase in logged fiscal revenue. 
+
+
+## Regression using social expenditure (logged) as dependent variable
+```{r mayor social expenditure, warning=FALSE}
 # This set of regressions use social expenditure (logged) as DV
-model_socexp <- lm(social_exp_log ~ term_year  + factor(year) + factor(name), 
+model_socexp <- lm(social_exp_log ~ term_year  + factor(year) + factor(term_identifier), 
                    data = df_merged_mayor)
 # Produce robust standard errors
 modelr_socexp <- lm_robust(social_exp_log ~ term_year, 
-                           fixed_effects = ~ year + identifier, 
+                           fixed_effects = ~ year + term_identifier, 
                            data = df_merged_mayor) 
 # Add a non-linear term
 modelr_socexp2 <- lm_robust(social_exp_log ~ poly(term_year, 2), 
-                            fixed_effects = ~ year + identifier,  
+                            fixed_effects = ~ year + term_identifier,  
                             data = df_merged_mayor) 
 # add an interaction with age
-modelr_socexp_interage <- lm_robust(social_exp_log ~ age50*term_year, 
-                                    fixed_effects = ~ year + name, 
+modelr_socexp_interage <- lm_robust(social_exp_log ~ age55*term_year, 
+                                    fixed_effects = ~ year + term_identifier, 
                                     data = df_merged_mayor)
 mdlist_socexp <- list(model_socexp, modelr_socexp, modelr_socexp2, modelr_socexp_interage)
 # Create a tibble to be added into the regression table, 
 # reflecting if fixed effects have been added into the model
-tbl_fe <- tibble("variable" = c("Leader fixed effects", "Year fixed effects"),
+tbl_fe <- tibble("variable" = c("Mayoralty fixed effects", "Year fixed effects"),
                  "values" = "Y") %>% 
     cbind(replicate(.$values, n = length(mdlist_socexp) - 1))
 # Produce the regression table
@@ -300,81 +328,46 @@ tbl_socexp <- modelsummary(mdlist_socexp,
              coef_map = c("term_year" = "Years in office",
                           "poly(term_year, 2)1" = "Years in office", 
                           "poly(term_year, 2)2" = "Years in office (squared)",
-                          "age50TRUE" = "Age",
-                          "age50TRUE:term_year" = "Age X Years in office"),
+                          "age55TRUE" = "Age >= 55",
+                          "age55TRUE:term_year" = "Age >= 55 X Years in office"),
              add_rows = tbl_fe)
 tbl_socexp
 ```
 
+Table 2 reports the regression results using logged social spending as the dependent variable. 
+
+Model 1 is a linear model of regressing social expenditure on years in current office, while controlling for learder and year fixed effects. The coefficient on the `Years in office` variable is 0.034, which means for every 1 year increase in `Years in office` is associated with a 0.034 increase in logged social expenditure. The estimated standard error on the OLS coefficient of `Years in office` is 0.033, which is the estimate of the standard deviation of the coefficient on `Years in office` over a sampling distribution. The p-value is `r summary(model_socexp)$coefficients[2,4]`, which means the probability that we would observe a value at least as extreme as the estimate under the null distribution is `r summary(model_socexp)$coefficients[2,4]`. This means we fail to reject the null hypothesis that the coefficient on `Years in office` is zero.  
+
+`Model 2` uses the same specification as model 1, but it is estimated with robust standard errors. The estimated robust standard error on the coefficient of `Years in office` is 0.022, which is smaller than the standard error estimated in model 1. The p-value is `r summary(modelr_socexp)$coefficients[1,4]`.       
+
+`Model 3` changes the specification and uses a second-degree polynomial of `Years in office`. It is also estimated with robust standard errors. The coefficient on `Years in office` is 4.471, and it is larger than the coefficient on `Years in office` in model 1 and model 2. The corresponding p-value is `r summary(modelr_socexp2)$coefficients[1,4]`. On the second-degree term of `Years in office`, the coefficient is 0.696. The corresponding p-value is `r summary(modelr_socexp2)$coefficients[2,4]`. 
+
+
+`Model 4` adds an interaction term of years in office and age, and is estimated with robust standard errors. The coefficient on the `Years in office` variable is −0.140, with a corresponding p-value of `r summary(modelr_socexp_interage)$coefficients[2,4]`. The coefficient on `Age >= 55` is 0.077 with a p-value of `r summary(modelr_socexp_interage)$coefficients[1,4]`. The coefficient on the interaction term (`Age >= 55` * `term_year`) is 0.008 with a p-value of `r summary(modelr_socexp_interage)$coefficients[3,4]`. The p-values suggest that we fail to reject the null hypotheses that the coefficient on each term is 0. 
 
 
 
-## Interpretation part: coef, standard errors, p-values
-Model 1 is a linear model of regressing social expenditure on years in current office, while controlling for learder and year fixed effects. The coefficient on the `Years in office` variable is - 0.117, which means for every 1 year increase in `Years in office` is associated with a 0.117 decrease in logged social expenditure. The standard error on `Years in office` is 0.012
-
-Model 2 uses the same specification as model 1, but it is estimated with robust standard errors. The robust standard error on `Years in office` is 0.018, different from the standard error produced in model 1. 
-
-Talk about the relative changes
-
-Model 3 changes the specification and uses a second-degree polynomial of `Years in office`. It is also estimated with robust standard errors. Compared to model 2, the coefficient on `Years in office` becomes 
-
-Model 4 adds an interaction term of years in office and age, and is estimated with robust standard errors. Since `age` is perfectly collinear with The coefficient on the `Years in office` variable
-
-## Income trends
-```{r income, warning=FALSE}
-# This regression is for mayors
-model_inc <- lm(income_log ~ term_year + factor(year) + factor(name), 
-                data = df_merged_mayor) 
-# Estimate with robust standard errors
-model_inc2 <- lm_robust(income_log ~ term_year, fixed_effects = ~ year + name, 
-                 data = df_merged_mayor) 
-# Add a non-linear term into the sp
-modelr_inc2 <- lm_robust(income_log ~ poly(term_year, 2), fixed_effects = ~ year + name, 
-                         data = df_merged_mayor)
-# add an interaction with age
-model_inc_interage <- lm_robust(income_log ~ age50*term_year,
-                                fixed_effects = ~ year + name,
-                                data = df_merged_mayor)
-mdlist_inc <- list(model_inc, "Robust standard errors" = model_inc2, "2nd-degree polynomial" = modelr_inc2, model_inc_interage)
-# Producing the regression tables
-modelsummary(mdlist_inc,
-             stars = TRUE,
-             coef_map = c("term_year" = "Years in office",
-                          "poly(term_year, 2)1" = "Years in office", 
-                          "poly(term_year, 2)2" = "Years in office (squared)",
-                          "age50TRUE" = "Age",
-                          "age50TRUE:term_year" = "Age X Years in office"),
-             add_rows = tbl_fe)
-```
-
-## Interpretations
-Table 2 shows that the regression results when using city-level fiscal revenue (logged) as the dependent variable. In all the models, leader fixed effects and year fixed effects are controlled.  
-Model 1 
-
-
-The results within the 
 
 
 ## Alternative specifications
-In the following regressions, I used 
+In the following regressions, I used an alternative specification on the 
 ### Using indicator variables
 ```{r}
 # Using indicator variables
 model_fac_socexp <- lm_robust(social_exp_log ~ completeterm, 
-                              fixed_effects = ~ year + name, 
-                              data = df_merged %>% filter(mayor))
+                              fixed_effects = ~ year + term_identifier, 
+                              data = df_merged_mayor)
 model_fac_income <- lm_robust(income_log ~ completeterm, 
-                              fixed_effects = ~ year + name, 
-                              data = df_merged %>% filter(mayor)) 
+                              fixed_effects = ~ year + term_identifier, 
+                              data = df_merged_mayor) 
 mdlist_fac <- list(model_fac_socexp, model_fac_income)
 modelplot(mdlist_fac) +
-    geom_vline(xintercept = 0)
+    geom_vline(xintercept = 0) +
+    labs() +
+    scale_color_discrete(name = "Fiscal data (logged)",
+                         labels = c("Social expenditure", "Fiscal revenue"))
 ```
 
+As the 95% confidence intervals don't intersect with the vertical line
 
-## Bootstrap the standard errors
-In this section, 
-```{r}
-
-```
 
